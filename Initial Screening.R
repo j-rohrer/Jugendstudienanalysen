@@ -40,3 +40,5 @@ rel_weighted_freq <- weighted_freq / sum(jugend2023$wph)
 rel_weighted_freq
 
 # weights dont seem to make a big difference here
+
+# test
