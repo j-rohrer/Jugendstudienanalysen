@@ -95,7 +95,7 @@ prop.table(table(jugend2015$f02a[jugend2015$geschlecht == 2])) # weiblich
 ######################
 
 
-mean(jugend2010$j02a[jugend2010$geschl == 2], na.rm = TRUE) # weiblich, 2010
+mean(schul2010$s02a[schul2010$geschl == 2], na.rm = TRUE) # weiblich, 2010
 
 mean(jugend2015$f02a[jugend2015$geschlecht == 1], na.rm = TRUE) # maennlich, 2015
 mean(jugend2015$f02a[jugend2015$geschlecht == 2], na.rm = TRUE) # weiblich, 2015
@@ -109,11 +109,11 @@ names(mean_satis) <- c("Year", "Gender", "M", "lb", "ub")
 mean_satis$Year <- rep(c(2010, 2015, 2023), each = 2)
 mean_satis$Gender <- rep(c("m", "f"), times = 3)
 
-mean_satis[mean_satis$Year == 2010 & mean_satis$Gender == "m",]$M <- t.test(jugend2010$j02a[jugend2010$geschl == 1], na.rm = TRUE)$estimate
-mean_satis[mean_satis$Year == 2010 & mean_satis$Gender == "m", c("lb", "ub")] <- as.numeric(t.test(jugend2010$j02a[jugend2010$geschl == 1], na.rm = TRUE)$conf.int)
+mean_satis[mean_satis$Year == 2010 & mean_satis$Gender == "m",]$M <- t.test(schul2010$s02a[schul2010$geschl == 1], na.rm = TRUE)$estimate
+mean_satis[mean_satis$Year == 2010 & mean_satis$Gender == "m", c("lb", "ub")] <- as.numeric(t.test(schul2010$s02a[schul2010$geschl == 1], na.rm = TRUE)$conf.int)
 
-mean_satis[mean_satis$Year == 2010 & mean_satis$Gender == "f",]$M <- t.test(jugend2010$j02a[jugend2010$geschl == 2], na.rm = TRUE)$estimate
-mean_satis[mean_satis$Year == 2010 & mean_satis$Gender == "f", c("lb", "ub")] <- t.test(jugend2010$j02a[jugend2010$geschl == 2], na.rm = TRUE)$conf.int
+mean_satis[mean_satis$Year == 2010 & mean_satis$Gender == "f",]$M <- t.test(schul2010$s02a[schul2010$geschl == 2], na.rm = TRUE)$estimate
+mean_satis[mean_satis$Year == 2010 & mean_satis$Gender == "f", c("lb", "ub")] <- t.test(schul2010$s02a[schul2010$geschl == 2], na.rm = TRUE)$conf.int
 
 mean_satis[mean_satis$Year == 2015 & mean_satis$Gender == "m",]$M <- t.test(jugend2015$f02a[jugend2015$geschlecht == 1], na.rm = TRUE)$estimate
 mean_satis[mean_satis$Year == 2015 & mean_satis$Gender == "m", c("lb", "ub")] <- t.test(jugend2015$f02a[jugend2015$geschlecht == 1], na.rm = TRUE)$conf.int
