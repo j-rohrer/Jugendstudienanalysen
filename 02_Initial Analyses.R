@@ -74,9 +74,8 @@ schul2010$satis_mom <- 6 - schul2010$s02d
 schul2010$satis_dad <- 6 - schul2010$s02e
 schul2010$satis_leisure <- 6 - schul2010$s02g
 schul2010$satis_dwell <- 6 - schul2010$s02h
+schul2010$satis_grades <- 6 - schul2010$s02f
 
-# 2010 weights
-schul2010$we
 
 ###########
 # 2015
@@ -112,6 +111,7 @@ jugend2015$satis_mom <- 6 - jugend2015$f02d
 jugend2015$satis_dad <- 6 - jugend2015$f02e
 jugend2015$satis_leisure <- 6 - jugend2015$f02g
 jugend2015$satis_dwell <- 6 - jugend2015$f02h
+jugend2015$satis_grades <- 6 - jugend2015$f02f
 
 jugend2015$migback <- NA
 
@@ -181,13 +181,14 @@ jugend2023$satis_mom <- 6 - jugend2023$f02d
 jugend2023$satis_dad <- 6 - jugend2023$f02e
 jugend2023$satis_leisure <- 6 - jugend2023$f02h
 jugend2023$satis_dwell <- 6 - jugend2023$f02i
+jugend2023$satis_grades <- as.numeric(6 - jugend2023$f02f)
 
 ###########
 # combined
 ###########
 
 vars <- c("gender", "age", "year", "migback", "german_at_home", "satis", "satis_money", "satis_friends",
-          "satis_mom", "satis_dad", "satis_leisure", "satis_dwell")
+          "satis_mom", "satis_dad", "satis_leisure", "satis_dwell", "satis_grades")
 dat2010 <- schul2010[, vars]
 dat2015 <- jugend2015[, vars]
 dat2023 <- jugend2023[, vars]
@@ -331,6 +332,20 @@ ggplot(dat = pred_satis_dwell, aes(x = year, y = estimate, ymin = conf.low, ymax
   ylab("Satisfaction with dwelling")
 ggsave("Plots/mean_satis_dwell.png", width = 4, height = 3)
 
+# satis_grades
+mod_satis_grades <- lm(scale(satis_grades) ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+pred_satis_grades <- predictions(mod_satis_grades,
+                                newdata = datagrid(gender = c("male", "female"), year = c(2010, 2015, 2023)))
+ggplot(dat = pred_satis_grades, aes(x = year, y = estimate, ymin = conf.low, ymax = conf.high, group = gender, color = gender)) +
+  geom_point(position = position_dodge(width = dodge_width)) +
+  geom_errorbar(position = position_dodge(width = dodge_width), width = .3) +
+  geom_line(position = position_dodge(width = dodge_width)) +
+  geom_hline(yintercept = 0) +
+  coord_cartesian(ylim = c(-0.4, +0.4)) +
+  theme_classic() +
+  ylab("Satisfaction with grades")
+ggsave("Plots/mean_satis_grades.png", width = 4, height = 3)
+
 ######################
 # Do plot for these unstandardized
 ######################
@@ -437,4 +452,18 @@ ggplot(dat = pred_satis_dwell, aes(x = year, y = estimate, ymin = conf.low, ymax
   theme_classic() +
   ylab("Satisfaction with dwelling")
 ggsave("Plots/raw_mean_satis_dwell.png", width = 4, height = 3)
+
+# satis_grades
+mod_satis_grades <- lm(satis_grades ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+pred_satis_grades <- predictions(mod_satis_grades,
+                                newdata = datagrid(gender = c("male", "female"), year = c(2010, 2015, 2023)))
+ggplot(dat = pred_satis_grades, aes(x = year, y = estimate, ymin = conf.low, ymax = conf.high, group = gender, color = gender)) +
+  geom_point(position = position_dodge(width = dodge_width)) +
+  geom_errorbar(position = position_dodge(width = dodge_width), width = .3) +
+  geom_line(position = position_dodge(width = dodge_width)) +
+  geom_hline(yintercept = 0) +
+  coord_cartesian(ylim = c(3, 5)) +
+  theme_classic() +
+  ylab("Satisfaction with grades")
+ggsave("Plots/raw_mean_satis_grades.png", width = 4, height = 3)
 
