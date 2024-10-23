@@ -75,6 +75,9 @@ schul2010$satis_dad <- 6 - schul2010$s02e
 schul2010$satis_leisure <- 6 - schul2010$s02g
 schul2010$satis_dwell <- 6 - schul2010$s02h
 
+# 2010 weights
+schul2010$we
+
 ###########
 # 2015
 ###########
@@ -109,6 +112,8 @@ jugend2015$satis_mom <- 6 - jugend2015$f02d
 jugend2015$satis_dad <- 6 - jugend2015$f02e
 jugend2015$satis_leisure <- 6 - jugend2015$f02g
 jugend2015$satis_dwell <- 6 - jugend2015$f02h
+
+jugend2015$migback <- NA
 
 ###########
 # 2023
@@ -176,3 +181,260 @@ jugend2023$satis_mom <- 6 - jugend2023$f02d
 jugend2023$satis_dad <- 6 - jugend2023$f02e
 jugend2023$satis_leisure <- 6 - jugend2023$f02h
 jugend2023$satis_dwell <- 6 - jugend2023$f02i
+
+###########
+# combined
+###########
+
+vars <- c("gender", "age", "year", "migback", "german_at_home", "satis", "satis_money", "satis_friends",
+          "satis_mom", "satis_dad", "satis_leisure", "satis_dwell")
+dat2010 <- schul2010[, vars]
+dat2015 <- jugend2015[, vars]
+dat2023 <- jugend2023[, vars]
+
+combined <- rbind(dat2010, dat2015, dat2023)
+combined$year
+
+fixed <- lm(scale(satis) ~ as.factor(year), data = combined)
+summary(fixed)
+
+fixed <- lm(scale(satis) ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+summary(fixed)
+
+# Take a look at the various satisfaction variables
+
+
+fixed <- lm(scale(satis_money) ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+summary(fixed) # no interaction
+
+fixed <- lm(scale(satis_friends) ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+summary(fixed) # yes interaction!
+
+fixed <- lm(scale(satis_mom) ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+summary(fixed) # no interaction
+
+fixed <- lm(scale(satis_dad) ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+summary(fixed) # no interaction
+
+fixed <- lm(scale(satis_leisure) ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+summary(fixed) # yes interaction!
+
+fixed <- lm(scale(satis_dwell) ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+summary(fixed) # yes interaction
+
+# Also consider: age, migback
+
+######################
+# Do plot for these
+######################
+library(marginaleffects)
+library(ggplot2)
+
+# satis
+mod_satis <- lm(scale(satis) ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+pred_satis <- predictions(mod_satis,
+                          newdata = datagrid(gender = c("male", "female"), year = c(2010, 2015, 2023)))
+ggplot(dat = pred_satis, aes(x = year, y = estimate, ymin = conf.low, ymax = conf.high, group = gender, color = gender)) +
+  geom_point(position = position_dodge(width = dodge_width)) +
+  geom_errorbar(position = position_dodge(width = dodge_width), width = .3) +
+  geom_line(position = position_dodge(width = dodge_width)) +
+  geom_hline(yintercept = 0) +
+  coord_cartesian(ylim = c(-0.4, +0.4)) +
+  theme_classic() +
+  ylab("Satisfaction with life")
+ggsave("Plots/mean_satis.png", width = 4, height = 3)
+
+
+# satis_money
+mod_satis_money <- lm(scale(satis_money) ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+pred_satis_money <- predictions(mod_satis_money,
+                          newdata = datagrid(gender = c("male", "female"), year = c(2010, 2015, 2023)))
+ggplot(dat = pred_satis_money, aes(x = year, y = estimate, ymin = conf.low, ymax = conf.high, group = gender, color = gender)) +
+  geom_point(position = position_dodge(width = dodge_width)) +
+  geom_errorbar(position = position_dodge(width = dodge_width), width = .3) +
+  geom_line(position = position_dodge(width = dodge_width)) +
+  geom_hline(yintercept = 0) +
+  coord_cartesian(ylim = c(-0.4, +0.4)) +
+  theme_classic() +
+  ylab("Financial satisfaction")
+ggsave("Plots/mean_satis_money.png", width = 4, height = 3)
+
+# satis_friends
+mod_satis_friends <- lm(scale(satis_friends) ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+pred_satis_friends <- predictions(mod_satis_friends,
+                          newdata = datagrid(gender = c("male", "female"), year = c(2010, 2015, 2023)))
+ggplot(dat = pred_satis_friends, aes(x = year, y = estimate, ymin = conf.low, ymax = conf.high, group = gender, color = gender)) +
+  geom_point(position = position_dodge(width = dodge_width)) +
+  geom_errorbar(position = position_dodge(width = dodge_width), width = .3) +
+  geom_line(position = position_dodge(width = dodge_width)) +
+  geom_hline(yintercept = 0) +
+  coord_cartesian(ylim = c(-0.4, +0.4)) +
+  theme_classic() +
+  ylab("Satisfaction with friends")
+ggsave("Plots/mean_satis_friends.png", width = 4, height = 3)
+
+# satis_mom
+mod_satis_mom <- lm(scale(satis_mom) ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+pred_satis_mom <- predictions(mod_satis_mom,
+                          newdata = datagrid(gender = c("male", "female"), year = c(2010, 2015, 2023)))
+ggplot(dat = pred_satis_mom, aes(x = year, y = estimate, ymin = conf.low, ymax = conf.high, group = gender, color = gender)) +
+  geom_point(position = position_dodge(width = dodge_width)) +
+  geom_errorbar(position = position_dodge(width = dodge_width), width = .3) +
+  geom_line(position = position_dodge(width = dodge_width)) +
+  geom_hline(yintercept = 0) +
+  coord_cartesian(ylim = c(-0.4, +0.4)) +
+  theme_classic() +
+  ylab("Satisfaction with mom")
+ggsave("Plots/mean_satis_mom.png", width = 4, height = 3)
+
+# satis_dad
+mod_satis_dad <- lm(scale(satis_dad) ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+pred_satis_dad <- predictions(mod_satis_dad,
+                          newdata = datagrid(gender = c("male", "female"), year = c(2010, 2015, 2023)))
+ggplot(dat = pred_satis_dad, aes(x = year, y = estimate, ymin = conf.low, ymax = conf.high, group = gender, color = gender)) +
+  geom_point(position = position_dodge(width = dodge_width)) +
+  geom_errorbar(position = position_dodge(width = dodge_width), width = .3) +
+  geom_line(position = position_dodge(width = dodge_width)) +
+  geom_hline(yintercept = 0) +
+  coord_cartesian(ylim = c(-0.4, +0.4)) +
+  theme_classic() +
+  ylab("Satisfaction with dad")
+ggsave("Plots/mean_satis_dad.png", width = 4, height = 3)
+
+
+# satis_leisure
+mod_satis_leisure <- lm(scale(satis_leisure) ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+pred_satis_leisure <- predictions(mod_satis_leisure,
+                          newdata = datagrid(gender = c("male", "female"), year = c(2010, 2015, 2023)))
+ggplot(dat = pred_satis_leisure, aes(x = year, y = estimate, ymin = conf.low, ymax = conf.high, group = gender, color = gender)) +
+  geom_point(position = position_dodge(width = dodge_width)) +
+  geom_errorbar(position = position_dodge(width = dodge_width), width = .3) +
+  geom_line(position = position_dodge(width = dodge_width)) +
+  geom_hline(yintercept = 0) +
+  coord_cartesian(ylim = c(-0.4, +0.4)) +
+  theme_classic() +
+  ylab("Satisfaction with leisure")
+ggsave("Plots/mean_satis_leisure.png", width = 4, height = 3)
+
+
+# satis_dwell
+mod_satis_dwell <- lm(scale(satis_dwell) ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+pred_satis_dwell <- predictions(mod_satis_dwell,
+                          newdata = datagrid(gender = c("male", "female"), year = c(2010, 2015, 2023)))
+ggplot(dat = pred_satis_dwell, aes(x = year, y = estimate, ymin = conf.low, ymax = conf.high, group = gender, color = gender)) +
+  geom_point(position = position_dodge(width = dodge_width)) +
+  geom_errorbar(position = position_dodge(width = dodge_width), width = .3) +
+  geom_line(position = position_dodge(width = dodge_width)) +
+  geom_hline(yintercept = 0) +
+  coord_cartesian(ylim = c(-0.4, +0.4)) +
+  theme_classic() +
+  ylab("Satisfaction with dwelling")
+ggsave("Plots/mean_satis_dwell.png", width = 4, height = 3)
+
+######################
+# Do plot for these unstandardized
+######################
+library(marginaleffects)
+library(ggplot2)
+
+# satis
+mod_satis <- lm(satis ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+pred_satis <- predictions(mod_satis,
+                          newdata = datagrid(gender = c("male", "female"), year = c(2010, 2015, 2023)))
+ggplot(dat = pred_satis, aes(x = year, y = estimate, ymin = conf.low, ymax = conf.high, group = gender, color = gender)) +
+  geom_point(position = position_dodge(width = dodge_width)) +
+  geom_errorbar(position = position_dodge(width = dodge_width), width = .3) +
+  geom_line(position = position_dodge(width = dodge_width)) +
+  geom_hline(yintercept = 0) +
+  coord_cartesian(ylim = c(3, 5)) +
+  theme_classic() +
+  ylab("Satisfaction with life")
+ggsave("Plots/raw_mean_satis.png", width = 4, height = 3)
+
+
+# satis_money
+mod_satis_money <- lm(satis_money ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+pred_satis_money <- predictions(mod_satis_money,
+                                newdata = datagrid(gender = c("male", "female"), year = c(2010, 2015, 2023)))
+ggplot(dat = pred_satis_money, aes(x = year, y = estimate, ymin = conf.low, ymax = conf.high, group = gender, color = gender)) +
+  geom_point(position = position_dodge(width = dodge_width)) +
+  geom_errorbar(position = position_dodge(width = dodge_width), width = .3) +
+  geom_line(position = position_dodge(width = dodge_width)) +
+  geom_hline(yintercept = 0) +
+  coord_cartesian(ylim = c(3, 5)) +
+  theme_classic() +
+  ylab("Financial satisfaction")
+ggsave("Plots/raw_mean_satis_money.png", width = 4, height = 3)
+
+# satis_friends
+mod_satis_friends <- lm(satis_friends ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+pred_satis_friends <- predictions(mod_satis_friends,
+                                  newdata = datagrid(gender = c("male", "female"), year = c(2010, 2015, 2023)))
+ggplot(dat = pred_satis_friends, aes(x = year, y = estimate, ymin = conf.low, ymax = conf.high, group = gender, color = gender)) +
+  geom_point(position = position_dodge(width = dodge_width)) +
+  geom_errorbar(position = position_dodge(width = dodge_width), width = .3) +
+  geom_line(position = position_dodge(width = dodge_width)) +
+  geom_hline(yintercept = 0) +
+  coord_cartesian(ylim = c(3, 5)) +
+  theme_classic() +
+  ylab("Satisfaction with friends")
+ggsave("Plots/raw_mean_satis_friends.png", width = 4, height = 3)
+
+# satis_mom
+mod_satis_mom <- lm(satis_mom ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+pred_satis_mom <- predictions(mod_satis_mom,
+                              newdata = datagrid(gender = c("male", "female"), year = c(2010, 2015, 2023)))
+ggplot(dat = pred_satis_mom, aes(x = year, y = estimate, ymin = conf.low, ymax = conf.high, group = gender, color = gender)) +
+  geom_point(position = position_dodge(width = dodge_width)) +
+  geom_errorbar(position = position_dodge(width = dodge_width), width = .3) +
+  geom_line(position = position_dodge(width = dodge_width)) +
+  geom_hline(yintercept = 0) +
+  coord_cartesian(ylim = c(3, 5)) +
+  theme_classic() +
+  ylab("Satisfaction with mom")
+ggsave("Plots/raw_mean_satis_mom.png", width = 4, height = 3)
+
+# satis_dad
+mod_satis_dad <- lm(satis_dad ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+pred_satis_dad <- predictions(mod_satis_dad,
+                              newdata = datagrid(gender = c("male", "female"), year = c(2010, 2015, 2023)))
+ggplot(dat = pred_satis_dad, aes(x = year, y = estimate, ymin = conf.low, ymax = conf.high, group = gender, color = gender)) +
+  geom_point(position = position_dodge(width = dodge_width)) +
+  geom_errorbar(position = position_dodge(width = dodge_width), width = .3) +
+  geom_line(position = position_dodge(width = dodge_width)) +
+  geom_hline(yintercept = 0) +
+  coord_cartesian(ylim = c(3, 5)) +
+  theme_classic() +
+  ylab("Satisfaction with dad")
+ggsave("Plots/raw_mean_satis_dad.png", width = 4, height = 3)
+
+
+# satis_leisure
+mod_satis_leisure <- lm(satis_leisure ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+pred_satis_leisure <- predictions(mod_satis_leisure,
+                                  newdata = datagrid(gender = c("male", "female"), year = c(2010, 2015, 2023)))
+ggplot(dat = pred_satis_leisure, aes(x = year, y = estimate, ymin = conf.low, ymax = conf.high, group = gender, color = gender)) +
+  geom_point(position = position_dodge(width = dodge_width)) +
+  geom_errorbar(position = position_dodge(width = dodge_width), width = .3) +
+  geom_line(position = position_dodge(width = dodge_width)) +
+  geom_hline(yintercept = 0) +
+  coord_cartesian(ylim = c(3, 5)) +
+  theme_classic() +
+  ylab("Satisfaction with leisure")
+ggsave("Plots/raw_mean_satis_leisure.png", width = 4, height = 3)
+
+
+# satis_dwell
+mod_satis_dwell <- lm(satis_dwell ~ as.factor(year)*gender, data = combined[combined$gender != "diverse" ,])
+pred_satis_dwell <- predictions(mod_satis_dwell,
+                                newdata = datagrid(gender = c("male", "female"), year = c(2010, 2015, 2023)))
+ggplot(dat = pred_satis_dwell, aes(x = year, y = estimate, ymin = conf.low, ymax = conf.high, group = gender, color = gender)) +
+  geom_point(position = position_dodge(width = dodge_width)) +
+  geom_errorbar(position = position_dodge(width = dodge_width), width = .3) +
+  geom_line(position = position_dodge(width = dodge_width)) +
+  geom_hline(yintercept = 0) +
+  coord_cartesian(ylim = c(3, 5)) +
+  theme_classic() +
+  ylab("Satisfaction with dwelling")
+ggsave("Plots/raw_mean_satis_dwell.png", width = 4, height = 3)
+
