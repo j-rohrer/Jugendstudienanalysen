@@ -467,3 +467,16 @@ ggplot(dat = pred_satis_grades, aes(x = year, y = estimate, ymin = conf.low, yma
   ylab("Satisfaction with grades")
 ggsave("Plots/raw_mean_satis_grades.png", width = 4, height = 3)
 
+
+# Folgende Items aufbereiten und mergen
+# BENACHTEILIGUNGSITEMS
+# ITEMS FREIZEIT WARUM NICHT
+# BERUFSTAETIGKEIT ELTERN
+# POSTLEITZAHL
+# ANZAHL GESCHWISTER
+# PERSOENLICHE PROBLEME
+# SCHULPROBLEME 2015 2023
+
+# Gewichtung?
+# Alter, Migback adjustieren
+# gleiche Schulen? PLZ?
