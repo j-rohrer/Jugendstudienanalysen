@@ -480,3 +480,25 @@ ggsave("Plots/raw_mean_satis_grades.png", width = 4, height = 3)
 # Gewichtung?
 # Alter, Migback adjustieren
 # gleiche Schulen? PLZ?
+# Filter: allgemeinbildende Schulen
+# Alter: unter 18
+
+
+# Umfj2010: beide Datensaetze geht bis 27 Jahre
+# umfschule2010: hier alle rausfiltern die ueber 18 sind und bei den
+# 18jaehrigen darauf achten, dass man nur schueler aus allgemeinbildenden Schulen mit drin hat
+
+
+# Jugend2015.sav sind die sauberen Daten, am besten alles andere loeschen
+
+# To do: Schritt fuer Schritt aufbereiten in RMarkdown file
+
+# Number of observations
+sum(!is.na(schul2010$age)) # 2377
+sum(schul2010$age >= 12 & schul2010$age <= 18, na.rm = TRUE) # 1981
+
+sum(!is.na(jugend2015$age)) # 2246
+sum(jugend2015$age >= 12 & jugend2015$age <= 18, na.rm = TRUE) # 2018
+
+sum(!is.na(jugend2023$age)) # 2967
+sum(jugend2023$age >= 12 & jugend2023$age <= 18, na.rm = TRUE) # 2316

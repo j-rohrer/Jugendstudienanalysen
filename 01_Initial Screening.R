@@ -74,11 +74,11 @@ sd(jugend2023$f02a, na.rm = TRUE) # 0.85
 
 library(haven)
 
-jugend2015_asc <- read_spss("Files/jugend2015_asc.sav")
-jugend2015_kl <- read_spss("Files/jugend2015_kl.sav")
-jugend2015_R <- read_spss("Files/jugend2015_R.sav")
+#jugend2015_asc <- read_spss("Files/jugend2015_asc.sav")
+#jugend2015_kl <- read_spss("Files/jugend2015_kl.sav")
+#jugend2015_R <- read_spss("Files/jugend2015_R.sav")
 jugend2015 <- read_spss("Files/jugend2015.sav")
-jugend2015schule <- read_spss("Files/jugend2015schule.sav")
+#jugend2015schule <- read_spss("Files/jugend2015schule.sav")
 
 
 table(jugend2015$f02a)
