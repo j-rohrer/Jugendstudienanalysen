@@ -116,10 +116,34 @@ youth2010$satis_grades <- 6 - youth2010$s02f
 
 ### An initial look at the data
 
-You can also embed plots, for example:
+```{r descriptives2010}
+# Gender
+# Absolute numbers
+table(youth2010$gender)
+# Proportions
+round(prop.table(table(youth2010$gender)), digits = 2)
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+# Age
+table(youth2010$age)
+summary(youth2010$age)
+sd(youth2010$age, na.rm = TRUE)
+
+hist(youth2010$age)
+axis(1, at = seq(min(youth2010$age, na.rm = TRUE), max(youth2010$age, na.rm = TRUE), by = 1))
+
+# School types
+table(youth2010$`@schultyp`)
+round(prop.table(table(youth2010$`@schultyp`)), digits = 2)
+# 0: Mittelschule, secondary school (grade 7 to 10)
+# 1: Gymnasium, grammar school (grade 7 to 12)
+# 2: Berufs-/Fachoberschule, vocational school (1st and 2nd year)
+# 3: Förderschule, special-needs school (grade 7 to 10)
+
+# Migration background
+table(youth2010$migback)
+round(prop.table(table(youth2010$migback)), digits = 2)
+
+# And the assumed language at home
+table(youth2010$german_at_home)
+round(prop.table(table(youth2010$german_at_home)), digits = 2)
 ```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
