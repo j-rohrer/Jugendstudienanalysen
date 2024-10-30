@@ -39,7 +39,11 @@ rel_weighted_freq
 jugend2010 <- readRDS("Files/umfj2010.rds")
 schul2010 <- readRDS("Files/umfschule2010.rds") # Whats the difference here
 
+which(jugend2010$pnum %in% schul2010$pnum)
+
 erwerb2010 <- readRDS("Files/umfj2010_erwerbverlauf.rds")
+summary(jugend2010$pnum)
+summary(schul2010$pnum)
 
 # Wie zufrieden zur Zeit
 table(jugend2010$j02a)

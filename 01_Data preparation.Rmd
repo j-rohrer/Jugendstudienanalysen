@@ -1,0 +1,125 @@
+---
+title: "Cleaning and preparation of the Youth Surveys"
+author: "Julia Rohrer"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Overview
+
+The city of Leipzig conducted Youth Surveys in the years 2010, 2015 and 2023. 
+Here, we are going to start by loading the data and taking an initial look at it.
+
+## Let's get started with the 2010 data
+In 2010, the city of Leipzig actually conducted two parallel Youth Surveys. 
+All the following information was taken from the official report: "Jugend in Leipzig -- Ergebnisse einer Befragung 2010 [07/2011]" issued by Stadt Leipzig, Amt für Statistik und Wahlen in Kooperation mit dem Amt für Jugend, Familie und Bildung.
+
+### Sampling procedure
+First, students between the ages of 12 and 17 were targeted within their respective schools (although students within the same classes who happened to be older were surveyed as well). 
+Second, young people between the ages of 18 and 27 were contacted separately based on registry information, to ensure that young people who already left school were represented as well.
+Only the first survey has a methodology comparable to the 2015 and 2023 Youth Surveys, so we will exclusively rely on that data and ignore the survey involving older young people.
+
+For the Youth Survey that took part in schools, whole classes were targeted for reasons of efficiency.
+The targeted inital sample size was 3000, which was distributed according to the actual distribution of students between the ages of 12 to 17 in the four types of schools included and the grade levels included (Mittelschule: grades 7 to 10, Gymnasium: grades 7 to 12, Berufs-/Fachoberschule: first and second year, Förderschule: grades 7 to 10).
+The corresponding schools and classrooms were then picked, prioritising schools who had participated in earlier Youth Surveys for organisational reasons.
+In total, there were 3459 students in the targeted classes.
+Of these, a trotal of 2411 (70%) participated in the Youth Survey and can be found in our data set.
+
+To my knowledge, no weights were generated for the official report issued by the city.
+
+### Load and clean data
+```{r read2010}
+# Read 2010 data
+youth2010 <- readRDS("Files/umfschule2010.rds")
+head(youth2010)
+
+# prepare some basic variables
+# add year
+youth2010$year <- 2010
+
+# gender
+table(youth2010$geschl) # original gender variable
+youth2010$gender <- NA # generate new gender variable
+youth2010$gender[youth2010$geschl == 1] <- "male"
+youth2010$gender[youth2010$geschl == 2] <- "female"
+youth2010$gender[youth2010$geschl == 3] <- "diverse"
+table(youth2010$gender)
+
+# age
+table(youth2010$alter)
+youth2010$age <- youth2010$alter
+
+# migback
+# migration background was assessed by asking respondents
+# whether they and their parents were born in Germany
+# self born in Germany? if no, which country
+table(youth2010$s23ad, youth2010$s23aa, useNA = "always")
+
+# father born in Germany? if no, which country
+table(youth2010$s23bd, youth2010$s23ba, useNA = "always")
+
+# mother born in Germany? if no, which country
+table(youth2010$s23cd, youth2010$s23ca, useNA = "always")
+
+# always lived in Germany?
+table(youth2010$s24a, useNA = "always")
+# in Germany since age...
+table(youth2010$s24b, useNA = "always")
+
+youth2010$migback <- NA
+
+# Self, father, mother born in Germany
+youth2010$migback[!is.na(youth2010$s23ad) & !is.na(youth2010$s23bd) & !is.na(youth2010$s23cd)] <- "none"
+# Self born in Germany, father mother not born in Germany
+youth2010$migback[!is.na(youth2010$s23ad) & !is.na(youth2010$s23ba) & !is.na(youth2010$s23ca)] <- "both"
+# Self born in Germany, father not born in Germany, mother born in Germany
+youth2010$migback[!is.na(youth2010$s23ad) & !is.na(youth2010$s23ba) & !is.na(youth2010$s23cd)] <- "father"
+# Self born in Germany, father born in Germany, mother not born in Germany
+youth2010$migback[!is.na(youth2010$s23ad) & !is.na(youth2010$s23bd) & !is.na(youth2010$s23ca)] <- "mother"
+# Self not born in Germany
+youth2010$migback[!is.na(youth2010$s23aa)] <- "self"
+# If both parents in Germany, assume self is also born in germany
+youth2010$migback[!is.na(youth2010$s23bd) & !is.na(youth2010$s23cd)] <- "none"
+
+table(youth2010$migback, useNA = "always")
+
+
+# Dichotomous indicator of ASSUMED language at home
+# we will need this later because in 2015, migration background was
+# not assessed in the same manner
+youth2010$german_at_home <- 1 # default: German at home
+youth2010$german_at_home[youth2010$migback == "self"|youth2010$migback == "both"] <- 0
+# here, we assume that if we know that a person was born outside of Germany or both of their parents were
+# we also know they do not speak German at home (this assumption is of course fallible)
+table(youth2010$german_at_home)
+
+# Satisfaction items
+# Students were asked for their satisfaction with various things
+# Here, we will recode the items so that higher values indicate more satisfaction
+# For all items that are comparable between the 2010, 2015 and 2023 Youth Surveys
+youth2010$satis <- 6 - youth2010$s02a
+youth2010$satis_money <- 6 - youth2010$s02b
+youth2010$satis_friends <- 6 - youth2010$s02c
+youth2010$satis_mom <- 6 - youth2010$s02d
+youth2010$satis_dad <- 6 - youth2010$s02e
+youth2010$satis_leisure <- 6 - youth2010$s02g
+youth2010$satis_dwell <- 6 - youth2010$s02h
+youth2010$satis_grades <- 6 - youth2010$s02f
+
+```
+
+### An initial look at the data
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
