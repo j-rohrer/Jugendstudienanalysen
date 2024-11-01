@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 The city of Leipzig conducted Youth Surveys in the years 2010, 2015 and 2023. 
 Here, we are going to start by loading the data and taking an initial look at it.
 
-## Let's get started with the 2010 data
+## Let's get started with the 2010 Youth Survey
 In 2010, the city of Leipzig actually conducted two parallel Youth Surveys. 
 All the following information was taken from the official report: "Jugend in Leipzig -- Ergebnisse einer Befragung 2010 [07/2011]" issued by Stadt Leipzig, Amt für Statistik und Wahlen in Kooperation mit dem Amt für Jugend, Familie und Bildung.
 
@@ -29,7 +29,8 @@ For the Youth Survey that took part in schools, whole classes were targeted for 
 The targeted inital sample size was 3000, which was distributed according to the actual distribution of students between the ages of 12 to 17 in the four types of schools included and the grade levels included (Mittelschule: grades 7 to 10, Gymnasium: grades 7 to 12, Berufs-/Fachoberschule: first and second year, Förderschule: grades 7 to 10).
 The corresponding schools and classrooms were then picked, prioritising schools who had participated in earlier Youth Surveys for organisational reasons.
 In total, there were 3459 students in the targeted classes.
-Of these, a trotal of 2411 (70%) participated in the Youth Survey and can be found in our data set.
+Of these, a total of 2411 (70%) participated in the Youth Survey and can be found in our data set.
+The data were collected between October 18th and November 5th 2010.
 
 To my knowledge, no weights were generated for the official report issued by the city.
 
@@ -37,11 +38,24 @@ To my knowledge, no weights were generated for the official report issued by the
 ```{r read2010}
 # Read 2010 data
 youth2010 <- readRDS("Files/umfschule2010.rds")
-head(youth2010)
 
 # prepare some basic variables
 # add year
 youth2010$year <- 2010
+
+# schooltype
+# existing variable
+table(youth2010$`@schultyp`)
+# 0: Mittelschule, secondary school (grade 7 to 10)
+# 1: Gymnasium, grammar school (grade 7 to 12)
+# 2: Berufs-/Fachoberschule, vocational school (1st and 2nd year)
+# 3: Förderschule, special-needs school (grade 7 to 10)
+
+youth2010$schooltype <- NA
+youth2010$schooltype[youth2010$`@schultyp` == 0] <- 1 # Mittelschule
+youth2010$schooltype[youth2010$`@schultyp` == 1] <- 2 # Gymnasium
+youth2010$schooltype[youth2010$`@schultyp` == 2] <- 3 # Berufs-/Fachoberschule
+youth2010$schooltype[youth2010$`@schultyp` == 3] <- 4 # Förderschule
 
 # gender
 table(youth2010$geschl) # original gender variable
@@ -132,12 +146,12 @@ hist(youth2010$age)
 axis(1, at = seq(min(youth2010$age, na.rm = TRUE), max(youth2010$age, na.rm = TRUE), by = 1))
 
 # School types
-table(youth2010$`@schultyp`)
-round(prop.table(table(youth2010$`@schultyp`)), digits = 2)
-# 0: Mittelschule, secondary school (grade 7 to 10)
-# 1: Gymnasium, grammar school (grade 7 to 12)
-# 2: Berufs-/Fachoberschule, vocational school (1st and 2nd year)
-# 3: Förderschule, special-needs school (grade 7 to 10)
+table(youth2010$schooltype)
+round(prop.table(table(youth2010$schooltype)), digits = 2)
+# 1: Mittelschule, secondary school (grade 7 to 10)
+# 2: Gymnasium, grammar school (grade 7 to 12)
+# 3: Berufs-/Fachoberschule, vocational school (1st and 2nd year)
+# 4: Förderschule, special-needs school (grade 7 to 10)
 
 # Migration background
 table(youth2010$migback)
@@ -146,4 +160,116 @@ round(prop.table(table(youth2010$migback)), digits = 2)
 # And the assumed language at home
 table(youth2010$german_at_home)
 round(prop.table(table(youth2010$german_at_home)), digits = 2)
+```
+## 2015 Youth Survey
+The next Youth Survey was conducted five years later. 
+The following information was taken from the official report: "Jugend in Leipzig – Ergebnisse einer Befragung 2015 [08/2015]" issued by Stadt Leipzig, Amt für Statistik und Wahlen in Kooperation mit dem
+Amt für Jugend, Familie und Bildung.
+
+### Sampling procedure
+In 2015, only one survey took place, targeting students within their respective schools.
+
+Again, whole classes were targeted for reasons of efficiency. 
+The targeted initial sample size was again 3000, which was again distributed according to the actual distribution of students across the included types of schools and grade levels (Oberschule, formerly called Mittelschule: grades 7 to 10, Gymnasium: grades 7 to *11*, Berufs-/Fachoberschule: first, second *and third* year, Förderschule: grades 7 to 10). 
+In total, 3298 students were in the targeted classes.
+Of these, a total of 2255 (75%) participated in the Youth Survey and can be found in our data set.
+The data were collected between May 7th and June 1st 2015, which is why the students in grade 12 at Gymnasium are missing -- they already finished their final examinations (Abitur).
+
+To my knowledge, no weights were generated for the official report issued by the city.
+
+### Load and clean data
+```{r read2015}
+# Read 2015 data
+library(haven)
+youth2015 <- read_spss("Files/jugend2015.sav")
+
+# prepare some basic variables
+# add year
+youth2015$year <- 2015
+
+# schooltype
+# existing variable
+table(youth2015$schulart)
+# 1: Gymnasium
+# 2: Oberschule
+# 3: Berufs-/Fachoberschule
+# 4: Förderschule
+
+youth2015$schooltype <- NA
+youth2015$schooltype[youth2015$schulart == 2] <- 1 # Mittelschule/Oberschule
+youth2015$schooltype[youth2015$schulart == 1] <- 2 # Gymnasium
+youth2015$schooltype[youth2015$schulart == 3] <- 3 # Berufs-/Fachoberschule
+youth2015$schooltype[youth2015$schulart == 4] <- 4 # Förderschule
+
+# gender
+youth2015$geschlecht
+youth2015$gender <- NA
+youth2015$gender[youth2015$geschlecht == 1] <- "male"
+youth2015$gender[youth2015$geschlecht == 2] <- "female"
+youth2015$gender[youth2015$geschlecht == 3] <- "diverse"
+table(youth2015$gender, youth2015$geschlecht)
+
+# age
+table(youth2015$alter)
+youth2015$age <- youth2015$alter
+
+# migback
+# in 2015, no detailed information on migration background was collected
+# but only information on the main language spoken at home
+# according to personal communications, this decision was made
+# (1) to increase comparability with other youth surveys and
+# (2) to ask in a more child-friendly manner
+youth2015$migback <- NA
+
+table(youth2015$f19)
+youth2015$german_at_home <- ifelse(youth2015$f19 == 1, 1, 0)
+table(youth2015$german_at_home)
+
+
+# Satisfaction items
+# Students were asked for their satisfaction with various things
+# Here, we will recode the items so that higher values indicate more satisfaction
+# For all items that are comparable between the 2010, 2015 and 2023 Youth Surveys
+youth2015$satis <- 6 - youth2015$f02a
+youth2015$satis_money <- 6 - youth2015$f02b
+youth2015$satis_friends <- 6 - youth2015$f02c
+youth2015$satis_mom <- 6 - youth2015$f02d
+youth2015$satis_dad <- 6 - youth2015$f02e
+youth2015$satis_leisure <- 6 - youth2015$f02g
+youth2015$satis_dwell <- 6 - youth2015$f02h
+youth2015$satis_grades <- 6 - youth2015$f02f
+
+```
+
+### An initial look at the data
+
+```{r descriptives2015}
+# Gender
+# Absolute numbers
+table(youth2015$gender)
+# Proportions
+round(prop.table(table(youth2015$gender)), digits = 2)
+
+# Age
+table(youth2015$age)
+summary(youth2015$age)
+sd(youth2015$age, na.rm = TRUE)
+
+hist(youth2015$age)
+axis(1, at = seq(min(youth2015$age, na.rm = TRUE), max(youth2015$age, na.rm = TRUE), by = 1))
+
+# School types
+table(youth2015$schooltype)
+round(prop.table(table(youth2015$schooltype)), digits = 2)
+# 1: Mittelschule, secondary school (grade 7 to 10)
+# 2: Gymnasium, grammar school (grade 7 to 11)
+# 3: Berufs-/Fachoberschule, vocational school (1st, 2nd, 3rd year)
+# 4: Förderschule, special-needs school (grade 7 to 10)
+
+# Migration background
+# not assessed
+
+# And the assumed language at home
+table(youth2015$german_at_home)
+round(prop.table(table(youth2015$german_at_home)), digits = 2)
 ```
