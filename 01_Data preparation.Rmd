@@ -25,7 +25,7 @@ First, students between the ages of 12 and 17 were targeted within their respect
 Second, young people between the ages of 18 and 27 were contacted separately based on registry information, to ensure that young people who already left school were represented as well.
 Only the first survey has a methodology comparable to the 2015 and 2023 Youth Surveys, so we will exclusively rely on that data and ignore the survey involving older young people.
 
-For the Youth Survey that took part in schools, whole classes were targeted for reasons of efficiency.
+For the Youth Survey that took part in schools, initially schools were selected, in within those schools whole classes were assessed.
 The targeted inital sample size was 3000, which was distributed according to the actual distribution of students between the ages of 12 to 17 in the four types of schools included and the grade levels included (Mittelschule: grades 7 to 10, Gymnasium: grades 7 to 12, Berufs-/Fachoberschule: first and second year, Förderschule: grades 7 to 10).
 The corresponding schools and classrooms were then picked, prioritising schools who had participated in earlier Youth Surveys for organisational reasons.
 In total, there were 3459 students in the targeted classes.
@@ -169,7 +169,7 @@ Amt für Jugend, Familie und Bildung.
 ### Sampling procedure
 In 2015, only one survey took place, targeting students within their respective schools.
 
-Again, whole classes were targeted for reasons of efficiency. 
+Again, schools were initially selected, and within those schools whole classes were assessed for reasons of efficiency. 
 The targeted initial sample size was again 3000, which was again distributed according to the actual distribution of students across the included types of schools and grade levels (Oberschule, formerly called Mittelschule: grades 7 to 10, Gymnasium: grades 7 to *11*, Berufs-/Fachoberschule: first, second *and third* year, Förderschule: grades 7 to 10). 
 In total, 3298 students were in the targeted classes.
 Of these, a total of 2255 (75%) participated in the Youth Survey and can be found in our data set.
@@ -202,7 +202,7 @@ youth2015$schooltype[youth2015$schulart == 3] <- 3 # Berufs-/Fachoberschule
 youth2015$schooltype[youth2015$schulart == 4] <- 4 # Förderschule
 
 # gender
-youth2015$geschlecht
+table(youth2015$geschlecht)
 youth2015$gender <- NA
 youth2015$gender[youth2015$geschlecht == 1] <- "male"
 youth2015$gender[youth2015$geschlecht == 2] <- "female"
@@ -272,4 +272,140 @@ round(prop.table(table(youth2015$schooltype)), digits = 2)
 # And the assumed language at home
 table(youth2015$german_at_home)
 round(prop.table(table(youth2015$german_at_home)), digits = 2)
+```
+
+## 2023 Youth Survey
+The next Youth Survey was supposed to happen in 2020 but was delayed by 3 years due to the COVID-19 pandemic.
+The following information was taken from the official report: "Jugend in Leipzig 2023" issued by Stadt Leipzig, Amt für Statistik und Wahlen/Amt für Jugend un Familie/Amt für Schule.
+
+### Sampling procedure
+In 2023, the sampling procedures were adjusted.
+Instead of first selecting schools and then assessing the relevant classrooms within those schools, classrooms were drawn across schools.
+This change was implemented to increase the variability in the data and improve the representativeness of the results.
+Furthermore, students from special-needs schools were intentionally oversampled, and weights were generated to account for this overrepresentation.
+
+A total of 212 classrooms across 68 schools were initially selected for the cluster sample, covering a total of 5000 students, which was anticipated to result in a sample size of 3000 students given previous experiences with response rates.
+When school headmaster refused to participate (which happened for a total of 9 schools), reserve schools were contacted.
+According to the official report, for pragmatic reasons there were some deviations from the initially intended sample.
+A total of 3053 questionnaires was filled out of which 3 had to be removed due to nonresponse of obviously fake answers.
+
+The data were collected between March 1st and April 28th 2023, which means that students in grade 12 at Gymnasium could be included.
+Approximately 65% of students filled out the questionnaire on a tablet as opposed to on paper.
+
+
+### Load and clean data
+```{r read2023}
+# Read 2023 data
+library(haven)
+youth2023 <- readRDS("Files/jugend2023.rds")
+
+# prepare some basic variables
+# add year
+youth2023$year <- 2023
+
+# schooltype
+# existing variable
+table(youth2023$schulart)
+# 1: Beruchsfachschule
+# 2: Berufsschule
+# 3: Förderschule
+# 4: Gymnasium
+# 5: Oberschule
+
+youth2023$schooltype <- NA
+youth2023$schooltype[youth2023$schulart == 5] <- 1 # Mittelschule/Oberschule
+youth2023$schooltype[youth2023$schulart == 4] <- 2 # Gymnasium
+youth2023$schooltype[youth2023$schulart == 1 | youth2023$schulart == 2] <- 3 # Berufs-/Fachoberschule
+youth2023$schooltype[youth2023$schulart == 3] <- 4 # Förderschule
+
+# gender
+table(youth2023$geschl)
+youth2023$gender <- NA
+youth2023$gender[youth2023$geschl == 1] <- "male"
+youth2023$gender[youth2023$geschl == 2] <- "female"
+youth2023$gender[youth2023$geschl == 3] <- "diverse"
+table(youth2023$gender, youth2023$geschl)
+
+# age
+table(youth2023$alter)
+youth2023$age <- youth2023$alter
+
+# migback
+# country of birth
+table(youth2023$staat_geb_person) # self
+table(youth2023$staat_geb_vater) # father
+table(youth2023$staat_geb_mutter) # mother
+
+youth2023$migback <- NA
+# Self, father, mother born in Germany
+youth2023$migback[youth2023$staat_geb_person == 1 & youth2023$staat_geb_vater == 1 & youth2023$staat_geb_mutter == 1] <- "none"
+# Self born in Germany, father mother not born in Germany
+youth2023$migback[youth2023$staat_geb_person == 1 & youth2023$staat_geb_vater == 2 & youth2023$staat_geb_mutter == 2] <- "both"
+# Self born in Germany, father not born in Germany, mother born in Germany
+youth2023$migback[youth2023$staat_geb_person == 1 & youth2023$staat_geb_vater == 2 & youth2023$staat_geb_mutter == 1] <- "father"
+# Self born in Germany, father born in Germany, mother not born in Germany
+youth2023$migback[youth2023$staat_geb_person == 1 & youth2023$staat_geb_vater == 1 & youth2023$staat_geb_mutter == 2] <- "mother"
+# Self not born in Germany
+youth2023$migback[youth2023$staat_geb_person == 2] <- "self"
+
+table(youth2023$migback, useNA = "always")
+
+# If both parents in Germany, assume self is also born in germany
+youth2023$migback[youth2023$staat_geb_vater == 1 & youth2023$staat_geb_mutter == 1] <- "none"
+
+# ASSUMED language at home
+youth2023$german_at_home <- 1
+youth2023$german_at_home[youth2023$migback == "self"|youth2023$migback == "both"] <- 0
+table(youth2023$german_at_home)
+
+
+
+# Satisfaction items
+# Students were asked for their satisfaction with various things
+# Here, we will recode the items so that higher values indicate more satisfaction
+# For all items that are comparable between the 2010, 2015 and 2023 Youth Surveys
+youth2023$satis <- 6 - youth2023$f02a
+youth2023$satis_money <- 6 - youth2023$f02b
+youth2023$satis_friends <- 6 - youth2023$f02c
+youth2023$satis_mom <- 6 - youth2023$f02d
+youth2023$satis_dad <- 6 - youth2023$f02e
+youth2023$satis_leisure <- 6 - youth2023$f02h
+youth2023$satis_dwell <- 6 - youth2023$f02i
+youth2023$satis_grades <- 6 - youth2023$f02f
+
+
+```
+
+### An initial look at the data
+
+```{r descriptives2023}
+# Gender
+# Absolute numbers
+table(youth2023$gender)
+# Proportions
+round(prop.table(table(youth2023$gender)), digits = 2)
+
+# Age
+table(youth2023$age)
+summary(youth2023$age)
+sd(youth2023$age, na.rm = TRUE)
+
+hist(youth2023$age)
+axis(1, at = seq(min(youth2023$age, na.rm = TRUE), max(youth2023$age, na.rm = TRUE), by = 1))
+
+# School types
+table(youth2023$schooltype)
+round(prop.table(table(youth2023$schooltype)), digits = 2)
+# 1: Mittelschule, secondary school (grade 7 to 10)
+# 2: Gymnasium, grammar school (grade 7 to 11)
+# 3: Berufs-/Fachoberschule, vocational school (1st, 2nd, 3rd year)
+# 4: Förderschule, special-needs school (grade 7 to 10)
+
+# Migration background
+table(youth2023$migback)
+round(prop.table(table(youth2023$migback)), digits = 2)
+
+# And the assumed language at home
+table(youth2023$german_at_home)
+round(prop.table(table(youth2023$german_at_home)), digits = 2)
 ```
