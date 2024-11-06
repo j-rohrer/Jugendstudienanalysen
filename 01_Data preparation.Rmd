@@ -415,5 +415,5 @@ summary(youth2023$wph)
 # Reverse-engineering what went into the weights
 summary(lm(wph ~ as.factor(gender)*as.factor(schooltype)*as.factor(klassenstufe), data = youth2023))$r.squared
 # As far as I can tell, the weights are a function of gender, schooltype and grade level (except for some minor deviations, which may be miscodings or result from assigning gender diverse students to one of the two groups)
-
+save.image("prep.RData")
 ```
