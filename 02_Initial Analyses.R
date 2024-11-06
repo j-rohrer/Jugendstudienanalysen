@@ -502,3 +502,4 @@ sum(jugend2015$age >= 12 & jugend2015$age <= 18, na.rm = TRUE) # 2018
 
 sum(!is.na(jugend2023$age)) # 2967
 sum(jugend2023$age >= 12 & jugend2023$age <= 18, na.rm = TRUE) # 2316
+
