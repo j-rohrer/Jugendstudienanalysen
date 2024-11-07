@@ -228,3 +228,8 @@ table(youth2010$`@beruf_neu`)
 table(youth2010$`@berufElt`)
 table(youth2010$s29a)
 table(youth2010$s29b)
+=======
+# Look within schooltypes
+
+# Project to general population? Project to population of 2010?
+>>>>>>> 333b6fd74d63edc669cb97c250efef88b47dd094
