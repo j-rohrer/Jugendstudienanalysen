@@ -1,6 +1,7 @@
 ######################
 # Let's figure out whether it could be demographics
 ######################
+<<<<<<< HEAD
 # NEXT STEP
 # Fold additional variables into data cleaning
 # Geschwister
@@ -11,6 +12,8 @@
 # restrict to ages between 12 and 18 (or 19?)
 # add value labels also to schooltype
 
+=======
+>>>>>>> 333b6fd74d63edc669cb97c250efef88b47dd094
 
 load("prep.RData")
 youth2010$wph <- 1
@@ -31,6 +34,7 @@ summary(lm(age ~ as.factor(year), data = combined, weights = wph))
 # Restrict to narrower age range
 summary(lm(age ~ as.factor(year), data = combined[combined$age >= 12 & combined$age <= 18,], weights = wph))
 
+<<<<<<< HEAD
 
 
 
@@ -39,10 +43,15 @@ library(marginaleffects)
 
 
 
+=======
+library(marginaleffects)
+
+>>>>>>> 333b6fd74d63edc669cb97c250efef88b47dd094
 combined <- combined[!is.na(combined$age),]
 combined <- combined[combined$age >= 12 & combined$age <= 18,]
 # model with age
 
+<<<<<<< HEAD
 age_model <- lm(scale(satis) ~ as.factor(year)*as.factor(gender) + 
                   age*as.factor(gender) + I(age^2)*as.factor(gender) + I(age^3)*as.factor(gender), 
                 data = combined[combined$age >= 12 & combined$age <= 18,], 
@@ -73,6 +82,8 @@ pred_prelim_model <- predictions(prelim_model,
                               by = c("gender", "year"))
 
 
+=======
+>>>>>>> 333b6fd74d63edc669cb97c250efef88b47dd094
 # first, let's check how age relates to the outcome
 library(ggplot2)
 library(haven)
@@ -125,6 +136,7 @@ pred_no_age_model
 # Should we allow for more interactions?
 
 
+<<<<<<< HEAD
 youth2010$
 
 
