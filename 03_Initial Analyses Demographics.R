@@ -232,4 +232,97 @@ table(youth2010$s29b)
 
 # Look within schooltypes
 
+
 # Project to general population? Project to population of 2010?
+
+
+##################################
+# Reconstruct within the data
+# School, classes, grade levels
+##################################
+
+#####################
+# youth2010
+#####################
+
+# ICCs: How much is explained through the cluster variables?
+# youth2010: schule, klasse A/B/C
+table(youth2010$klasse)
+# Suspicion: Klasse within Schule identifies unique classrooms
+youth2010$unique_classroom <- paste0(youth2010$schule, youth2010$klasse)
+table(youth2010$unique_classroom)
+length(unique(youth2010$unique_classroom))
+# 114 classrooms in
+table(youth2010$schule)
+length(unique(youth2010$schule)) # 38 schools
+str(youth2010$schule)
+youth2010$schule <- as.factor(youth2010$schule)
+youth2010$unique_classroom <- as.factor(youth2010$unique_classroom)
+
+library(lme4)
+icc <- lmer(satis ~ 1 + (1|schule/unique_classroom), data = youth2010)
+
+summary(icc)
+vc <- as.data.frame(VarCorr(icc))
+
+school_var <- vc[vc$grp == "schule", "vcov"]
+classroom_var <- vc[vc$grp == "unique_classroom:schule", "vcov"]
+residual_var <- vc[vc$grp == "Residual", "vcov"]
+
+# Calculate ICCs
+icc_school <- school_var / (school_var + classroom_var + residual_var) # 0.011
+icc_classroom_rel_to_total <- classroom_var / (classroom_var + school_var + residual_var) # 0.03
+icc_classroom_inc_school <- (classroom_var + school_var) / (classroom_var + school_var +residual_var) # 0.041
+
+icc_residual <- residual_var / (school_var + classroom_var + residual_var)
+
+
+#####################
+# youth2015
+#####################
+# kennung, schulart, ortsteil, Klasse
+# Klasse geht von 1 bis 11
+length(unique(youth2015$kennung))
+# 114 distinkte Werte -- Anzahl der Schulklassen?
+# Kennung is schulart + ortsteil + klasse and should identify unique classrooms
+# schulart + ortsteil should uniquely identify schools
+
+# only exception: documentation looks like there are two Berufs/fachoberschulen
+# in 02 (Zentrum-Suedost)
+
+check <- youth2015[youth2015$ortsteil == 2, c("ortsteil", "schulart", "Klasse", "kennung")]
+youth2015$school <- paste0(youth2015$ortsteil, youth2015$schulart)
+length(unique(youth2015$school))
+table(youth2015$school)
+youth2015$school[youth2015$school == "NANA"] <- NA
+youth2015$school <- as.factor(youth2015$school)
+
+library(lme4)
+icc <- lmer(satis ~ 1 + (1|school/kennung), data = youth2015)
+
+summary(icc)
+vc <- as.data.frame(VarCorr(icc))
+
+school_var <- vc[vc$grp == "school", "vcov"]
+classroom_var <- vc[vc$grp == "kennung:school", "vcov"]
+residual_var <- vc[vc$grp == "Residual", "vcov"]
+
+# Calculate ICCs
+icc_school <- school_var / (school_var + classroom_var + residual_var) # 0.014
+icc_classroom_rel_to_total <- classroom_var / (classroom_var + school_var + residual_var) # 0.014
+icc_classroom_inc_school <- (classroom_var + school_var) / (classroom_var + school_var +residual_var) # 0.028
+
+icc_residual <- residual_var / (school_var + classroom_var + residual_var) # 97%
+
+#####################
+# youth2023
+#####################
+table(youth2023$source) # this is almost half online and half paper!
+# That seems like a potential issue???
+youth2023$factor_source <- as.factor(youth2023$source)
+table(youth2023$gender)
+
+mode <- lm(satis ~ as.factor(gender)*factor_source, dat = youth2023[youth2023$gender != "diverse",]) 
+summary(mode)
+
+# CONSIDER CHANGE IN MODE
