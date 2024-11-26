@@ -55,6 +55,7 @@ table(youth2023$schule_amt51, useNA = "always")
 table(youth2023$klasse_amt51, useNA = "always")
 youth2023$test <- paste(youth2023$schule_amt51, youth2023$klasse_amt51)
 length(unique(youth2023$test)) # 168
+youth2023$unique_classroom <- youth2023$test
 # SANITY CHECK: CONTACT GREGOR
 
 
