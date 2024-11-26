@@ -4,8 +4,7 @@
 # gender gap?
 ####################
 
-# DO NOT FORGET MODE DIFFERENCES
-table(youth2023$source) # this is almost half online and half paper!
+
 
 load("prep.RData")
 
@@ -60,9 +59,9 @@ length(unique(youth2023$test)) # 168
 
 
 
-youth2023$klassenstufe
-youth2023$klassenstufe2
-
+#####################
+# Calculate ICC
+#####################
 library(lme4)
 icc <- lmer(satis ~ 1 + (1|schule/unique_classroom), data = youth2010)
 
