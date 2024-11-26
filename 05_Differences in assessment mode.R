@@ -2,6 +2,9 @@
 # What about differences in assessment mode?
 ####################
 
+# Clean-up: Move variable generation into the first file
+
+
 # Changes in assessment mode could possibly explain away the effect
 # coefficient reduced from 0.19 to 0.12 and no longer statistically significant
 # online, girls may be slightly unhappier

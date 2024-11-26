@@ -11,7 +11,7 @@
 
 <meta name="author" content="Julia Rohrer" />
 
-<meta name="date" content="2024-11-06" />
+<meta name="date" content="2024-11-26" />
 
 <title>The Explanandum</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">The Explanandum</h1>
 <h4 class="author">Julia Rohrer</h4>
-<h4 class="date">2024-11-06</h4>
+<h4 class="date">2024-11-26</h4>
 
 </div>
 
@@ -387,51 +387,11 @@ look at the other satisfaction items first</a>
 have become less satisfied with their lives than they used to be in 2015
 – more so than boys. Let’s look at that pattern and also take into
 account the 2010 data.</p>
-<p>The 2023 data is supposed to be analyzed with the help of weights.
-Thus, we will incorporate weights into our analysis. This requires us to
-add weights to the 2010 and 2015 data as well. For now, we will assign
-everybody a weight of 1, which corresponds to the analyses reported in
-the original report.</p>
-<pre class="r"><code># What do the 2023 weights add up to?
-sum(youth2023$wph, na.rm = TRUE)</code></pre>
-<pre><code>## [1] 2834.077</code></pre>
-<pre class="r"><code># That is approximately, but not exactly the number of observations with assigned weights
-sum(!is.na(youth2023$wph))</code></pre>
-<pre><code>## [1] 3036</code></pre>
-<pre class="r"><code># So the weights are not exactly normalized (in which case they would add up to the number of observations)
-# but close enough
-
-# Equal weights for the other years
-youth2010$wph &lt;- 1
-youth2015$wph &lt;- 1</code></pre>
 <div id="regression-analysis" class="section level3">
 <h3>Regression analysis</h3>
-<p>Now we can conduct a simple regression analysis to see whether life
+<p>We can conduct a simple regression analysis to see whether life
 satisfaction really decreases for for girls in particular.</p>
-<pre class="r"><code># Let&#39;s get the variables into a single data frame
-vars &lt;- c(&quot;year&quot;, &quot;wph&quot;, &quot;schooltype&quot;, &quot;gender&quot;, &quot;age&quot;, &quot;german_at_home&quot;, 
-          &quot;satis&quot;, &quot;satis_money&quot;, &quot;satis_friends&quot;, &quot;satis_mom&quot;, &quot;satis_dad&quot;,
-          &quot;satis_leisure&quot;, &quot;satis_dwell&quot;, &quot;satis_grades&quot;)
-combined &lt;- rbind(youth2010[, vars], youth2015[, vars], youth2023[, vars])
-
-table(youth2010$gender)</code></pre>
-<pre><code>## 
-## female   male 
-##   1191   1210</code></pre>
-<pre class="r"><code>table(youth2015$gender)</code></pre>
-<pre><code>## 
-## female   male 
-##   1207   1029</code></pre>
-<pre class="r"><code>table(youth2023$gender)</code></pre>
-<pre><code>## 
-## diverse  female    male 
-##      83    1520    1394</code></pre>
-<pre class="r"><code># Reporting a different gender was not possible in 2010 and 2015
-# We thus cannot compare the gender diverse students in 2023 to gender diverse students in earlier years
-# Which is why we unfortunately have to exclude them for the present purposes
-combined$gender[combined$gender == &quot;diverse&quot;] &lt;- NA
-
-simple_model &lt;- lm(scale(satis) ~ as.factor(year)*as.factor(gender), data = combined, weights = wph)
+<pre class="r"><code>simple_model &lt;- lm(scale(satis) ~ as.factor(year)*as.factor(gender), data = combined, weights = wph)
 summary(simple_model)</code></pre>
 <pre><code>## 
 ## Call:
@@ -518,6 +478,7 @@ for girls but did not change for girls).</p>
 real changes in the population – for example, maybe somehow in 2023
 parts of Leipzig with more unhappy girls were sampled; maybe the age in
 the sample changed</li>
+<li>maybe changes in survey mode can explain the differences</li>
 <li>maybe the composition of the underlying population changed – for
 example, maybe an influx of unhappy girls with migration background can
 explain the pattern</li>

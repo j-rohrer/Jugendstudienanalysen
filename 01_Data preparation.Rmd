@@ -415,5 +415,117 @@ summary(youth2023$wph)
 # Reverse-engineering what went into the weights
 summary(lm(wph ~ as.factor(gender)*as.factor(schooltype)*as.factor(klassenstufe), data = youth2023))$r.squared
 # As far as I can tell, the weights are a function of gender, schooltype and grade level (except for some minor deviations, which may be miscodings or result from assigning gender diverse students to one of the two groups)
-save.image("prep.RData")
 ```
+
+## Additional variables
+### Weights
+The 2023 data are supposed to be analyzed with the help of weights.
+Thus, we will incorporate weights into our analysis.
+This requires us to add weights to the 2010 and 2015 data as well.
+For now, we will assign everybody a weight of 1, which corresponds to the analyses reported in the original report.
+
+
+```{r weights}
+
+# What do the 2023 weights add up to?
+sum(youth2023$wph, na.rm = TRUE)
+# That is approximately, but not exactly the number of observations with assigned weights
+sum(!is.na(youth2023$wph))
+# So the weights are not exactly normalized (in which case they would add up to the number of observations)
+# but close enough
+
+# Equal weights for the other years
+youth2010$wph <- 1
+youth2015$wph <- 1
+
+
+```
+
+### Unique classroom IDs
+Generate a variable that identifies each unique classroom in the data.
+
+```{r classroomid}
+# youth2010: schule, klasse A/B/C
+#table(youth2010$klasse)
+# Suspicion: Klasse within Schule identifies unique classrooms
+youth2010$unique_classroom <- paste0(youth2010$schule, youth2010$klasse)
+#table(youth2010$unique_classroom)
+length(unique(youth2010$unique_classroom))
+# 114 classrooms in
+#table(youth2010$schule)
+length(unique(youth2010$schule)) # 38 schools
+str(youth2010$schule)
+
+youth2010$school <- paste("2011", youth2010$schule, sep = "_")
+youth2010$unique_classroom <- paste("2011", youth2010$unique_classroom, sep = "_")
+
+# youth2015
+# kennung, schulart, ortsteil, Klasse
+# class from 1 to 11
+length(unique(youth2015$kennung))
+# 114 distinct values -- classrooms
+# this variable is schulart + ortsteil + klasse and should identify unique classrooms
+# schulart + ortsteil should uniquely identify schools
+# only exception: documentation looks like there are two Berufs/fachoberschulen
+# in 02 (Zentrum-Suedost)
+youth2015$school <- paste0("2015_", youth2015$ortsteil, youth2015$schulart)
+length(unique(youth2015$school))
+#table(youth2015$school)
+youth2015$school[youth2015$school == "NANA"] <- NA
+youth2015$unique_classroom <- paste(2015, youth2015$kennung, sep = "_")
+
+
+# youth2023
+names(youth2023)
+# klassenstufe, schulart, schule_amt51, klasse_amt51, schulart
+#table(youth2023$schule_amt51, useNA = "always")
+#table(youth2023$klasse_amt51, useNA = "always")
+youth2023$test <- paste0("2023_", youth2023$schule_amt51, youth2023$klasse_amt51)
+length(unique(youth2023$test)) # 168
+youth2023$unique_classroom <- youth2023$test
+youth2023$school <- paste0("2023_", youth2023$schule_amt51)
+
+
+
+
+```
+
+### Source variable
+In 2023, some students answered the survey on tablets.
+Let's generate a source variable for the other years as well.
+
+```{r source}
+# mode variable
+youth2010$source <- "paper"
+youth2015$source <- "paper"
+
+```
+
+
+## Combined dataframe
+Let's create one dataframe for everything we will need later.
+
+```{r combining}
+vars <- c("year", "wph", "schooltype", "gender", "age", "german_at_home", 
+          "satis", "satis_money", "satis_friends", "satis_mom", "satis_dad",
+          "satis_leisure", "satis_dwell", "satis_grades", "school", "unique_classroom", "source")
+combined <- rbind(youth2010[, vars], youth2015[, vars], youth2023[, vars])
+
+
+table(youth2010$gender)
+table(youth2015$gender)
+table(youth2023$gender)
+# Reporting a different gender was not possible in 2010 and 2015
+# We thus cannot compare the gender diverse students in 2023 to gender diverse students in earlier years
+# Which is why we unfortunately have to exclude them for the present purposes
+combined$gender[combined$gender == "diverse"] <- NA
+
+combined$gender <- as.factor(combined$gender)
+combined$school <- as.factor(combined$school)
+combined$unique_classroom <- as.factor(combined$unique_classroom)
+
+save.image("prep.RData")
+
+```
+
+

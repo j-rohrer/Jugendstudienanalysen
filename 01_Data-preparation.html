@@ -11,7 +11,7 @@
 
 <meta name="author" content="Julia Rohrer" />
 
-<meta name="date" content="2024-11-06" />
+<meta name="date" content="2024-11-26" />
 
 <title>Cleaning and preparation of the Youth Surveys</title>
 
@@ -353,7 +353,7 @@ display: none;
 <h1 class="title toc-ignore">Cleaning and preparation of the Youth
 Surveys</h1>
 <h4 class="author">Julia Rohrer</h4>
-<h4 class="date">2024-11-06</h4>
+<h4 class="date">2024-11-26</h4>
 
 </div>
 
@@ -387,6 +387,16 @@ and clean data</a></li>
 <li><a href="#an-initial-look-at-the-data-2" id="toc-an-initial-look-at-the-data-2">An initial look at the
 data</a></li>
 </ul></li>
+<li><a href="#additional-variables" id="toc-additional-variables">Additional variables</a>
+<ul>
+<li><a href="#weights" id="toc-weights">Weights</a></li>
+<li><a href="#unique-classroom-ids" id="toc-unique-classroom-ids">Unique
+classroom IDs</a></li>
+<li><a href="#source-variable" id="toc-source-variable">Source
+variable</a></li>
+</ul></li>
+<li><a href="#combined-dataframe" id="toc-combined-dataframe">Combined
+dataframe</a></li>
 </ul>
 </div>
 
@@ -1021,9 +1031,450 @@ summary(youth2023$wph)</code></pre>
 <pre class="r"><code># Reverse-engineering what went into the weights
 summary(lm(wph ~ as.factor(gender)*as.factor(schooltype)*as.factor(klassenstufe), data = youth2023))$r.squared</code></pre>
 <pre><code>## [1] 0.9998635</code></pre>
-<pre class="r"><code># As far as I can tell, the weights are a function of gender, schooltype and grade level (except for some minor deviations, which may be miscodings or result from assigning gender diverse students to one of the two groups)
-save.image(&quot;prep.RData&quot;)</code></pre>
+<pre class="r"><code># As far as I can tell, the weights are a function of gender, schooltype and grade level (except for some minor deviations, which may be miscodings or result from assigning gender diverse students to one of the two groups)</code></pre>
 </div>
+</div>
+<div id="additional-variables" class="section level2">
+<h2>Additional variables</h2>
+<div id="weights" class="section level3">
+<h3>Weights</h3>
+<p>The 2023 data are supposed to be analyzed with the help of weights.
+Thus, we will incorporate weights into our analysis. This requires us to
+add weights to the 2010 and 2015 data as well. For now, we will assign
+everybody a weight of 1, which corresponds to the analyses reported in
+the original report.</p>
+<pre class="r"><code># What do the 2023 weights add up to?
+sum(youth2023$wph, na.rm = TRUE)</code></pre>
+<pre><code>## [1] 2834.077</code></pre>
+<pre class="r"><code># That is approximately, but not exactly the number of observations with assigned weights
+sum(!is.na(youth2023$wph))</code></pre>
+<pre><code>## [1] 3036</code></pre>
+<pre class="r"><code># So the weights are not exactly normalized (in which case they would add up to the number of observations)
+# but close enough
+
+# Equal weights for the other years
+youth2010$wph &lt;- 1
+youth2015$wph &lt;- 1</code></pre>
+</div>
+<div id="unique-classroom-ids" class="section level3">
+<h3>Unique classroom IDs</h3>
+<p>Generate a variable that identifies each unique classroom in the
+data.</p>
+<pre class="r"><code># youth2010: schule, klasse A/B/C
+#table(youth2010$klasse)
+# Suspicion: Klasse within Schule identifies unique classrooms
+youth2010$unique_classroom &lt;- paste0(youth2010$schule, youth2010$klasse)
+#table(youth2010$unique_classroom)
+length(unique(youth2010$unique_classroom))</code></pre>
+<pre><code>## [1] 114</code></pre>
+<pre class="r"><code># 114 classrooms in
+#table(youth2010$schule)
+length(unique(youth2010$schule)) # 38 schools</code></pre>
+<pre><code>## [1] 38</code></pre>
+<pre class="r"><code>str(youth2010$schule)</code></pre>
+<pre><code>##  num [1:2411] 53 53 53 53 53 1 1 1 1 1 ...
+##  - attr(*, &quot;label&quot;)= chr &quot;Schule:&quot;
+##  - attr(*, &quot;format.spss&quot;)= chr &quot;F2.0&quot;</code></pre>
+<pre class="r"><code>youth2010$school &lt;- paste(&quot;2011&quot;, youth2010$schule, sep = &quot;_&quot;)
+youth2010$unique_classroom &lt;- paste(&quot;2011&quot;, youth2010$unique_classroom, sep = &quot;_&quot;)
+
+# youth2015
+# kennung, schulart, ortsteil, Klasse
+# class from 1 to 11
+length(unique(youth2015$kennung))</code></pre>
+<pre><code>## [1] 114</code></pre>
+<pre class="r"><code># 114 distinct values -- classrooms
+# this variable is schulart + ortsteil + klasse and should identify unique classrooms
+# schulart + ortsteil should uniquely identify schools
+# only exception: documentation looks like there are two Berufs/fachoberschulen
+# in 02 (Zentrum-Suedost)
+youth2015$school &lt;- paste0(&quot;2015_&quot;, youth2015$ortsteil, youth2015$schulart)
+length(unique(youth2015$school))</code></pre>
+<pre><code>## [1] 34</code></pre>
+<pre class="r"><code>#table(youth2015$school)
+youth2015$school[youth2015$school == &quot;NANA&quot;] &lt;- NA
+youth2015$unique_classroom &lt;- paste(2015, youth2015$kennung, sep = &quot;_&quot;)
+
+
+# youth2023
+names(youth2023)</code></pre>
+<pre><code>##   [1] &quot;rawid&quot;                    &quot;pseudonym&quot;               
+##   [3] &quot;password&quot;                 &quot;language&quot;                
+##   [5] &quot;source&quot;                   &quot;filename&quot;                
+##   [7] &quot;filenames&quot;                &quot;zeit&quot;                    
+##   [9] &quot;duration_seconds&quot;         &quot;f01a&quot;                    
+##  [11] &quot;f01b&quot;                     &quot;f01c&quot;                    
+##  [13] &quot;f01d&quot;                     &quot;f01e&quot;                    
+##  [15] &quot;f01f&quot;                     &quot;f01g&quot;                    
+##  [17] &quot;f01h&quot;                     &quot;f01i&quot;                    
+##  [19] &quot;f01j&quot;                     &quot;f01k&quot;                    
+##  [21] &quot;f01l&quot;                     &quot;f01m&quot;                    
+##  [23] &quot;f01n&quot;                     &quot;f01o&quot;                    
+##  [25] &quot;f02a&quot;                     &quot;f02b&quot;                    
+##  [27] &quot;f02c&quot;                     &quot;f02d&quot;                    
+##  [29] &quot;f02e&quot;                     &quot;f02f&quot;                    
+##  [31] &quot;f02g&quot;                     &quot;f02h&quot;                    
+##  [33] &quot;f02i&quot;                     &quot;f03a&quot;                    
+##  [35] &quot;f03b&quot;                     &quot;f03c&quot;                    
+##  [37] &quot;f03d&quot;                     &quot;f03e&quot;                    
+##  [39] &quot;f04a&quot;                     &quot;f04b&quot;                    
+##  [41] &quot;f04c&quot;                     &quot;f04d&quot;                    
+##  [43] &quot;f04e&quot;                     &quot;f04f&quot;                    
+##  [45] &quot;f04g&quot;                     &quot;f04h&quot;                    
+##  [47] &quot;f04i&quot;                     &quot;f04j&quot;                    
+##  [49] &quot;f04k&quot;                     &quot;f05a&quot;                    
+##  [51] &quot;f05b&quot;                     &quot;f05c&quot;                    
+##  [53] &quot;f05d&quot;                     &quot;f05e&quot;                    
+##  [55] &quot;f05f&quot;                     &quot;f05g&quot;                    
+##  [57] &quot;f05h&quot;                     &quot;f05i&quot;                    
+##  [59] &quot;f06&quot;                      &quot;f07_15_text&quot;             
+##  [61] &quot;f08_02_text&quot;              &quot;f09_02_text&quot;             
+##  [63] &quot;f10_02_text&quot;              &quot;f11_02_text&quot;             
+##  [65] &quot;f12a_01&quot;                  &quot;f12a_02&quot;                 
+##  [67] &quot;f12b_01&quot;                  &quot;f12b_02&quot;                 
+##  [69] &quot;f12c_01&quot;                  &quot;f12c_02&quot;                 
+##  [71] &quot;f12d_01&quot;                  &quot;f12d_02&quot;                 
+##  [73] &quot;f13_text&quot;                 &quot;f14&quot;                     
+##  [75] &quot;f15_01&quot;                   &quot;f15_02&quot;                  
+##  [77] &quot;f15_03&quot;                   &quot;f15_04&quot;                  
+##  [79] &quot;f15_05&quot;                   &quot;f15_06&quot;                  
+##  [81] &quot;f15_07&quot;                   &quot;f15_08&quot;                  
+##  [83] &quot;f15_09&quot;                   &quot;f15_10&quot;                  
+##  [85] &quot;f15_11&quot;                   &quot;f15_13&quot;                  
+##  [87] &quot;f15_14&quot;                   &quot;f15_15&quot;                  
+##  [89] &quot;f15_16&quot;                   &quot;f15_17&quot;                  
+##  [91] &quot;f15_18&quot;                   &quot;f15_19&quot;                  
+##  [93] &quot;f15_20&quot;                   &quot;f15_21&quot;                  
+##  [95] &quot;f15_22&quot;                   &quot;f15_23&quot;                  
+##  [97] &quot;f15_24&quot;                   &quot;f15_25&quot;                  
+##  [99] &quot;f15_26&quot;                   &quot;f15_27&quot;                  
+## [101] &quot;f15_28&quot;                   &quot;f15_29&quot;                  
+## [103] &quot;f15_30&quot;                   &quot;f15_31&quot;                  
+## [105] &quot;f15_text&quot;                 &quot;f16_01&quot;                  
+## [107] &quot;f16_02&quot;                   &quot;f16_02_text&quot;             
+## [109] &quot;f17_01&quot;                   &quot;f17_02&quot;                  
+## [111] &quot;f17_03&quot;                   &quot;f17_04&quot;                  
+## [113] &quot;f17_05&quot;                   &quot;f17_06&quot;                  
+## [115] &quot;f17_07&quot;                   &quot;f17_08&quot;                  
+## [117] &quot;f17_09&quot;                   &quot;f17_11&quot;                  
+## [119] &quot;f17_13&quot;                   &quot;f17_14&quot;                  
+## [121] &quot;f17_15&quot;                   &quot;f17_16&quot;                  
+## [123] &quot;f17_17&quot;                   &quot;f17_19&quot;                  
+## [125] &quot;f17_21&quot;                   &quot;f17_22&quot;                  
+## [127] &quot;f17_07_text&quot;              &quot;f18_01&quot;                  
+## [129] &quot;f18_02&quot;                   &quot;f18_03&quot;                  
+## [131] &quot;f18_04&quot;                   &quot;f18_05&quot;                  
+## [133] &quot;f18_06&quot;                   &quot;f18_07&quot;                  
+## [135] &quot;f18_08&quot;                   &quot;f18_09&quot;                  
+## [137] &quot;f18_10&quot;                   &quot;f18_11&quot;                  
+## [139] &quot;f18_12&quot;                   &quot;f18_13&quot;                  
+## [141] &quot;f18_text&quot;                 &quot;f19a_01&quot;                 
+## [143] &quot;f19a_02&quot;                  &quot;f19b_01&quot;                 
+## [145] &quot;f19b_02&quot;                  &quot;f19c_01&quot;                 
+## [147] &quot;f19c_02&quot;                  &quot;f19d_01&quot;                 
+## [149] &quot;f19d_02&quot;                  &quot;f19e_01&quot;                 
+## [151] &quot;f19e_02&quot;                  &quot;f19f_text&quot;               
+## [153] &quot;f20_01&quot;                   &quot;f20_02&quot;                  
+## [155] &quot;f20_03&quot;                   &quot;f20_04&quot;                  
+## [157] &quot;f20_05&quot;                   &quot;f20_06&quot;                  
+## [159] &quot;f20_07&quot;                   &quot;f20_08&quot;                  
+## [161] &quot;f20_09&quot;                   &quot;f20_10&quot;                  
+## [163] &quot;f20_11&quot;                   &quot;f20_12&quot;                  
+## [165] &quot;f20_05_text&quot;              &quot;f21&quot;                     
+## [167] &quot;f22a_01&quot;                  &quot;f22a_02&quot;                 
+## [169] &quot;f22a_03&quot;                  &quot;f22a_04&quot;                 
+## [171] &quot;f22b_01&quot;                  &quot;f22b_02&quot;                 
+## [173] &quot;f22b_03&quot;                  &quot;f22b_04&quot;                 
+## [175] &quot;f22c_01&quot;                  &quot;f22c_02&quot;                 
+## [177] &quot;f22c_03&quot;                  &quot;f22c_04&quot;                 
+## [179] &quot;f23a&quot;                     &quot;f23b&quot;                    
+## [181] &quot;f23c&quot;                     &quot;f23d&quot;                    
+## [183] &quot;f23e&quot;                     &quot;f23f&quot;                    
+## [185] &quot;f23g&quot;                     &quot;f23h&quot;                    
+## [187] &quot;f23i_text&quot;                &quot;f23i_01&quot;                 
+## [189] &quot;f23i_02&quot;                  &quot;f23i_03&quot;                 
+## [191] &quot;f23i_04&quot;                  &quot;f23i_05&quot;                 
+## [193] &quot;f23i_06&quot;                  &quot;f23i_07&quot;                 
+## [195] &quot;f23i_08&quot;                  &quot;f23i_09&quot;                 
+## [197] &quot;f23i_10&quot;                  &quot;f23i_11&quot;                 
+## [199] &quot;f23i_12&quot;                  &quot;f23i_13&quot;                 
+## [201] &quot;f23i_14&quot;                  &quot;f23i_15&quot;                 
+## [203] &quot;f23i_16&quot;                  &quot;f23i_17&quot;                 
+## [205] &quot;f23i_18&quot;                  &quot;f24a_01&quot;                 
+## [207] &quot;f24a_02&quot;                  &quot;f24b_01&quot;                 
+## [209] &quot;f24b_02&quot;                  &quot;f24c_01&quot;                 
+## [211] &quot;f24c_02&quot;                  &quot;f25a_roh&quot;                
+## [213] &quot;f25b_roh&quot;                 &quot;f26_01&quot;                  
+## [215] &quot;f26_02&quot;                   &quot;f26_03&quot;                  
+## [217] &quot;f26_04&quot;                   &quot;f26_05&quot;                  
+## [219] &quot;f26_06&quot;                   &quot;f26_07&quot;                  
+## [221] &quot;f26_08&quot;                   &quot;f26_09&quot;                  
+## [223] &quot;f26_10&quot;                   &quot;f26_11&quot;                  
+## [225] &quot;f26_12&quot;                   &quot;f26_13&quot;                  
+## [227] &quot;f26_14&quot;                   &quot;f26_15&quot;                  
+## [229] &quot;f26_16&quot;                   &quot;f26_17&quot;                  
+## [231] &quot;f26_18&quot;                   &quot;f26_19&quot;                  
+## [233] &quot;f26_20&quot;                   &quot;f26_21&quot;                  
+## [235] &quot;f26_22&quot;                   &quot;f26_23&quot;                  
+## [237] &quot;f26_11_text&quot;              &quot;geschl&quot;                  
+## [239] &quot;alter&quot;                    &quot;plz&quot;                     
+## [241] &quot;staat_geb_person&quot;         &quot;staat_geb_mutter&quot;        
+## [243] &quot;staat_geb_vater&quot;          &quot;hhstat&quot;                  
+## [245] &quot;hhstat_text&quot;              &quot;f32&quot;                     
+## [247] &quot;f33a&quot;                     &quot;f33b&quot;                    
+## [249] &quot;f34&quot;                      &quot;f35&quot;                     
+## [251] &quot;f36&quot;                      &quot;f37_01&quot;                  
+## [253] &quot;f37_02&quot;                   &quot;f37_03&quot;                  
+## [255] &quot;f37_04&quot;                   &quot;f37_05&quot;                  
+## [257] &quot;f38&quot;                      &quot;f39a&quot;                    
+## [259] &quot;f39b&quot;                     &quot;f39c&quot;                    
+## [261] &quot;f39d&quot;                     &quot;f39e&quot;                    
+## [263] &quot;f39f&quot;                     &quot;f39g&quot;                    
+## [265] &quot;f39h_text&quot;                &quot;f39h_01&quot;                 
+## [267] &quot;f39h_02&quot;                  &quot;f39h_03&quot;                 
+## [269] &quot;f39h_04&quot;                  &quot;f39h_05&quot;                 
+## [271] &quot;f39h_06&quot;                  &quot;f39h_07&quot;                 
+## [273] &quot;f39h_08&quot;                  &quot;f39h_09&quot;                 
+## [275] &quot;f39h_10&quot;                  &quot;f39h_11&quot;                 
+## [277] &quot;f39h_12&quot;                  &quot;f39h_13&quot;                 
+## [279] &quot;f39h_14&quot;                  &quot;f39h_15&quot;                 
+## [281] &quot;f39h_16&quot;                  &quot;f39h_17&quot;                 
+## [283] &quot;f39h_18&quot;                  &quot;f39h_19&quot;                 
+## [285] &quot;f39h_20&quot;                  &quot;f39h_21&quot;                 
+## [287] &quot;f39h_22&quot;                  &quot;f39h_23&quot;                 
+## [289] &quot;f40_01&quot;                   &quot;f40_02&quot;                  
+## [291] &quot;f40_03&quot;                   &quot;f40_04&quot;                  
+## [293] &quot;f40_05&quot;                   &quot;f40_06&quot;                  
+## [295] &quot;f40_07&quot;                   &quot;f40_08&quot;                  
+## [297] &quot;f40_09&quot;                   &quot;f40_10&quot;                  
+## [299] &quot;f40_11&quot;                   &quot;f40_12&quot;                  
+## [301] &quot;f40_13&quot;                   &quot;f40_14&quot;                  
+## [303] &quot;f40_06_text&quot;              &quot;f41a&quot;                    
+## [305] &quot;f41b&quot;                     &quot;f41c&quot;                    
+## [307] &quot;f41d&quot;                     &quot;f41e&quot;                    
+## [309] &quot;f41f&quot;                     &quot;f41g&quot;                    
+## [311] &quot;f41h&quot;                     &quot;f41i&quot;                    
+## [313] &quot;f41j&quot;                     &quot;f41k&quot;                    
+## [315] &quot;f41l_text&quot;                &quot;f42_01&quot;                  
+## [317] &quot;f42_02&quot;                   &quot;f42_03&quot;                  
+## [319] &quot;f43&quot;                      &quot;f44&quot;                     
+## [321] &quot;f45a&quot;                     &quot;f45b&quot;                    
+## [323] &quot;f45c&quot;                     &quot;f45d&quot;                    
+## [325] &quot;f45e&quot;                     &quot;f45f&quot;                    
+## [327] &quot;f45g&quot;                     &quot;f45h_text&quot;               
+## [329] &quot;f46a&quot;                     &quot;f46b&quot;                    
+## [331] &quot;f46c&quot;                     &quot;f46d&quot;                    
+## [333] &quot;f46e&quot;                     &quot;f46f&quot;                    
+## [335] &quot;f46g&quot;                     &quot;f46h&quot;                    
+## [337] &quot;f47a&quot;                     &quot;f47b&quot;                    
+## [339] &quot;f47c&quot;                     &quot;f47d&quot;                    
+## [341] &quot;f47e&quot;                     &quot;f47a_dich&quot;               
+## [343] &quot;f47b_dich&quot;                &quot;f47c_dich&quot;               
+## [345] &quot;f47d_dich&quot;                &quot;f47e_dich&quot;               
+## [347] &quot;f48&quot;                      &quot;f49&quot;                     
+## [349] &quot;f50&quot;                      &quot;f51a_01&quot;                 
+## [351] &quot;f51a_02&quot;                  &quot;f51b_01&quot;                 
+## [353] &quot;f51b_02&quot;                  &quot;f51c_01&quot;                 
+## [355] &quot;f51c_02&quot;                  &quot;f51d_01&quot;                 
+## [357] &quot;f51d_02&quot;                  &quot;f51e_01&quot;                 
+## [359] &quot;f51e_02&quot;                  &quot;f51f_01&quot;                 
+## [361] &quot;f51f_02&quot;                  &quot;f51g_01&quot;                 
+## [363] &quot;f51g_02&quot;                  &quot;f51h_01&quot;                 
+## [365] &quot;f51h_02&quot;                  &quot;f51i_01&quot;                 
+## [367] &quot;f51i_02&quot;                  &quot;f52a&quot;                    
+## [369] &quot;f52b&quot;                     &quot;f52c&quot;                    
+## [371] &quot;f52d&quot;                     &quot;f52e&quot;                    
+## [373] &quot;f52f&quot;                     &quot;f52g&quot;                    
+## [375] &quot;f52h&quot;                     &quot;f53a&quot;                    
+## [377] &quot;f53b&quot;                     &quot;f53c&quot;                    
+## [379] &quot;f53d&quot;                     &quot;f53e&quot;                    
+## [381] &quot;f54_text&quot;                 &quot;f54_01&quot;                  
+## [383] &quot;f54_02&quot;                   &quot;f54_03&quot;                  
+## [385] &quot;f54_04&quot;                   &quot;f54_05&quot;                  
+## [387] &quot;f54_06&quot;                   &quot;f54_07&quot;                  
+## [389] &quot;f54_08&quot;                   &quot;f54_09&quot;                  
+## [391] &quot;f54_10&quot;                   &quot;f54_11&quot;                  
+## [393] &quot;f54_12&quot;                   &quot;f54_13&quot;                  
+## [395] &quot;f54_14&quot;                   &quot;f54_15&quot;                  
+## [397] &quot;f54_16&quot;                   &quot;f54_17&quot;                  
+## [399] &quot;f54_18&quot;                   &quot;f54_19&quot;                  
+## [401] &quot;f54_20&quot;                   &quot;f54_21&quot;                  
+## [403] &quot;f55_text&quot;                 &quot;f55_01&quot;                  
+## [405] &quot;f55_02&quot;                   &quot;f55_03&quot;                  
+## [407] &quot;f55_04&quot;                   &quot;f55_05&quot;                  
+## [409] &quot;f55_06&quot;                   &quot;f55_07&quot;                  
+## [411] &quot;f55_08&quot;                   &quot;f55_09&quot;                  
+## [413] &quot;f55_10&quot;                   &quot;f55_11&quot;                  
+## [415] &quot;f55_12&quot;                   &quot;f55_13&quot;                  
+## [417] &quot;f55_14&quot;                   &quot;f55_15&quot;                  
+## [419] &quot;f55_16&quot;                   &quot;f55_17&quot;                  
+## [421] &quot;f55_18&quot;                   &quot;f55_19&quot;                  
+## [423] &quot;f55_20&quot;                   &quot;f55_21&quot;                  
+## [425] &quot;f55_22&quot;                   &quot;f55_23&quot;                  
+## [427] &quot;f55_24&quot;                   &quot;datum_amt51&quot;             
+## [429] &quot;schule_amt51&quot;             &quot;ort_amt51&quot;               
+## [431] &quot;tablet_amt51&quot;             &quot;klasse_amt51&quot;            
+## [433] &quot;schulart_amt51&quot;           &quot;zeit_amt51&quot;              
+## [435] &quot;bildungsgang_amt51&quot;       &quot;f25a&quot;                    
+## [437] &quot;f25b&quot;                     &quot;klassenstufe&quot;            
+## [439] &quot;klassenstufe_klasse&quot;      &quot;altersgruppe_klasse&quot;     
+## [441] &quot;schulart&quot;                 &quot;altgr&quot;                   
+## [443] &quot;geschl_altgr&quot;             &quot;schulart2&quot;               
+## [445] &quot;f07_01&quot;                   &quot;f07_02&quot;                  
+## [447] &quot;f07_03&quot;                   &quot;f07_04&quot;                  
+## [449] &quot;f07_05&quot;                   &quot;f07_06&quot;                  
+## [451] &quot;f07_07&quot;                   &quot;f07_08&quot;                  
+## [453] &quot;f07_09&quot;                   &quot;f07_10&quot;                  
+## [455] &quot;f07_11&quot;                   &quot;f07_12&quot;                  
+## [457] &quot;f07_13&quot;                   &quot;f07_14&quot;                  
+## [459] &quot;f07_15&quot;                   &quot;f07_16&quot;                  
+## [461] &quot;f07_17&quot;                   &quot;f07_18&quot;                  
+## [463] &quot;f07_19&quot;                   &quot;f07_20&quot;                  
+## [465] &quot;f07_21&quot;                   &quot;f07_22&quot;                  
+## [467] &quot;f07_23&quot;                   &quot;f07_24&quot;                  
+## [469] &quot;f07_25&quot;                   &quot;f08_01&quot;                  
+## [471] &quot;f08_02&quot;                   &quot;f08_02_01&quot;               
+## [473] &quot;f08_02_02&quot;                &quot;f08_02_03&quot;               
+## [475] &quot;f08_02_04&quot;                &quot;f08_02_05&quot;               
+## [477] &quot;f08_02_06&quot;                &quot;f08_02_07&quot;               
+## [479] &quot;f08_02_08&quot;                &quot;f08_02_10&quot;               
+## [481] &quot;f08_02_11&quot;                &quot;f08_02_13&quot;               
+## [483] &quot;f08_02_14&quot;                &quot;f08_02_16&quot;               
+## [485] &quot;f08_02_17&quot;                &quot;f08_02_18&quot;               
+## [487] &quot;f08_02_19&quot;                &quot;f08_02_20&quot;               
+## [489] &quot;f08_02_21&quot;                &quot;f08_02_22&quot;               
+## [491] &quot;f08_02_23&quot;                &quot;f08_02_24&quot;               
+## [493] &quot;f09_01&quot;                   &quot;f09_02&quot;                  
+## [495] &quot;f09_02_01&quot;                &quot;f09_02_02&quot;               
+## [497] &quot;f09_02_03&quot;                &quot;f09_02_04&quot;               
+## [499] &quot;f09_02_05&quot;                &quot;f09_02_06&quot;               
+## [501] &quot;f09_02_07&quot;                &quot;f09_02_08&quot;               
+## [503] &quot;f09_02_10&quot;                &quot;f09_02_11&quot;               
+## [505] &quot;f09_02_13&quot;                &quot;f09_02_14&quot;               
+## [507] &quot;f09_02_16&quot;                &quot;f09_02_17&quot;               
+## [509] &quot;f09_02_18&quot;                &quot;f09_02_19&quot;               
+## [511] &quot;f09_02_20&quot;                &quot;f09_02_21&quot;               
+## [513] &quot;f09_02_22&quot;                &quot;f09_02_23&quot;               
+## [515] &quot;f09_02_24&quot;                &quot;f09_02_25&quot;               
+## [517] &quot;f10_01&quot;                   &quot;f10_02&quot;                  
+## [519] &quot;f10_02_01&quot;                &quot;f10_02_02&quot;               
+## [521] &quot;f10_02_03&quot;                &quot;f10_02_04&quot;               
+## [523] &quot;f10_02_05&quot;                &quot;f10_02_06&quot;               
+## [525] &quot;f10_02_07&quot;                &quot;f10_02_08&quot;               
+## [527] &quot;f10_02_10&quot;                &quot;f10_02_11&quot;               
+## [529] &quot;f10_02_13&quot;                &quot;f10_02_16&quot;               
+## [531] &quot;f10_02_17&quot;                &quot;f10_02_18&quot;               
+## [533] &quot;f10_02_19&quot;                &quot;f10_02_20&quot;               
+## [535] &quot;f10_02_21&quot;                &quot;f10_02_22&quot;               
+## [537] &quot;f10_02_23&quot;                &quot;f10_02_24&quot;               
+## [539] &quot;f10_02_25&quot;                &quot;f11_01&quot;                  
+## [541] &quot;f11_02&quot;                   &quot;f11_02_01&quot;               
+## [543] &quot;f11_02_02&quot;                &quot;f11_02_03&quot;               
+## [545] &quot;f11_02_04&quot;                &quot;f11_02_05&quot;               
+## [547] &quot;f11_02_06&quot;                &quot;f11_02_07&quot;               
+## [549] &quot;f11_02_08&quot;                &quot;f11_02_10&quot;               
+## [551] &quot;f11_02_13&quot;                &quot;f11_02_14&quot;               
+## [553] &quot;f11_02_16&quot;                &quot;f11_02_17&quot;               
+## [555] &quot;f11_02_18&quot;                &quot;f11_02_19&quot;               
+## [557] &quot;f11_02_20&quot;                &quot;f11_02_21&quot;               
+## [559] &quot;f11_02_22&quot;                &quot;f11_02_23&quot;               
+## [561] &quot;f11_02_24&quot;                &quot;f11_02_25&quot;               
+## [563] &quot;errors_before&quot;            &quot;kommentar&quot;               
+## [565] &quot;historie&quot;                 &quot;stadt&quot;                   
+## [567] &quot;bundesland&quot;               &quot;plz_diff&quot;                
+## [569] &quot;planungsraum_schueler&quot;    &quot;sbz_schule&quot;              
+## [571] &quot;planungsraum_schule&quot;      &quot;f10_02_12&quot;               
+## [573] &quot;f10_02_14&quot;                &quot;f11_02_12&quot;               
+## [575] &quot;f32_chop&quot;                 &quot;klassenstufe2&quot;           
+## [577] &quot;schulart_orig&quot;            &quot;schulart3&quot;               
+## [579] &quot;schulart_klasse&quot;          &quot;altgr2&quot;                  
+## [581] &quot;altgr3&quot;                   &quot;altgr1&quot;                  
+## [583] &quot;geschl_mw&quot;                &quot;arbzeit_eltern&quot;          
+## [585] &quot;f32_diff&quot;                 &quot;einwanderungsgeschichte&quot; 
+## [587] &quot;einwanderungsgeschichte2&quot; &quot;zufr&quot;                    
+## [589] &quot;sport_aktiv&quot;              &quot;sport_mitglied&quot;          
+## [591] &quot;jugendtreffbesucher&quot;      &quot;engagement_jugend_org&quot;   
+## [593] &quot;familie_finanz&quot;           &quot;f35_diff&quot;                
+## [595] &quot;nachhilfe&quot;                &quot;schulessen&quot;              
+## [597] &quot;mobbing&quot;                  &quot;schulabsent&quot;             
+## [599] &quot;diskriminierung&quot;          &quot;raucher&quot;                 
+## [601] &quot;trinker&quot;                  &quot;trinker_dich&quot;            
+## [603] &quot;drogenkonsum&quot;             &quot;schulweg&quot;                
+## [605] &quot;f49_chop&quot;                 &quot;id&quot;                      
+## [607] &quot;f08_02_copy&quot;              &quot;f09_02_copy&quot;             
+## [609] &quot;f10_02_copy&quot;              &quot;f11_02_copy&quot;             
+## [611] &quot;wph&quot;                      &quot;f13_01&quot;                  
+## [613] &quot;f13_02&quot;                   &quot;f13_03&quot;                  
+## [615] &quot;f13_04&quot;                   &quot;f13_05&quot;                  
+## [617] &quot;f13_06&quot;                   &quot;f13_07&quot;                  
+## [619] &quot;f13_08&quot;                   &quot;f13_09&quot;                  
+## [621] &quot;f13_10&quot;                   &quot;f13_11&quot;                  
+## [623] &quot;f13_12&quot;                   &quot;f13_13&quot;                  
+## [625] &quot;f13_14&quot;                   &quot;f13_15&quot;                  
+## [627] &quot;f13_16&quot;                   &quot;f13_17&quot;                  
+## [629] &quot;f13_18&quot;                   &quot;f13_19&quot;                  
+## [631] &quot;f13_20&quot;                   &quot;f13_21&quot;                  
+## [633] &quot;f13_22&quot;                   &quot;f13_23&quot;                  
+## [635] &quot;f13_24&quot;                   &quot;f13_25&quot;                  
+## [637] &quot;f13_26&quot;                   &quot;f13_27&quot;                  
+## [639] &quot;f13_28&quot;                   &quot;f13_29&quot;                  
+## [641] &quot;f13_30&quot;                   &quot;year&quot;                    
+## [643] &quot;schooltype&quot;               &quot;gender&quot;                  
+## [645] &quot;age&quot;                      &quot;migback&quot;                 
+## [647] &quot;german_at_home&quot;           &quot;satis&quot;                   
+## [649] &quot;satis_money&quot;              &quot;satis_friends&quot;           
+## [651] &quot;satis_mom&quot;                &quot;satis_dad&quot;               
+## [653] &quot;satis_leisure&quot;            &quot;satis_dwell&quot;             
+## [655] &quot;satis_grades&quot;</code></pre>
+<pre class="r"><code># klassenstufe, schulart, schule_amt51, klasse_amt51, schulart
+#table(youth2023$schule_amt51, useNA = &quot;always&quot;)
+#table(youth2023$klasse_amt51, useNA = &quot;always&quot;)
+youth2023$test &lt;- paste0(&quot;2023_&quot;, youth2023$schule_amt51, youth2023$klasse_amt51)
+length(unique(youth2023$test)) # 168</code></pre>
+<pre><code>## [1] 168</code></pre>
+<pre class="r"><code>youth2023$unique_classroom &lt;- youth2023$test
+youth2023$school &lt;- paste0(&quot;2023_&quot;, youth2023$schule_amt51)</code></pre>
+</div>
+<div id="source-variable" class="section level3">
+<h3>Source variable</h3>
+<p>In 2023, some students answered the survey on tablets. Let’s generate
+a source variable for the other years as well.</p>
+<pre class="r"><code># mode variable
+youth2010$source &lt;- &quot;paper&quot;
+youth2015$source &lt;- &quot;paper&quot;</code></pre>
+</div>
+</div>
+<div id="combined-dataframe" class="section level2">
+<h2>Combined dataframe</h2>
+<p>Let’s create one dataframe for everything we will need later.</p>
+<pre class="r"><code>vars &lt;- c(&quot;year&quot;, &quot;wph&quot;, &quot;schooltype&quot;, &quot;gender&quot;, &quot;age&quot;, &quot;german_at_home&quot;, 
+          &quot;satis&quot;, &quot;satis_money&quot;, &quot;satis_friends&quot;, &quot;satis_mom&quot;, &quot;satis_dad&quot;,
+          &quot;satis_leisure&quot;, &quot;satis_dwell&quot;, &quot;satis_grades&quot;, &quot;school&quot;, &quot;unique_classroom&quot;, &quot;source&quot;)
+combined &lt;- rbind(youth2010[, vars], youth2015[, vars], youth2023[, vars])
+
+
+table(youth2010$gender)</code></pre>
+<pre><code>## 
+## female   male 
+##   1191   1210</code></pre>
+<pre class="r"><code>table(youth2015$gender)</code></pre>
+<pre><code>## 
+## female   male 
+##   1207   1029</code></pre>
+<pre class="r"><code>table(youth2023$gender)</code></pre>
+<pre><code>## 
+## diverse  female    male 
+##      83    1520    1394</code></pre>
+<pre class="r"><code># Reporting a different gender was not possible in 2010 and 2015
+# We thus cannot compare the gender diverse students in 2023 to gender diverse students in earlier years
+# Which is why we unfortunately have to exclude them for the present purposes
+combined$gender[combined$gender == &quot;diverse&quot;] &lt;- NA
+
+combined$gender &lt;- as.factor(combined$gender)
+combined$school &lt;- as.factor(combined$school)
+combined$unique_classroom &lt;- as.factor(combined$unique_classroom)
+
+save.image(&quot;prep.RData&quot;)</code></pre>
 </div>
 
 

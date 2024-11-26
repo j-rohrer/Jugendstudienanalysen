@@ -324,5 +324,3 @@ table(youth2023$gender)
 
 mode <- lm(satis ~ as.factor(gender)*factor_source, dat = youth2023[youth2023$gender != "diverse",]) 
 summary(mode)
-
-# CONSIDER CHANGE IN MODE
