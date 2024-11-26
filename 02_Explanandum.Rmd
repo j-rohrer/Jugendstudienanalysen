@@ -95,6 +95,7 @@ These range from "artifactual" explanations (maybe something is wrong with our d
 "Artifactual" explanations that we will consider:
 
 * maybe the changes in sampling scheme caused the drop, without any real changes in the population -- for example, maybe somehow in 2023 parts of Leipzig with more unhappy girls were sampled; maybe the age in the sample changed
+* maybe changes in survey mode can explain the differences
 * maybe the composition of the underlying population changed -- for example, maybe an influx of unhappy girls with migration background can explain the pattern
 * maybe this is a scaling artifact -- maybe the drop in latent happiness in girls is actually comparable to the drop in latent happiness in boys
 
