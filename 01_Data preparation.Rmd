@@ -502,7 +502,7 @@ youth2015$source <- "paper"
 ```
 
 
-## Combined dataframe
+## Combined dataframe and inclusion criteria
 Let's create one dataframe for everything we will need later.
 
 ```{r combining}
@@ -524,8 +524,21 @@ combined$gender <- as.factor(combined$gender)
 combined$school <- as.factor(combined$school)
 combined$unique_classroom <- as.factor(combined$unique_classroom)
 
+
+```
+To simply the research question somewhat, we will also limit ourselves to students in particular schooltypes, of certain ages.
+In the German system and in Leipzig, the standard is that after primary school, students attend either Mittelschule or Gymnasium.
+Special needs school target a different population that may have shifted over time, due to both changes in the criteria for special schools, and to intentional changes to the survey design (the 2023 Survey intentionally oversampled students from Förderschule).
+Students who finished Mittelschule (or, less frequently, Gymnasium), may move on to Berufs-/Fachoberschule.
+But this is a heterogeneous crowd, mixing people living at home and those who have moved out.
+So, our analysis will focus on Mittelschule and Gymnasium -- and within those, students with typical ages
+
+```{r inclusion}
+combined <- combined[combined$schooltype == 1 | combined$schooltype == 2,]
+table(combined$age)
+hist(combined$age)
+
+combined <- combined[combined$age >= 12 & combined$age <= 18,]
 save.image("prep.RData")
 
 ```
-
-
