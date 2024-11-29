@@ -69,8 +69,6 @@ full_model <- brm(satis|weights(wph) ~ year*gender + source*gender + (1|unique_c
                              data = combined,
                              cores = 4)
 summary(full_model)
-<<<<<<< HEAD
 
 save.image("intermediate_models.RData")
-=======
->>>>>>> 341e7142276168496c86d71e06ca138fc36327a3
+
