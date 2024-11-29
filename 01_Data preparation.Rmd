@@ -506,7 +506,17 @@ youth2015$source <- "paper"
 Let's create one dataframe for everything we will need later.
 
 ```{r combining}
-vars <- c("year", "wph", "schooltype", "gender", "age", "german_at_home", 
+# Add unique ids
+intersect(youth2010$pnum, youth2015$rawid)
+intersect(youth2010$pnum, youth2023$rawid)
+intersect(youth2023$rawid, youth2015$rawid)
+# none of these values intersect, so we can use them
+youth2010$id <- youth2010$pnum
+youth2015$id <- youth2015$rawid
+youth2023$id <- youth2023$rawid
+
+
+vars <- c("id", "year", "wph", "schooltype", "gender", "age", "german_at_home", 
           "satis", "satis_money", "satis_friends", "satis_mom", "satis_dad",
           "satis_leisure", "satis_dwell", "satis_grades", "school", "unique_classroom", "source")
 combined <- rbind(youth2010[, vars], youth2015[, vars], youth2023[, vars])

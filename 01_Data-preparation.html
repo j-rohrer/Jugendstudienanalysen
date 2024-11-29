@@ -1447,7 +1447,20 @@ youth2015$source &lt;- &quot;paper&quot;</code></pre>
 <div id="combined-dataframe-and-inclusion-criteria" class="section level2">
 <h2>Combined dataframe and inclusion criteria</h2>
 <p>Let’s create one dataframe for everything we will need later.</p>
-<pre class="r"><code>vars &lt;- c(&quot;year&quot;, &quot;wph&quot;, &quot;schooltype&quot;, &quot;gender&quot;, &quot;age&quot;, &quot;german_at_home&quot;, 
+<pre class="r"><code># Add unique ids
+intersect(youth2010$pnum, youth2015$rawid)</code></pre>
+<pre><code>## numeric(0)</code></pre>
+<pre class="r"><code>intersect(youth2010$pnum, youth2023$rawid)</code></pre>
+<pre><code>## numeric(0)</code></pre>
+<pre class="r"><code>intersect(youth2023$rawid, youth2015$rawid)</code></pre>
+<pre><code>## numeric(0)</code></pre>
+<pre class="r"><code># none of these values intersect, so we can use them
+youth2010$id &lt;- youth2010$pnum
+youth2015$id &lt;- youth2015$rawid
+youth2023$id &lt;- youth2023$rawid
+
+
+vars &lt;- c(&quot;id&quot;, &quot;year&quot;, &quot;wph&quot;, &quot;schooltype&quot;, &quot;gender&quot;, &quot;age&quot;, &quot;german_at_home&quot;, 
           &quot;satis&quot;, &quot;satis_money&quot;, &quot;satis_friends&quot;, &quot;satis_mom&quot;, &quot;satis_dad&quot;,
           &quot;satis_leisure&quot;, &quot;satis_dwell&quot;, &quot;satis_grades&quot;, &quot;school&quot;, &quot;unique_classroom&quot;, &quot;source&quot;)
 combined &lt;- rbind(youth2010[, vars], youth2015[, vars], youth2023[, vars])
