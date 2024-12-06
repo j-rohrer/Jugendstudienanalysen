@@ -11,7 +11,7 @@
 
 <meta name="author" content="Julia Rohrer" />
 
-<meta name="date" content="2024-11-29" />
+<meta name="date" content="2024-12-06" />
 
 <title>Cleaning and preparation of the Youth Surveys</title>
 
@@ -353,7 +353,7 @@ display: none;
 <h1 class="title toc-ignore">Cleaning and preparation of the Youth
 Surveys</h1>
 <h4 class="author">Julia Rohrer</h4>
-<h4 class="date">2024-11-29</h4>
+<h4 class="date">2024-12-06</h4>
 
 </div>
 
@@ -394,6 +394,7 @@ data</a></li>
 classroom IDs</a></li>
 <li><a href="#source-variable" id="toc-source-variable">Source
 variable</a></li>
+<li><a href="#match-schools-across-years" id="toc-match-schools-across-years">Match schools across years</a></li>
 </ul></li>
 <li><a href="#combined-dataframe-and-inclusion-criteria" id="toc-combined-dataframe-and-inclusion-criteria">Combined dataframe
 and inclusion criteria</a></li>
@@ -1443,6 +1444,56 @@ a source variable for the other years as well.</p>
 youth2010$source &lt;- &quot;paper&quot;
 youth2015$source &lt;- &quot;paper&quot;</code></pre>
 </div>
+<div id="match-schools-across-years" class="section level3">
+<h3>Match schools across years</h3>
+<p>Generate a variable that identifies each identifies identical schools
+across years.</p>
+<pre class="r"><code># This is a mapping I manually created to match the schools
+# as even identical schools had slightly different names
+# between the waves (e.g., Mittleschule was renamed to oberschule)
+mapping &lt;- read.csv(&quot;Mapping_schools.csv&quot;, sep = &quot;;&quot;)
+
+
+# 2010
+mapping_2010 &lt;- mapping[mapping$Year == 2010,]
+names(mapping_2010)[names(mapping_2010) == &quot;Code&quot;] &lt;- &quot;schule&quot;
+
+mapping_2010 &lt;- mapping_2010[, c(&quot;schule&quot;, &quot;school_id&quot;)]
+youth2010 &lt;- merge(youth2010, mapping_2010, by = &quot;schule&quot;)
+# all successfully matched
+
+
+# 2015
+library(haven)
+youth2015_school &lt;- read_spss(&quot;Files/jugend2015Schule.sav&quot;)
+mapping_2015 &lt;- mapping[mapping$Year == 2015,]
+names(mapping_2015)[names(mapping_2015) == &quot;Code&quot;] &lt;- &quot;schule&quot;
+
+mapping_2015 &lt;- mapping_2015[, c(&quot;schule&quot;, &quot;school_id&quot;)]
+youth2015_school &lt;- merge(youth2015_school, mapping_2015, by = &quot;schule&quot;, all.x = TRUE)
+
+youth2015_school &lt;- youth2015_school[, c(&quot;rawid&quot;, &quot;school_id&quot;)]
+youth2015 &lt;- merge(youth2015, youth2015_school, by = &quot;rawid&quot;, all.x = TRUE)
+rm(youth2015_school)
+
+
+# 2023: Here, we do have a proper variable
+# in the main dataset, containing all names
+mapping_2023 &lt;- mapping[mapping$Year == 2023,]
+names(mapping_2023)[names(mapping_2023) == &quot;Name&quot;] &lt;- &quot;schule_amt51&quot;
+mapping_2023 &lt;- mapping_2023[, c(&quot;schule_amt51&quot;, &quot;school_id&quot;)]
+
+youth2023 &lt;- merge(youth2023, mapping_2023, by = &quot;schule_amt51&quot;, all.x = TRUE)
+table(youth2023[is.na(youth2023$school_id), &quot;schule_amt51&quot;])</code></pre>
+<pre><code>## 
+##                                  Förderzentrum FS Sprache &quot;Käthe Kollwitz&quot; 
+##                                                                          7 
+## Ruth-Pfau-Schule, BSZ für Gesundheit und Sozialwesen der Stadt Leipzig\r\n 
+##                                                                         89</code></pre>
+<pre class="r"><code># Two schools have not been successfully matched due to special characters in their names
+# However, these wont be part of the final analyses (one is a Berufsschule,
+# the other one a Förderschule), so we can just ignore this issue</code></pre>
+</div>
 </div>
 <div id="combined-dataframe-and-inclusion-criteria" class="section level2">
 <h2>Combined dataframe and inclusion criteria</h2>
@@ -1462,7 +1513,7 @@ youth2023$id &lt;- youth2023$rawid
 
 vars &lt;- c(&quot;id&quot;, &quot;year&quot;, &quot;wph&quot;, &quot;schooltype&quot;, &quot;gender&quot;, &quot;age&quot;, &quot;german_at_home&quot;, 
           &quot;satis&quot;, &quot;satis_money&quot;, &quot;satis_friends&quot;, &quot;satis_mom&quot;, &quot;satis_dad&quot;,
-          &quot;satis_leisure&quot;, &quot;satis_dwell&quot;, &quot;satis_grades&quot;, &quot;school&quot;, &quot;unique_classroom&quot;, &quot;source&quot;)
+          &quot;satis_leisure&quot;, &quot;satis_dwell&quot;, &quot;satis_grades&quot;, &quot;school&quot;, &quot;unique_classroom&quot;, &quot;school_id&quot;, &quot;source&quot;)
 combined &lt;- rbind(youth2010[, vars], youth2015[, vars], youth2023[, vars])
 
 
