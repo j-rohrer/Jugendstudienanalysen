@@ -1475,7 +1475,8 @@ youth2015_school &lt;- merge(youth2015_school, mapping_2015, by = &quot;schule&q
 youth2015_school &lt;- youth2015_school[, c(&quot;rawid&quot;, &quot;school_id&quot;)]
 youth2015 &lt;- merge(youth2015, youth2015_school, by = &quot;rawid&quot;, all.x = TRUE)
 rm(youth2015_school)
-
+# Some cases here cannot be matched because the students are not in the Schule.sav
+# data set
 
 # 2023: Here, we do have a proper variable
 # in the main dataset, containing all names
@@ -1511,7 +1512,7 @@ youth2015$id &lt;- youth2015$rawid
 youth2023$id &lt;- youth2023$rawid
 
 
-vars &lt;- c(&quot;id&quot;, &quot;year&quot;, &quot;wph&quot;, &quot;schooltype&quot;, &quot;gender&quot;, &quot;age&quot;, &quot;german_at_home&quot;, 
+vars &lt;- c(&quot;id&quot;, &quot;year&quot;, &quot;wph&quot;, &quot;schooltype&quot;, &quot;gender&quot;, &quot;age&quot;, &quot;german_at_home&quot;, &quot;migback&quot;,
           &quot;satis&quot;, &quot;satis_money&quot;, &quot;satis_friends&quot;, &quot;satis_mom&quot;, &quot;satis_dad&quot;,
           &quot;satis_leisure&quot;, &quot;satis_dwell&quot;, &quot;satis_grades&quot;, &quot;school&quot;, &quot;unique_classroom&quot;, &quot;school_id&quot;, &quot;source&quot;)
 combined &lt;- rbind(youth2010[, vars], youth2015[, vars], youth2023[, vars])

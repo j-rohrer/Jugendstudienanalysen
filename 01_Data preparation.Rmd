@@ -532,7 +532,8 @@ youth2015_school <- merge(youth2015_school, mapping_2015, by = "schule", all.x =
 youth2015_school <- youth2015_school[, c("rawid", "school_id")]
 youth2015 <- merge(youth2015, youth2015_school, by = "rawid", all.x = TRUE)
 rm(youth2015_school)
-
+# Some cases here cannot be matched because the students are not in the Schule.sav
+# data set
 
 # 2023: Here, we do have a proper variable
 # in the main dataset, containing all names
@@ -561,7 +562,7 @@ youth2015$id <- youth2015$rawid
 youth2023$id <- youth2023$rawid
 
 
-vars <- c("id", "year", "wph", "schooltype", "gender", "age", "german_at_home", 
+vars <- c("id", "year", "wph", "schooltype", "gender", "age", "german_at_home", "migback",
           "satis", "satis_money", "satis_friends", "satis_mom", "satis_dad",
           "satis_leisure", "satis_dwell", "satis_grades", "school", "unique_classroom", "school_id", "source")
 combined <- rbind(youth2010[, vars], youth2015[, vars], youth2023[, vars])
