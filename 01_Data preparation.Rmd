@@ -594,6 +594,9 @@ combined <- combined[combined$schooltype == 1 | combined$schooltype == 2,]
 table(combined$age)
 hist(combined$age)
 
+# Standardize the outcome across everyone
+combined$satis_std <- scale(combined$satis)
+
 combined <- combined[combined$age >= 12 & combined$age <= 18,]
 save.image("prep.RData")
 

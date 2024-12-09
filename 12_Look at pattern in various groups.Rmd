@@ -1,0 +1,693 @@
+---
+title: "Look at pattern in various groups"
+author: "Julia Rohrer"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+load("prep.RData")
+library(haven)
+library(marginaleffects)
+library(ggplot2)
+library(ordinal)
+library(gridExtra)
+```
+
+## Agenda
+We are now going to contrast the pattern across various subgroups to get a better feel for what is going on.
+We will split analyses by:
+* Migration background
+* Schooltype
+
+And report:
+* statistical significance of the interaction
+* the means plot in raw scores
+* and an effect size measure based on the overall standardizes satisfaction score
+* results from an ordinal model
+
+Furthermore, we will consider:
+* all relevant outcomes
+
+
+## For reference, the whole sample
+
+```{r }
+
+simple_model <- lm(satis ~ as.factor(year)*gender, data = combined, weights = wph)
+# Unstandardized estimate
+round(summary(simple_model)$coefficients["as.factor(year)2023:gendermale",], 3)
+# Estimate standardized relative to total SD
+round(summary(simple_model)$coefficients["as.factor(year)2023:gendermale", "Estimate"]/sd(combined$satis, na.rm = TRUE), 3)
+
+# Corresponding ordinal results
+ordinal <- clm(as.factor(satis) ~ as.factor(year)*gender, data = combined, weights = wph)
+round(summary(ordinal)$coefficients["as.factor(year)2023:gendermale",], 3)
+
+
+pred <- predictions(simple_model,
+                 by = c("gender", "year"))
+
+ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean life satisfaction") +
+  xlab("Survey year")
+
+
+
+```
+
+## Let's split by school type
+
+```{r }
+
+simple_model_schooltype1 <- lm(satis ~ as.factor(year)*gender, data = combined[combined$schooltype == 1,], weights = wph)
+simple_model_schooltype2 <- lm(satis ~ as.factor(year)*gender, data = combined[combined$schooltype == 2,], weights = wph)
+
+# Unstandardized estimate
+# Schooltype == 1
+round(summary(simple_model_schooltype1)$coefficients["as.factor(year)2023:gendermale",], 3)
+# Schooltype == 2
+round(summary(simple_model_schooltype2)$coefficients["as.factor(year)2023:gendermale",], 3)
+
+# Estimate standardized relative to total SD
+# Schooltype == 1
+round(summary(simple_model_schooltype1)$coefficients["as.factor(year)2023:gendermale", "Estimate"]/sd(combined$satis, na.rm = TRUE), 3)
+# Schooltype == 2
+round(summary(simple_model_schooltype2)$coefficients["as.factor(year)2023:gendermale", "Estimate"]/sd(combined$satis, na.rm = TRUE), 3)
+
+# Corresponding ordinal results
+# Schooltype == 1
+ordinal1 <- clm(as.factor(satis) ~ as.factor(year)*gender, data = combined[combined$schooltype == 1,], weights = wph)
+round(summary(ordinal1)$coefficients["as.factor(year)2023:gendermale",], 3)
+# Schooltype == 2
+ordinal2 <- clm(as.factor(satis) ~ as.factor(year)*gender, data = combined[combined$schooltype == 2,], weights = wph)
+round(summary(ordinal2)$coefficients["as.factor(year)2023:gendermale",], 3)
+
+pred1 <- predictions(simple_model_schooltype1,
+                 by = c("gender", "year"))
+pred2 <- predictions(simple_model_schooltype2,
+                 by = c("gender", "year"))
+
+plot1 <- ggplot(pred1, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean life satisfaction") +
+  xlab("Survey year") +
+  ggtitle("Schooltype Mittelschule")
+
+plot2 <- ggplot(pred2, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean life satisfaction") +
+  xlab("Survey year") +
+  ggtitle("Schooltype Gymnasium")
+
+grid.arrange(plot1, plot2, ncol = 2)
+
+
+
+```
+
+## Let's split by languate at home
+
+```{r}
+# German at home == 1
+simple_model_german1 <- lm(satis ~ as.factor(year)*gender, data = combined[combined$german_at_home == 1,], weights = wph)
+# German at home == 0
+simple_model_german0 <- lm(satis ~ as.factor(year)*gender, data = combined[combined$german_at_home == 0,], weights = wph)
+
+# Unstandardized estimate
+# German at home == 1
+round(summary(simple_model_german1)$coefficients["as.factor(year)2023:gendermale",], 3)
+# German at home == 0
+round(summary(simple_model_german0)$coefficients["as.factor(year)2023:gendermale",], 3)
+
+# Estimate standardized relative to total SD
+# German at home == 1
+round(summary(simple_model_german1)$coefficients["as.factor(year)2023:gendermale", "Estimate"]/sd(combined$satis, na.rm = TRUE), 3)
+# German at home == 0
+round(summary(simple_model_german0)$coefficients["as.factor(year)2023:gendermale", "Estimate"]/sd(combined$satis, na.rm = TRUE), 3)
+
+# Corresponding ordinal results
+# German at home == 1
+ordinal1 <- clm(as.factor(satis) ~ as.factor(year)*gender, data = combined[combined$german_at_home == 1,], weights = wph)
+round(summary(ordinal1)$coefficients["as.factor(year)2023:gendermale",], 3)
+# German at home == 0
+ordinal2 <- clm(as.factor(satis) ~ as.factor(year)*gender, data = combined[combined$german_at_home == 0,], weights = wph)
+round(summary(ordinal2)$coefficients["as.factor(year)2023:gendermale",], 3)
+
+pred1 <- predictions(simple_model_german1,
+                 by = c("gender", "year"))
+pred2 <- predictions(simple_model_german0,
+                 by = c("gender", "year"))
+
+plot1 <- ggplot(pred1, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean life satisfaction") +
+  xlab("Survey year") +
+  ggtitle("German at home")
+
+plot2 <- ggplot(pred2, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean life satisfaction") +
+  xlab("Survey year") +
+  ggtitle("No German at home")
+
+grid.arrange(plot1, plot2, ncol = 2)
+
+
+
+```
+
+## Let's split by more detailed migration background
+
+```{r }
+# Three groups:
+# None
+# both/self
+# father or mother
+
+# migback none
+migback_none <- lm(satis ~ as.factor(year)*gender, data = combined[combined$migback == "none",], weights = wph)
+# migback both
+migback_both <- lm(satis ~ as.factor(year)*gender, data = combined[combined$migback == "both" |combined$migback == "self",], weights = wph)
+# migback one
+migback_some <- lm(satis ~ as.factor(year)*gender, data = combined[combined$migback == "father" |combined$migback == "mother",], weights = wph)
+
+
+# Unstandardized estimate
+# migback none
+round(summary(migback_none)$coefficients["as.factor(year)2023:gendermale",], 3)
+# migback both
+round(summary(migback_both)$coefficients["as.factor(year)2023:gendermale",], 3)
+# migback one
+round(summary(migback_some)$coefficients["as.factor(year)2023:gendermale",], 3)
+
+# Estimate standardized relative to total SD
+# migback none
+round(summary(migback_none)$coefficients["as.factor(year)2023:gendermale", "Estimate"]/sd(combined$satis, na.rm = TRUE), 3)
+# migback both
+round(summary(migback_both)$coefficients["as.factor(year)2023:gendermale", "Estimate"]/sd(combined$satis, na.rm = TRUE), 3)
+# migback one
+round(summary(migback_some)$coefficients["as.factor(year)2023:gendermale", "Estimate"]/sd(combined$satis, na.rm = TRUE), 3)
+
+# Corresponding ordinal results
+# migback none
+ordinal1 <- clm(as.factor(satis) ~ as.factor(year)*gender, data = combined[combined$migback == "none",], weights = wph)
+round(summary(ordinal1)$coefficients["as.factor(year)2023:gendermale",], 3)
+# migback both
+ordinal2 <- clm(as.factor(satis) ~ as.factor(year)*gender, data = combined[combined$migback == "both" |combined$migback == "self",], weights = wph)
+round(summary(ordinal2)$coefficients["as.factor(year)2023:gendermale",], 3)
+# migback one
+ordinal3 <- clm(as.factor(satis) ~ as.factor(year)*gender, data = combined[combined$migback == "father" |combined$migback == "mother",], weights = wph)
+round(summary(ordinal3)$coefficients["as.factor(year)2023:gendermale",], 3)
+
+pred1 <- predictions(migback_none,
+                 by = c("gender", "year"))
+pred2 <- predictions(migback_both,
+                 by = c("gender", "year"))
+pred3 <- predictions(migback_some,
+                 by = c("gender", "year"))
+
+plot1 <- ggplot(pred1, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean life satisfaction") +
+  xlab("Survey year") +
+  ggtitle("No migback")
+
+plot2 <- ggplot(pred2, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean life satisfaction") +
+  xlab("Survey year") +
+  ggtitle("Full migback")
+
+plot3 <- ggplot(pred3, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean life satisfaction") +
+  xlab("Survey year") +
+  ggtitle("Half migback")
+
+grid.arrange(plot1, plot2, plot3, ncol = 3)
+
+
+
+```
+
+## Let's do the other outcomes by language at home
+
+
+```{r, fig.width = 10, fig.height = 40}
+
+satis_money_german1 <- lm(satis_money ~ as.factor(year)*gender, data = combined[combined$german_at_home == 1,], weights = wph)
+satis_money_german0 <- lm(satis_money ~ as.factor(year)*gender, data = combined[combined$german_at_home == 0,], weights = wph)
+pred_money_german1 <- predictions(satis_money_german1, by = c("gender", "year"))
+pred_money_german0 <- predictions(satis_money_german0, by = c("gender", "year"))
+
+satis_friends_german1 <- lm(satis_friends ~ as.factor(year)*gender, data = combined[combined$german_at_home == 1,], weights = wph)
+satis_friends_german0 <- lm(satis_friends ~ as.factor(year)*gender, data = combined[combined$german_at_home == 0,], weights = wph)
+pred_friends_german1 <- predictions(satis_friends_german1, by = c("gender", "year"))
+pred_friends_german0 <- predictions(satis_friends_german0, by = c("gender", "year"))
+
+satis_mom_german1 <- lm(satis_mom ~ as.factor(year)*gender, data = combined[combined$german_at_home == 1,], weights = wph)
+satis_mom_german0 <- lm(satis_mom ~ as.factor(year)*gender, data = combined[combined$german_at_home == 0,], weights = wph)
+pred_mom_german1 <- predictions(satis_mom_german1, by = c("gender", "year"))
+pred_mom_german0 <- predictions(satis_mom_german0, by = c("gender", "year"))
+
+satis_dad_german1 <- lm(satis_dad ~ as.factor(year)*gender, data = combined[combined$german_at_home == 1,], weights = wph)
+satis_dad_german0 <- lm(satis_dad ~ as.factor(year)*gender, data = combined[combined$german_at_home == 0,], weights = wph)
+pred_dad_german1 <- predictions(satis_dad_german1, by = c("gender", "year"))
+pred_dad_german0 <- predictions(satis_dad_german0, by = c("gender", "year"))
+
+satis_leisure_german1 <- lm(satis_leisure ~ as.factor(year)*gender, data = combined[combined$german_at_home == 1,], weights = wph)
+satis_leisure_german0 <- lm(satis_leisure ~ as.factor(year)*gender, data = combined[combined$german_at_home == 0,], weights = wph)
+pred_leisure_german1 <- predictions(satis_leisure_german1, by = c("gender", "year"))
+pred_leisure_german0 <- predictions(satis_leisure_german0, by = c("gender", "year"))
+
+satis_dwell_german1 <- lm(satis_dwell ~ as.factor(year)*gender, data = combined[combined$german_at_home == 1,], weights = wph)
+satis_dwell_german0 <- lm(satis_dwell ~ as.factor(year)*gender, data = combined[combined$german_at_home == 0,], weights = wph)
+pred_dwell_german1 <- predictions(satis_dwell_german1, by = c("gender", "year"))
+pred_dwell_german0 <- predictions(satis_dwell_german0, by = c("gender", "year"))
+
+satis_grades_german1 <- lm(satis_grades ~ as.factor(year)*gender, data = combined[combined$german_at_home == 1,], weights = wph)
+satis_grades_german0 <- lm(satis_grades ~ as.factor(year)*gender, data = combined[combined$german_at_home == 0,], weights = wph)
+pred_grades_german1 <- predictions(satis_grades_german1, by = c("gender", "year"))
+pred_grades_german0 <- predictions(satis_grades_german0, by = c("gender", "year"))
+
+
+
+money_1 <- ggplot(pred_money_german1, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("Money, German at home")
+
+money_2 <- ggplot(pred_money_german0, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("Money, No german at home")
+
+friends_1 <- ggplot(pred_friends_german1, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("friends, German at home")
+
+friends_2 <- ggplot(pred_friends_german0, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("friends, No German at home")
+
+mom_1 <- ggplot(pred_mom_german1, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("mom, German at home")
+
+mom_2 <- ggplot(pred_mom_german0, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("mom, No German at home")
+
+dad_1 <- ggplot(pred_dad_german1, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("dad, German at home")
+
+dad_2 <- ggplot(pred_dad_german0, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("dad, No German at home")
+
+leisure_1 <- ggplot(pred_leisure_german1, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("leisure, German at home")
+
+leisure_2 <- ggplot(pred_leisure_german0, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("leisure, No German at home")
+
+dwell_1 <- ggplot(pred_dwell_german1, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("dwell, German at home")
+
+dwell_2 <- ggplot(pred_dwell_german0, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("dwell, No German at home")
+
+grades_1 <- ggplot(pred_grades_german1, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("grades, German at home")
+
+grades_2 <- ggplot(pred_grades_german0, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("grades, No German at home")
+
+grid.arrange(money_1, money_2, 
+             friends_1, friends_2,
+             mom_1, mom_2,
+             dad_1, dad_2,
+             leisure_1, leisure_2,
+             dwell_1, dwell_2,
+             grades_1, grades_2, ncol = 2)
+
+
+
+```
+
+## Let's do the other outcomes by school type
+Given the results for general satisfaction, I do not really expect much to be going on here.
+
+
+```{r, fig.width = 10, fig.height = 40}
+
+satis_money_schooltype1 <- lm(satis_money ~ as.factor(year)*gender, data = combined[combined$schooltype == 1,], weights = wph)
+satis_money_schooltype2 <- lm(satis_money ~ as.factor(year)*gender, data = combined[combined$schooltype == 2,], weights = wph)
+pred_money_schooltype1 <- predictions(satis_money_schooltype1, by = c("gender", "year"))
+pred_money_schooltype2 <- predictions(satis_money_schooltype2, by = c("gender", "year"))
+
+satis_friends_schooltype1 <- lm(satis_friends ~ as.factor(year)*gender, data = combined[combined$schooltype == 1,], weights = wph)
+satis_friends_schooltype2 <- lm(satis_friends ~ as.factor(year)*gender, data = combined[combined$schooltype == 2,], weights = wph)
+pred_friends_schooltype1 <- predictions(satis_friends_schooltype1, by = c("gender", "year"))
+pred_friends_schooltype2 <- predictions(satis_friends_schooltype2, by = c("gender", "year"))
+
+satis_mom_schooltype1 <- lm(satis_mom ~ as.factor(year)*gender, data = combined[combined$schooltype == 1,], weights = wph)
+satis_mom_schooltype2 <- lm(satis_mom ~ as.factor(year)*gender, data = combined[combined$schooltype == 2,], weights = wph)
+pred_mom_schooltype1 <- predictions(satis_mom_schooltype1, by = c("gender", "year"))
+pred_mom_schooltype2 <- predictions(satis_mom_schooltype2, by = c("gender", "year"))
+
+satis_dad_schooltype1 <- lm(satis_dad ~ as.factor(year)*gender, data = combined[combined$schooltype == 1,], weights = wph)
+satis_dad_schooltype2 <- lm(satis_dad ~ as.factor(year)*gender, data = combined[combined$schooltype == 2,], weights = wph)
+pred_dad_schooltype1 <- predictions(satis_dad_schooltype1, by = c("gender", "year"))
+pred_dad_schooltype2 <- predictions(satis_dad_schooltype2, by = c("gender", "year"))
+
+satis_leisure_schooltype1 <- lm(satis_leisure ~ as.factor(year)*gender, data = combined[combined$schooltype == 1,], weights = wph)
+satis_leisure_schooltype2 <- lm(satis_leisure ~ as.factor(year)*gender, data = combined[combined$schooltype == 2,], weights = wph)
+pred_leisure_schooltype1 <- predictions(satis_leisure_schooltype1, by = c("gender", "year"))
+pred_leisure_schooltype2 <- predictions(satis_leisure_schooltype2, by = c("gender", "year"))
+
+satis_dwell_schooltype1 <- lm(satis_dwell ~ as.factor(year)*gender, data = combined[combined$schooltype == 1,], weights = wph)
+satis_dwell_schooltype2 <- lm(satis_dwell ~ as.factor(year)*gender, data = combined[combined$schooltype == 2,], weights = wph)
+pred_dwell_schooltype1 <- predictions(satis_dwell_schooltype1, by = c("gender", "year"))
+pred_dwell_schooltype2 <- predictions(satis_dwell_schooltype2, by = c("gender", "year"))
+
+satis_grades_schooltype1 <- lm(satis_grades ~ as.factor(year)*gender, data = combined[combined$schooltype == 1,], weights = wph)
+satis_grades_schooltype2 <- lm(satis_grades ~ as.factor(year)*gender, data = combined[combined$schooltype == 2,], weights = wph)
+pred_grades_schooltype1 <- predictions(satis_grades_schooltype1, by = c("gender", "year"))
+pred_grades_schooltype2 <- predictions(satis_grades_schooltype2, by = c("gender", "year"))
+
+
+
+money_1 <- ggplot(pred_money_schooltype1, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("Money, Schooltype Mittelschule")
+
+money_2 <- ggplot(pred_money_schooltype2, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("Money, Schooltype Gymnasium")
+
+friends_1 <- ggplot(pred_friends_schooltype1, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("friends, Schooltype Mittelschule")
+
+friends_2 <- ggplot(pred_friends_schooltype2, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("friends, Schooltype Gymnasium")
+
+mom_1 <- ggplot(pred_mom_schooltype1, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("mom, Schooltype Mittelschule")
+
+mom_2 <- ggplot(pred_mom_schooltype2, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("mom, Schooltype Gymnasium")
+
+dad_1 <- ggplot(pred_dad_schooltype1, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("dad, Schooltype Mittelschule")
+
+dad_2 <- ggplot(pred_dad_schooltype2, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("dad, Schooltype Gymnasium")
+
+leisure_1 <- ggplot(pred_leisure_schooltype1, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("leisure, Schooltype Mittelschule")
+
+leisure_2 <- ggplot(pred_leisure_schooltype2, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("leisure, Schooltype Gymnasium")
+
+dwell_1 <- ggplot(pred_dwell_schooltype1, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("dwell, Schooltype Mittelschule")
+
+dwell_2 <- ggplot(pred_dwell_schooltype2, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("dwell, Schooltype Gymnasium")
+
+grades_1 <- ggplot(pred_grades_schooltype1, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("grades, Schooltype Mittelschule")
+
+grades_2 <- ggplot(pred_grades_schooltype2, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(2.5, 5)) +
+  theme_classic() +
+  ylab("Mean satisfaction") +
+  xlab("Survey year") +
+  ggtitle("grades, Schooltype Gymnasium")
+
+grid.arrange(money_1, money_2, 
+             friends_1, friends_2,
+             mom_1, mom_2,
+             dad_1, dad_2,
+             leisure_1, leisure_2,
+             dwell_1, dwell_2,
+             grades_1, grades_2, ncol = 2)
+
+
+
+```
