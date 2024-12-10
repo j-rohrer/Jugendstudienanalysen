@@ -548,6 +548,92 @@ table(youth2023[is.na(youth2023$school_id), "schule_amt51"])
 # the other one a Förderschule), so we can just ignore this issue
 
 ```
+## Additional variables: What is important in life
+
+```{r}
+#############################
+# All shared importance items
+#############################
+# Gesetz und Ordnung respektieren
+# hoher Lebensstandard
+# beruflich Karriere/beruflicher Erfolg
+# sich politisch engagieren
+# Das Leben geniessen
+# Gesundheitsbewusst leben
+# Sich Umweltbewusst verhalten
+# Mitspracherecht in Staat und Gesellschaft haben
+# Freundschaften pflegen
+# Kinder haben
+
+imp_names <- c("imp_law", "imp_standard", "imp_career", "imp_politics", "imp_enjoy", 
+               "imp_health", "imp_environment", "imp_participate", "imp_friends", "imp_kids")
+imp_2010 <- c("s01a", "s01b", "s01i", "s01j", "s01k", 
+               "s01n", "s01o", "s01p", "s01q", "s01s")
+imp_2015 <- c("f01j", "f01a", "f01l", "f01n", "f01o", 
+               "f01e", "f01d", "f01c", "f01h", "f01b")
+imp_2023 <- c("f01l", "f01i", "f01m", "f01n", "f01o", 
+               "f01b", "f01e", "f01d", "f01h", "f01k")
+
+# recode so that higher equals more important
+youth2010[, imp_2010] <- 6 - youth2010[, imp_2010] 
+names(youth2010)[names(youth2010) %in% imp_2010] <- imp_names
+
+youth2015[, imp_2015] <- 6 - youth2015[, imp_2015] 
+names(youth2015)[names(youth2015) %in% imp_2015] <- imp_names
+
+youth2023[, imp_2023] <- 6 - youth2023[, imp_2023] 
+names(youth2023)[names(youth2023) %in% imp_2023] <- imp_names
+
+```
+
+## Additional variables: Problems in life
+
+```{r}
+
+#############################
+# Problem items
+#############################
+# 2010, 2015, 2023
+# Dauerhafte Auseinandersetzungen mit Eltern
+# Grossen Aerger mit Gleichaltrigen
+# Probleme wegen Scheidung/Trennung Eltern
+# Finanzielle Probleme
+# Schulden
+# Gewalt/Schlaegereien
+
+prob_items <- c("prob_parents", "prob_peers", "prob_divorce", 
+                "prob_money", "prob_debt", "prob_future", "prob_violence")
+prob_2010 <- c("s30a", "s30b", "s30c", 
+                "s30d", "s30e", "s30f", "s30h")
+prob_2015 <- c("f31a", "f31b", "f31c", 
+                "f31d", "f31e", "f31f", "f31h")
+
+# OH NO, they changed the response format in 2023
+# OH NO, in 2010 and 2015 they asked about the last two years
+# In 2023, they only asked about the last year
+prob_2023 <- c("f41a", "f41b", "f41c", 
+               "f41d", "f41e", "f41f", "f41h")
+
+# rename
+names(youth2010)[names(youth2010) %in% prob_2010] <- prob_items
+names(youth2015)[names(youth2015) %in% prob_2015] <- prob_items
+names(youth2023)[names(youth2023) %in% prob_2023] <- prob_items
+
+table(youth2010$prob_parents)
+# 0 said does not apply, 1 is YES, 2 is NO
+# Recode more sensibly: 1 yes, 0 no
+youth2010$prob_parents[youth2010$prob_parents == 0] <- NA
+youth2010$prob_parents[youth2010$prob_parents == 2] <- 0
+youth2010$prob_parents[youth2010$prob_parents == 1] <- 1
+
+table(youth2015$prob_parents)
+# 1 is yes, 2 is no
+# lets recode so that 0 is no, 1 is yes
+youth2015$prob_parents[youth2015$prob_parents == 2] <- 0
+youth2015$prob_parents[youth2015$prob_parents == 1] <- 1
+
+```
+
 ## Combined dataframe and inclusion criteria
 Let's create one dataframe for everything we will need later.
 
@@ -564,7 +650,8 @@ youth2023$id <- youth2023$rawid
 
 vars <- c("id", "year", "wph", "schooltype", "gender", "age", "german_at_home", "migback",
           "satis", "satis_money", "satis_friends", "satis_mom", "satis_dad",
-          "satis_leisure", "satis_dwell", "satis_grades", "school", "unique_classroom", "school_id", "source")
+          "satis_leisure", "satis_dwell", "satis_grades", "school", "unique_classroom", "school_id", "source", 
+          imp_names, prob_items)
 combined <- rbind(youth2010[, vars], youth2015[, vars], youth2023[, vars])
 
 
@@ -588,6 +675,9 @@ Special needs school target a different population that may have shifted over ti
 Students who finished Mittelschule (or, less frequently, Gymnasium), may move on to Berufs-/Fachoberschule.
 But this is a heterogeneous crowd, mixing people living at home and those who have moved out.
 So, our analysis will focus on Mittelschule and Gymnasium -- and within those, students with typical ages
+
+
+
 
 ```{r inclusion}
 combined <- combined[combined$schooltype == 1 | combined$schooltype == 2,]

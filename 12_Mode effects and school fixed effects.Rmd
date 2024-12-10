@@ -215,6 +215,9 @@ ggplot(plot_frame, aes(x = group, y = estimate, fill = source)) +
   )
 
 ```
+
+## Can we explain everything with migration background and source?
+
 ```{r }
 # If we put this together
 # Can we get rid of the explanandum?
@@ -238,4 +241,82 @@ summary(simple_model) # large difference here remains
 simple_model <- lm(scale(satis) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender)+ as.factor(school_id), data = combined[combined$german_at_home == 0,], weights = wph)
 summary(simple_model) # large difference here remains
 
+```
+
+## Does this also hold for the other outcomes?
+
+```{r }
+
+# General Satisfaction
+german <- lm(scale(satis) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender) + as.factor(school_id), data = combined[combined$german_at_home == 1,], weights = wph)
+no_german <- lm(scale(satis) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender) + as.factor(school_id), data = combined[combined$german_at_home == 0,], weights = wph)
+
+# German
+summary(german)$coefficients["as.factor(year)2023:as.factor(gender)male",] 
+# No German
+summary(no_german)$coefficients["as.factor(year)2023:as.factor(gender)male",] 
+
+
+# Money
+german <- lm(scale(satis_money) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender) + as.factor(school_id), data = combined[combined$german_at_home == 1,], weights = wph)
+no_german <- lm(scale(satis_money) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender) + as.factor(school_id), data = combined[combined$german_at_home == 0,], weights = wph)
+
+# German
+summary(german)$coefficients["as.factor(year)2023:as.factor(gender)male",] 
+# No German
+summary(no_german)$coefficients["as.factor(year)2023:as.factor(gender)male",] 
+
+# Friends
+german <- lm(scale(satis_money) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender) + as.factor(school_id), data = combined[combined$german_at_home == 1,], weights = wph)
+no_german <- lm(scale(satis_money) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender) + as.factor(school_id), data = combined[combined$german_at_home == 0,], weights = wph)
+
+# German
+summary(german)$coefficients["as.factor(year)2023:as.factor(gender)male",] 
+# No German
+summary(no_german)$coefficients["as.factor(year)2023:as.factor(gender)male",] 
+
+# mom
+german <- lm(scale(satis_mom) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender) + as.factor(school_id), data = combined[combined$german_at_home == 1,], weights = wph)
+no_german <- lm(scale(satis_mom) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender) + as.factor(school_id), data = combined[combined$german_at_home == 0,], weights = wph)
+
+# German
+summary(german)$coefficients["as.factor(year)2023:as.factor(gender)male",] 
+# No German
+summary(no_german)$coefficients["as.factor(year)2023:as.factor(gender)male",] 
+
+# dad
+german <- lm(scale(satis_dad) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender) + as.factor(school_id), data = combined[combined$german_at_home == 1,], weights = wph)
+no_german <- lm(scale(satis_dad) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender) + as.factor(school_id), data = combined[combined$german_at_home == 0,], weights = wph)
+
+# German
+summary(german)$coefficients["as.factor(year)2023:as.factor(gender)male",] 
+# No German
+summary(no_german)$coefficients["as.factor(year)2023:as.factor(gender)male",] 
+
+# leisure
+german <- lm(scale(satis_leisure) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender) + as.factor(school_id), data = combined[combined$german_at_home == 1,], weights = wph)
+no_german <- lm(scale(satis_leisure) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender) + as.factor(school_id), data = combined[combined$german_at_home == 0,], weights = wph)
+
+# German
+summary(german)$coefficients["as.factor(year)2023:as.factor(gender)male",] 
+# No German
+summary(no_german)$coefficients["as.factor(year)2023:as.factor(gender)male",] 
+
+# dwell
+german <- lm(scale(satis_dwell) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender) + as.factor(school_id), data = combined[combined$german_at_home == 1,], weights = wph)
+no_german <- lm(scale(satis_dwell) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender) + as.factor(school_id), data = combined[combined$german_at_home == 0,], weights = wph)
+
+# German
+summary(german)$coefficients["as.factor(year)2023:as.factor(gender)male",] 
+# No German
+summary(no_german)$coefficients["as.factor(year)2023:as.factor(gender)male",] 
+
+# grades
+german <- lm(scale(satis_grades) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender) + as.factor(school_id), data = combined[combined$german_at_home == 1,], weights = wph)
+no_german <- lm(scale(satis_grades) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender) + as.factor(school_id), data = combined[combined$german_at_home == 0,], weights = wph)
+
+# German
+summary(german)$coefficients["as.factor(year)2023:as.factor(gender)male",] 
+# No German
+summary(no_german)$coefficients["as.factor(year)2023:as.factor(gender)male",] 
 ```
