@@ -14,6 +14,8 @@ library(haven)
 library(marginaleffects)
 library(ggplot2)
 library(gridExtra)
+library(dplyr)
+
 ```
 
 ## Agenda
@@ -169,6 +171,48 @@ summary(simple_model)
 ```
 
 
-## What happens if we take into account both migration status and source
+## What happens if we take into account both migration status and source in 2023
 
+```{r }
+# Lets split things up -- do we get the same pattern if we split by language at home?
+
+mode_effects_language <- lm(satis ~ as.factor(source)*gender*as.factor(german_at_home), data = combined_2023)
+summary(mode_effects_language)
+
+# there is a weak interaction here
+pred_mode_effects_language <- predictions(mode_effects_language,
+                 by = c("gender", "german_at_home", "source"))
+pred_mode_effects_language
+
+# let us do a plot for this
+
+plot_frame <- pred_mode_effects_language %>%
+  mutate(
+    group = interaction(german_at_home, gender, source),
+    group = factor(group, levels = c(
+      "1.female.paper", "1.female.online",
+      "1.male.paper", "1.male.online",
+      "0.female.paper", "0.female.online",
+      "0.male.paper", "0.male.online"
+    ))
+  )
+
+ggplot(plot_frame, aes(x = group, y = estimate, fill = source)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
+  geom_errorbar(
+    aes(ymin = conf.low, ymax = conf.high),
+    width = 0.2,
+    position = position_dodge(width = 0.8)
+  ) +
+  labs(
+    x = "Groups",
+    y = "Estimate",
+    fill = "Source"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+```
 
