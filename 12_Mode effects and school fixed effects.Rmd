@@ -215,4 +215,27 @@ ggplot(plot_frame, aes(x = group, y = estimate, fill = source)) +
   )
 
 ```
+```{r }
+# If we put this together
+# Can we get rid of the explanandum?
+simple_model <- lm(scale(satis) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender), data = combined[combined$german_at_home == 1,], weights = wph)
+summary(simple_model) # no more difference to be explained
 
+simple_model <- lm(scale(satis) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender) + as.factor(school_id), data = combined[combined$german_at_home == 1,], weights = wph)
+summary(simple_model) # no more difference to be explained
+
+simple_model <- lm(scale(satis) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender), data = combined[combined$german_at_home == 0,], weights = wph)
+summary(simple_model) # large difference here remains
+
+
+
+simple_model <- lm(scale(satis) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender) + as.factor(school_id)*as.factor(gender), data = combined[combined$german_at_home == 1,], weights = wph)
+summary(simple_model) # no more difference to be explained
+
+simple_model <- lm(scale(satis) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender)+ as.factor(school_id), data = combined[combined$german_at_home == 0,], weights = wph)
+summary(simple_model) # large difference here remains
+
+simple_model <- lm(scale(satis) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender)+ as.factor(school_id), data = combined[combined$german_at_home == 0,], weights = wph)
+summary(simple_model) # large difference here remains
+
+```
