@@ -1,0 +1,174 @@
+---
+title: "Mode effects and school fixed effects"
+author: "Julia Rohrer"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+load("prep.RData")
+library(haven)
+library(marginaleffects)
+library(ggplot2)
+library(gridExtra)
+```
+
+## Agenda
+In 2023, the survey was conducted with tablets whenever they were available in the schools.
+Here, we are going to look at the possibility that this might have affected how students report their life satisfaction.
+
+
+## Let's look at the distribution of response mode in 2023
+
+```{r }
+# Extract 2023 final data for convenience
+combined_2023 <- combined[combined$year == 2023,]
+prop.table(table(combined_2023$source))
+
+# Schools with assessment modes
+has_tablet <- unique(combined_2023$school_id[combined_2023$source == "online" & !is.na(combined_2023$school_id)])
+has_paper <- unique(combined_2023$school_id[combined_2023$source == "paper" & !is.na(combined_2023$school_id)])
+has_tablet
+has_paper
+
+# Assessment mode table
+assessment_modes <- data.frame(matrix(NA, ncol = 3,nrow = length(unique(combined_2023$school_id[!is.na(combined_2023$school_id)]))))
+names(assessment_modes) <- c("school_id", "has_paper", "has_tablet")
+assessment_modes$school_id <- unique(combined_2023$school_id[!is.na(combined_2023$school_id)])
+
+for (i in 1:nrow(assessment_modes)) {
+  assessment_modes$has_paper[i] <-  assessment_modes$school_id[i] %in% has_paper
+  assessment_modes$has_tablet[i] <-  assessment_modes$school_id[i] %in% has_tablet
+}
+
+assessment_modes$count <- assessment_modes$has_paper + assessment_modes$has_tablet
+prop.table(table(assessment_modes$count))
+# 63 percent of schools had only one mode, 36 percent of schools had both
+
+
+# Is response mode correlated with the type of school?
+prop.table(table(combined_2023$schooltype, combined_2023$source), margin = 1)
+# Many more tablets at Mittelschule
+
+# Is response mode correlated with the age (proxy for grade level)?
+prop.table(table(combined_2023$age, combined_2023$source), margin = 1)
+t.test(combined_2023$age[combined_2023$source == "paper"], combined_2023$age[combined_2023$source == "online"])
+# Highly significant association
+mean(combined_2023$age[combined_2023$source == "paper"], na.rm = TRUE)
+mean(combined_2023$age[combined_2023$source == "online"], na.rm = TRUE)
+# Students who filled out on tablet are slightly older
+```
+## Does life satisfaction vary by response mode?
+```{r }
+mode_effects <- lm(satis ~ as.factor(source)*gender, data = combined_2023)
+summary(mode_effects)
+# there is a weak interaction here
+pred_mode_effects <- predictions(mode_effects,
+                 by = c("gender", "source"))
+pred_mode_effects
+# Girls are less satisfied on the tabled
+# Boys are pretty much the same
+
+# What if we include school fixed effects?
+mode_effects_school <- lm(satis ~ as.factor(source)*gender + as.factor(school_id), data = combined[combined$year == 2023,])
+summary(mode_effects_school)
+# there is a weak interaction here
+pred_mode_effects_school <- predictions(mode_effects_school,
+                 by = c("gender", "source"))
+pred_mode_effects_school
+
+# What about if we allow the gender-gap to vary by school?
+mode_effects_school <- lm(satis ~ as.factor(source)*gender + gender*as.factor(school_id), data = combined_2023)
+summary(mode_effects_school)
+pred_mode_effects_school <- predictions(mode_effects_school,
+                 by = c("gender", "source"))
+pred_mode_effects_school
+# there is still weak interaction here
+
+# Let's additionally account age (schooltype is already taken care of by school fixed effect)
+mode_effects_school_plus <- lm(satis ~ as.factor(source)*gender + gender*as.factor(school_id) + gender*age, data = combined_2023)
+summary(mode_effects_school_plus)
+# there is still an interaction here
+
+
+```
+
+
+## Do we get the same patterns for the other outcomes?
+```{r }
+# General satisfaction
+mode_effects_school_plus <- lm(satis ~ as.factor(source)*gender + gender*as.factor(school_id) + gender*age, data = combined_2023)
+summary(mode_effects_school_plus)$coefficients["as.factor(source)paper:gendermale",]
+
+# Satisfaction with money
+mode_effects_school_plus <- lm(satis_money ~ as.factor(source)*gender + gender*as.factor(school_id) + gender*age, data = combined_2023)
+summary(mode_effects_school_plus)$coefficients["as.factor(source)paper:gendermale",]
+
+# Satisfaction with friends
+mode_effects_school_plus <- lm(satis_friends ~ as.factor(source)*gender + gender*as.factor(school_id) + gender*age, data = combined_2023)
+summary(mode_effects_school_plus)$coefficients["as.factor(source)paper:gendermale",]
+
+# Satisfaction with mom
+mode_effects_school_plus <- lm(satis_mom ~ as.factor(source)*gender + gender*as.factor(school_id) + gender*age, data = combined_2023)
+summary(mode_effects_school_plus)$coefficients["as.factor(source)paper:gendermale",]
+
+# Satisfaction with dad
+mode_effects_school_plus <- lm(satis_dad ~ as.factor(source)*gender + gender*as.factor(school_id) + gender*age, data = combined_2023)
+summary(mode_effects_school_plus)$coefficients["as.factor(source)paper:gendermale",]
+
+# Satisfaction with leisure
+mode_effects_school_plus <- lm(satis_leisure ~ as.factor(source)*gender + gender*as.factor(school_id) + gender*age, data = combined_2023)
+summary(mode_effects_school_plus)$coefficients["as.factor(source)paper:gendermale",]
+
+# Satisfaction with dwelling
+mode_effects_school_plus <- lm(satis_dwell ~ as.factor(source)*gender + gender*as.factor(school_id) + gender*age, data = combined_2023)
+summary(mode_effects_school_plus)$coefficients["as.factor(source)paper:gendermale",]
+
+# Satisfaction with grades
+mode_effects_school_plus <- lm(satis_grades ~ as.factor(source)*gender + gender*as.factor(school_id) + gender*age, data = combined_2023)
+summary(mode_effects_school_plus)$coefficients["as.factor(source)paper:gendermale",]
+
+```
+
+## What happens to the explanandum if we take into account source
+```{r }
+# The original
+simple_model <- lm(scale(satis) ~ as.factor(year)*as.factor(gender), data = combined, weights = wph)
+summary(simple_model)
+
+# Adding source
+simple_model <- lm(scale(satis) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender), data = combined, weights = wph)
+summary(simple_model)
+
+# the effect does not change sign but is reduced to non-significant .16
+
+# Adding additional controls
+simple_model <- lm(scale(satis) ~ as.factor(year)*as.factor(gender) + as.factor(source)*as.factor(gender) + as.factor(school_id), data = combined, weights = wph)
+summary(simple_model)
+
+
+```
+
+
+## Just school fixed-effects for the explanandum
+So, a question that arises here is: What's up with assessment mode?
+Girls might score lower on satisfaction on the tablet because the school which use tablets are subtly different in a manner that explains larger gender gaps.
+Or, alternatively, girls might score lower on satisfaction on tablet because of the tablet.
+In the former case, assuming that this completely drives the explanandum, controlling for the school_id should make the explanandum disappear (regardless of source).
+
+```{r }
+simple_model <- lm(scale(satis) ~ as.factor(year)*as.factor(gender) + as.factor(school_id)*as.factor(gender), data = combined, weights = wph)
+summary(simple_model)
+# But this is still barely hanging in there.
+# So between-school heterogeneity potentially accounts for some of the observed differences
+# but it cannot fully explain away the pattern, boys are still 0.2 SD happier considering the differene in difference
+
+```
+
+
+## What happens if we take into account both migration status and source
+
+
