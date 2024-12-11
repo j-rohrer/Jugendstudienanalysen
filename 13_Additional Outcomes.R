@@ -19,7 +19,7 @@ library(gridExtra)
 apply(combined[, imp_names], 2, function(x) mean(x, na.rm = TRUE))
 apply(combined[, imp_names], 2, function(x) sd(x, na.rm = TRUE))
 
-plot_means <- function(variable) {
+plot_means <- function(variable, yrange = c(2.5, 5)) {
   combined$var <- combined[, variable]
   german <- lm(var ~ as.factor(year)*as.factor(gender) + as.factor(school_id), data = combined[combined$german_at_home == 1,], weights = wph)
   no_german <- lm(var ~ as.factor(year)*as.factor(gender) + as.factor(school_id), data = combined[combined$german_at_home == 0,], weights = wph)
@@ -33,7 +33,7 @@ plot_means <- function(variable) {
     geom_line() +
     geom_errorbar(width = .5) +
     scale_x_continuous(breaks = c(2010, 2015, 2023)) +
-    coord_cartesian(ylim = c(2.5, 5)) +
+    coord_cartesian(ylim = yrange) +
     theme_classic() +
     ylab("Importance") +
     xlab("Survey year") +
@@ -47,7 +47,7 @@ plot_means <- function(variable) {
     geom_line() +
     geom_errorbar(width = .5) +
     scale_x_continuous(breaks = c(2010, 2015, 2023)) +
-    coord_cartesian(ylim = c(2.5, 5)) +
+    coord_cartesian(ylim = yrange) +
     theme_classic() +
     ylab("Importance") +
     xlab("Survey year") +
@@ -113,3 +113,8 @@ pred_parental_2010 <- predictions(test_2010,
 #############################
 # Discrimination items
 #############################
+
+plot_means("disc_city", yrange = c(1,3))
+plot_means("disc_language", yrange = c(1,3))
+plot_means("disc_sex", yrange = c(1,3))
+plot_means("disc_school", yrange = c(1,3))

@@ -634,6 +634,53 @@ youth2015$prob_parents[youth2015$prob_parents == 1] <- 1
 
 ```
 
+## Additional variables: Discrimination
+
+```{r}
+
+#############################
+# Discrimination items
+#############################
+
+# Stadtteil
+# Muttersprache (2023: Herkunft)
+# Geschlecht (nicht 2023)
+# Schule
+
+disc_items_2010_2015 <- c("disc_city", "disc_language", "disc_sex", "disc_school")
+disc_items_2023 <- c("disc_city", "disc_language", "disc_school")
+
+# Identify and recode items
+
+# 2010
+disc_vars_2010 <- c("s31a", "s31b", "s31c", "s31d")
+table(youth2010$s31a)
+youth2010[, disc_items_2010_2015] <- 6 - youth2010[, disc_vars_2010]
+
+# 1: sehr stark, 5: ueberhaupt nicht
+
+# 2015
+disc_vars_2015 <- c("f32a", "f32b", "f32c", "f32d")
+table(youth2015$f32a)
+youth2015[, disc_items_2010_2015] <- 6 - youth2015[, disc_vars_2015]
+
+# 1: sehr stark, 5: ueberhaupt nicht
+
+# 2023
+disc_vars_2023 <- c("f45a", "f45b", "f45e")
+table(youth2023$f45a)
+# 1: sehr haeufig, 5: nie, 6: trifft nicht zu
+# This year changed the value labels 
+# and introduced a "does not apply" category that does not
+# really make sense -- we will assume that it's equivalent
+# with the "never" response
+youth2023[, disc_vars_2023][youth2023[, disc_vars_2023] == 6] <- 5
+table(youth2023$f45a)
+youth2023[, disc_items_2023] <- 6 - youth2023[, disc_vars_2023]
+youth2023$disc_sex <- NA
+
+```
+
 ## Combined dataframe and inclusion criteria
 Let's create one dataframe for everything we will need later.
 
@@ -651,7 +698,7 @@ youth2023$id <- youth2023$rawid
 vars <- c("id", "year", "wph", "schooltype", "gender", "age", "german_at_home", "migback",
           "satis", "satis_money", "satis_friends", "satis_mom", "satis_dad",
           "satis_leisure", "satis_dwell", "satis_grades", "school", "unique_classroom", "school_id", "source", 
-          imp_names, prob_items)
+          imp_names, prob_items, disc_items_2010_2015)
 combined <- rbind(youth2010[, vars], youth2015[, vars], youth2023[, vars])
 
 

@@ -11,7 +11,7 @@
 
 <meta name="author" content="Julia Rohrer" />
 
-<meta name="date" content="2024-12-10" />
+<meta name="date" content="2024-12-11" />
 
 <title>Cleaning and preparation of the Youth Surveys</title>
 
@@ -353,7 +353,7 @@ display: none;
 <h1 class="title toc-ignore">Cleaning and preparation of the Youth
 Surveys</h1>
 <h4 class="author">Julia Rohrer</h4>
-<h4 class="date">2024-12-10</h4>
+<h4 class="date">2024-12-11</h4>
 
 </div>
 
@@ -400,6 +400,8 @@ variable</a></li>
 variables: What is important in life</a></li>
 <li><a href="#additional-variables-problems-in-life" id="toc-additional-variables-problems-in-life">Additional variables:
 Problems in life</a></li>
+<li><a href="#additional-variables-discrimination" id="toc-additional-variables-discrimination">Additional variables:
+Discrimination</a></li>
 <li><a href="#combined-dataframe-and-inclusion-criteria" id="toc-combined-dataframe-and-inclusion-criteria">Combined dataframe
 and inclusion criteria</a></li>
 </ul>
@@ -1585,6 +1587,61 @@ table(youth2015$prob_parents)</code></pre>
 youth2015$prob_parents[youth2015$prob_parents == 2] &lt;- 0
 youth2015$prob_parents[youth2015$prob_parents == 1] &lt;- 1</code></pre>
 </div>
+<div id="additional-variables-discrimination" class="section level2">
+<h2>Additional variables: Discrimination</h2>
+<pre class="r"><code>#############################
+# Discrimination items
+#############################
+
+# Stadtteil
+# Muttersprache (2023: Herkunft)
+# Geschlecht (nicht 2023)
+# Schule
+
+disc_items_2010_2015 &lt;- c(&quot;disc_city&quot;, &quot;disc_language&quot;, &quot;disc_sex&quot;, &quot;disc_school&quot;)
+disc_items_2023 &lt;- c(&quot;disc_city&quot;, &quot;disc_language&quot;, &quot;disc_school&quot;)
+
+# Identify and recode items
+
+# 2010
+disc_vars_2010 &lt;- c(&quot;s31a&quot;, &quot;s31b&quot;, &quot;s31c&quot;, &quot;s31d&quot;)
+table(youth2010$s31a)</code></pre>
+<pre><code>## 
+##    1    2    3    4    5 
+##  110  302  284  490 1165</code></pre>
+<pre class="r"><code>youth2010[, disc_items_2010_2015] &lt;- 6 - youth2010[, disc_vars_2010]
+
+# 1: sehr stark, 5: ueberhaupt nicht
+
+# 2015
+disc_vars_2015 &lt;- c(&quot;f32a&quot;, &quot;f32b&quot;, &quot;f32c&quot;, &quot;f32d&quot;)
+table(youth2015$f32a)</code></pre>
+<pre><code>## 
+##    1    2    3    4    5 
+##   77  238  238  494 1177</code></pre>
+<pre class="r"><code>youth2015[, disc_items_2010_2015] &lt;- 6 - youth2015[, disc_vars_2015]
+
+# 1: sehr stark, 5: ueberhaupt nicht
+
+# 2023
+disc_vars_2023 &lt;- c(&quot;f45a&quot;, &quot;f45b&quot;, &quot;f45e&quot;)
+table(youth2023$f45a)</code></pre>
+<pre><code>## 
+##    1    2    3    4    5    6 
+##   51   96  195  336 1535  712</code></pre>
+<pre class="r"><code># 1: sehr haeufig, 5: nie, 6: trifft nicht zu
+# This year changed the value labels 
+# and introduced a &quot;does not apply&quot; category that does not
+# really make sense -- we will assume that it&#39;s equivalent
+# with the &quot;never&quot; response
+youth2023[, disc_vars_2023][youth2023[, disc_vars_2023] == 6] &lt;- 5
+table(youth2023$f45a)</code></pre>
+<pre><code>## 
+##    1    2    3    4    5 
+##   51   96  195  336 2247</code></pre>
+<pre class="r"><code>youth2023[, disc_items_2023] &lt;- 6 - youth2023[, disc_vars_2023]
+youth2023$disc_sex &lt;- NA</code></pre>
+</div>
 <div id="combined-dataframe-and-inclusion-criteria" class="section level2">
 <h2>Combined dataframe and inclusion criteria</h2>
 <p>Let’s create one dataframe for everything we will need later.</p>
@@ -1604,7 +1661,7 @@ youth2023$id &lt;- youth2023$rawid
 vars &lt;- c(&quot;id&quot;, &quot;year&quot;, &quot;wph&quot;, &quot;schooltype&quot;, &quot;gender&quot;, &quot;age&quot;, &quot;german_at_home&quot;, &quot;migback&quot;,
           &quot;satis&quot;, &quot;satis_money&quot;, &quot;satis_friends&quot;, &quot;satis_mom&quot;, &quot;satis_dad&quot;,
           &quot;satis_leisure&quot;, &quot;satis_dwell&quot;, &quot;satis_grades&quot;, &quot;school&quot;, &quot;unique_classroom&quot;, &quot;school_id&quot;, &quot;source&quot;, 
-          imp_names, prob_items)
+          imp_names, prob_items, disc_items_2010_2015)
 combined &lt;- rbind(youth2010[, vars], youth2015[, vars], youth2023[, vars])
 
 
