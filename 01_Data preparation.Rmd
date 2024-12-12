@@ -727,6 +727,13 @@ So, our analysis will focus on Mittelschule and Gymnasium -- and within those, s
 
 
 ```{r inclusion}
+# Limit age range
+combined <- combined[combined$age >= 12 & combined$age <= 18,]
+
+# Generate a copy with all school types that we will need for something else
+combined_all_schooltypes <- combined
+
+# Main analysis sample
 combined <- combined[combined$schooltype == 1 | combined$schooltype == 2,]
 table(combined$age)
 hist(combined$age)
@@ -734,7 +741,6 @@ hist(combined$age)
 # Standardize the outcome across everyone
 combined$satis_std <- scale(combined$satis)
 
-combined <- combined[combined$age >= 12 & combined$age <= 18,]
 save.image("prep.RData")
 
 ```
