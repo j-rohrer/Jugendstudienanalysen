@@ -268,7 +268,9 @@ print(explanation_slopes, nrows = 100)
 # Okay, we need to set up a full-blown model
 ##############################################
 
+
+
+
 # best effort
-# ordinal
 # mixed effects with classroom random effects
 # school fixed effects
