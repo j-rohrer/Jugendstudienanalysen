@@ -3,7 +3,8 @@
 #####################################
 
 load("prep.RData")
-
+library(haven)
+library(marginaleffects)
 # check where we do have a significant interaction
 # friends
 # father
@@ -35,6 +36,9 @@ avg_slopes(friends, variables = "year", by = c("german_at_home", "gender"))
 avg_slopes(friends, variables = "year", by = c("german_at_home", "gender"), hypothesis = "b5 - b6 = 0")
 
 avg_slopes(friends, variables = "year", by = c("german_at_home", "gender"), hypothesis = "b7 - b8 = 0")
+
+avg_slopes(friends, variables = "year", by = c("gender"))
+avg_slopes(friends, variables = "year", by = c("gender"), hypothesis = "b3 - b4 = 0")
 
 ######################
 # dad
