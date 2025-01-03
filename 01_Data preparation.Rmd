@@ -110,8 +110,11 @@ table(youth2010$migback, useNA = "always")
 youth2010$german_at_home <- 1 # default: German at home
 youth2010$german_at_home[youth2010$migback == "self"|youth2010$migback == "both"] <- 0
 # here, we assume that if we know that a person was born outside of Germany or both of their parents were
+
+# if migback is missing German at home needs to be missing
+youth2010$german_at_home[is.na(youth2010$migback)] <- NA
 # we also know they do not speak German at home (this assumption is of course fallible)
-table(youth2010$german_at_home)
+table(youth2010$german_at_home, useNA = "always")
 
 # Satisfaction items
 # Students were asked for their satisfaction with various things
@@ -125,6 +128,11 @@ youth2010$satis_dad <- 6 - youth2010$s02e
 youth2010$satis_leisure <- 6 - youth2010$s02g
 youth2010$satis_dwell <- 6 - youth2010$s02h
 youth2010$satis_grades <- 6 - youth2010$s02f
+
+table(youth2010$gender, useNA = "always")
+table(youth2010$schooltype, useNA = "always")
+table(youth2010$migback, useNA = "always")
+table(youth2010$satis, useNA = "always")
 
 ```
 
@@ -356,8 +364,11 @@ youth2023$migback[youth2023$staat_geb_vater == 1 & youth2023$staat_geb_mutter ==
 # ASSUMED language at home
 youth2023$german_at_home <- 1
 youth2023$german_at_home[youth2023$migback == "self"|youth2023$migback == "both"] <- 0
-table(youth2023$german_at_home)
 
+# if migback is missing German at home needs to be missing
+youth2023$german_at_home[is.na(youth2023$migback)] <- NA
+# we also know they do not speak German at home (this assumption is of course fallible)
+table(youth2023$german_at_home, useNA = "always")
 
 
 # Satisfaction items
@@ -705,14 +716,7 @@ combined <- rbind(youth2010[, vars], youth2015[, vars], youth2023[, vars])
 table(youth2010$gender)
 table(youth2015$gender)
 table(youth2023$gender)
-# Reporting a different gender was not possible in 2010 and 2015
-# We thus cannot compare the gender diverse students in 2023 to gender diverse students in earlier years
-# Which is why we unfortunately have to exclude them for the present purposes
-combined$gender[combined$gender == "diverse"] <- NA
 
-combined$gender <- as.factor(combined$gender)
-combined$school <- as.factor(combined$school)
-combined$unique_classroom <- as.factor(combined$unique_classroom)
 
 
 ```
@@ -727,6 +731,75 @@ So, our analysis will focus on Mittelschule and Gymnasium -- and within those, s
 
 
 ```{r inclusion}
+combined_original <- combined
+
+##################
+# Numbers included in Table 1: Data set
+##################
+# Total n per year
+table(combined_original$year)
+
+# Classrooms per year
+length(unique(combined_original$unique_classroom[combined_original$year == 2010]))
+length(unique(combined_original$unique_classroom[combined_original$year == 2015]))
+length(unique(combined_original$unique_classroom[combined_original$year == 2023]))
+
+# Schools per year
+length(unique(combined_original$school[combined_original$year == 2010]))
+length(unique(combined_original$school[combined_original$year == 2015]))
+length(unique(combined_original$school[combined_original$year == 2023]))
+
+# Schooltype
+round(prop.table(table(combined_original$schooltype[combined_original$year == 2010], useNA = "always")), 2)
+round(prop.table(table(combined_original$schooltype[combined_original$year == 2015], useNA = "always")), 2)
+round(prop.table(table(combined_original$schooltype[combined_original$year == 2023], useNA = "always")), 2)
+
+# Gender
+round(prop.table(table(combined_original$gender[combined_original$year == 2010], useNA = "always")), 2)
+round(prop.table(table(combined_original$gender[combined_original$year == 2015], useNA = "always")), 2)
+round(prop.table(table(combined_original$gender[combined_original$year == 2023], useNA = "always")), 2)
+
+# Age
+combined_original$age[combined_original$age <= 11] <- 11
+combined_original$age[combined_original$age >= 19] <- 19
+
+round(prop.table(table(combined_original$age[combined_original$year == 2010], useNA = "always")), 2)
+round(prop.table(table(combined_original$age[combined_original$year == 2015], useNA = "always")), 2)
+round(prop.table(table(combined_original$age[combined_original$year == 2023], useNA = "always")), 2)
+
+# German language at home
+round(prop.table(table(combined_original$german_at_home[combined_original$year == 2010], useNA = "always")), 2)
+
+round(prop.table(table(combined_original$german_at_home[combined_original$year == 2015], useNA = "always")), 2)
+
+round(prop.table(table(combined_original$german_at_home[combined_original$year == 2023], useNA = "always")), 2)
+
+# Exclusion criteria/filter
+# Reporting a different gender was not possible in 2010 and 2015
+# We thus cannot compare the gender diverse students in 2023 to gender diverse students in earlier years
+# Which is why we unfortunately have to exclude them for the present purposes
+combined$gender[combined$gender == "diverse"] <- NA
+
+# only keep known gender
+combined <- combined[!is.na(combined$gender),]
+
+# known language at home
+combined <- combined[!is.na(combined$german_at_home),]
+
+# known age
+combined <- combined[!is.na(combined$age),]
+
+# known schooltype
+combined <- combined[!is.na(combined$schooltype),]
+
+# known outcome
+combined <- combined[!is.na(combined$satis),]
+
+
+combined$gender <- as.factor(combined$gender)
+combined$school <- as.factor(combined$school)
+combined$unique_classroom <- as.factor(combined$unique_classroom)
+
 # Limit age range
 combined <- combined[combined$age >= 12 & combined$age <= 18,]
 
@@ -741,6 +814,50 @@ hist(combined$age)
 # Standardize the outcome across everyone
 combined$satis_std <- scale(combined$satis)
 
+##################
+# Numbers included in Table 1: Analysis
+##################
+# Total n per year
+table(combined$year)
+
+# Classrooms per year
+length(unique(combined$unique_classroom[combined$year == 2010]))
+length(unique(combined$unique_classroom[combined$year == 2015]))
+length(unique(combined$unique_classroom[combined$year == 2023]))
+
+# Schools per year
+length(unique(combined$school[combined$year == 2010]))
+length(unique(combined$school[combined$year == 2015]))
+length(unique(combined$school[combined$year == 2023]))
+
+# Schooltype
+round(prop.table(table(combined$schooltype[combined$year == 2010], useNA = "always")), 2)
+round(prop.table(table(combined$schooltype[combined$year == 2015], useNA = "always")), 2)
+round(prop.table(table(combined$schooltype[combined$year == 2023], useNA = "always")), 2)
+
+# Gender
+round(prop.table(table(combined$gender[combined$year == 2010], useNA = "always")), 2)
+round(prop.table(table(combined$gender[combined$year == 2015], useNA = "always")), 2)
+round(prop.table(table(combined$gender[combined$year == 2023], useNA = "always")), 2)
+
+# Age
+combined$age[combined$age <= 11] <- 11
+combined$age[combined$age >= 19] <- 19
+
+round(prop.table(table(combined$age[combined$year == 2010], useNA = "always")), 2)
+round(prop.table(table(combined$age[combined$year == 2015], useNA = "always")), 2)
+round(prop.table(table(combined$age[combined$year == 2023], useNA = "always")), 2)
+
+# German language at home
+round(prop.table(table(combined$german_at_home[combined$year == 2010], useNA = "always")), 2)
+
+round(prop.table(table(combined$german_at_home[combined$year == 2015], useNA = "always")), 2)
+
+round(prop.table(table(combined$german_at_home[combined$year == 2023], useNA = "always")), 2)
+
+table(combined_original$school_id, combined_original$schooltype)
 save.image("prep.RData")
+
+
 
 ```
