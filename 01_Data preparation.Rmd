@@ -746,7 +746,7 @@ length(unique(combined_original$unique_classroom[combined_original$year == 2023]
 
 # Schools per year
 length(unique(combined_original$school[combined_original$year == 2010]))
-length(unique(combined_original$school[combined_original$year == 2015]))
+length(unique(combined_original$school_id[combined_original$year == 2015]))
 length(unique(combined_original$school[combined_original$year == 2023]))
 
 # Schooltype
