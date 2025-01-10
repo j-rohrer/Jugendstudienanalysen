@@ -74,42 +74,50 @@ ggsave(plot = plot_means("imp_enjoy"), filename = "Plots/imp_enjoy.png", width =
 ggsave(plot = plot_means("imp_friends"), filename = "Plots/imp_friends.png", width = 8, height = 4)
 
 
-
+# Decrease
 check_law <- lm(scale(imp_law) ~ as.factor(year), data = combined, weights = wph)
 summary(check_law)
+# -.12
 
-check_standard <- lm(scale(imp_standard) ~ as.factor(year), data = combined, weights = wph)
-summary(check_standard)
+check_friends <- lm(scale(imp_friends) ~ as.factor(year), data = combined, weights = wph)
+summary(check_friends)
+# - .2
 
-
-# decrease
 check_career <- lm(scale(imp_career) ~ as.factor(year), data = combined, weights = wph)
 summary(check_career)
+# -.1
+
+check_kids <- lm(scale(imp_kids) ~ as.factor(year), data = combined, weights = wph)
+summary(check_kids)
+# -.5
+
+# Unchanged
+check_standard <- lm(scale(imp_standard) ~ as.factor(year), data = combined, weights = wph)
+summary(check_standard)
 
 check_health <- lm(scale(imp_health) ~ as.factor(year), data = combined, weights = wph)
 summary(check_health)
 
+# Increase
 check_enjoy <- lm(scale(imp_enjoy) ~ as.factor(year), data = combined, weights = wph)
 summary(check_enjoy)
+# .16
 
-check_friends <- lm(scale(imp_friends) ~ as.factor(year), data = combined, weights = wph)
-summary(check_friends)
-
-# increase
 check_participate <- lm(scale(imp_participate) ~ as.factor(year), data = combined, weights = wph)
 summary(check_participate)
-
-check_kids <- lm(scale(imp_kids) ~ as.factor(year), data = combined, weights = wph)
-summary(check_kids)
+# .52
 
 check_politics <- lm(scale(imp_politics) ~ as.factor(year), data = combined, weights = wph)
 summary(check_politics)
+# .48
 
 
 
 
 
 
+check_satis <- lm(scale(satis) ~ as.factor(year), data = combined, weights = wph)
+summary(check_satis)
 
 
 
