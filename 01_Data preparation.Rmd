@@ -592,15 +592,23 @@ imp_2015 <- c("f01j", "f01a", "f01l", "f01n", "f01o",
 imp_2023 <- c("f01l", "f01i", "f01m", "f01n", "f01o", 
                "f01b", "f01e", "f01d", "f01h", "f01k")
 
+
+
 # recode so that higher equals more important
-youth2010[, imp_2010] <- 6 - youth2010[, imp_2010] 
-names(youth2010)[names(youth2010) %in% imp_2010] <- imp_names
+youth2010[, imp_names] <- 6 - youth2010[, imp_2010] 
+youth2015[, imp_names] <- 6 - youth2015[, imp_2015] 
+youth2023[, imp_names] <- 6 - youth2023[, imp_2023] 
 
-youth2015[, imp_2015] <- 6 - youth2015[, imp_2015] 
-names(youth2015)[names(youth2015) %in% imp_2015] <- imp_names
 
-youth2023[, imp_2023] <- 6 - youth2023[, imp_2023] 
-names(youth2023)[names(youth2023) %in% imp_2023] <- imp_names
+# Check recoding
+prop.table(table(youth2010[,imp_2010[10]]))
+prop.table(table(youth2010$imp_kids))
+
+prop.table(table(youth2015[,imp_2015[10]]))
+prop.table(table(youth2015$imp_kids))
+
+prop.table(table(youth2023[,imp_2023[10]]))
+prop.table(table(youth2023$imp_kids))
 
 ```
 
