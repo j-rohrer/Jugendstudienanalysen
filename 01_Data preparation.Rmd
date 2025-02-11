@@ -510,13 +510,7 @@ youth2015$source <- "paper"
 Generate a variable that identifies each identifies identical schools across years.
 
 ```{r school_id}
-#########################
-# OPEN ISSUES HERE -- the school information for 2015 doesnt seem to work out
-# individual schools have multiple types of schulart
-#########################
-# This is a mapping I manually created to match the schools
-# as even identical schools had slightly different names
-# between the waves (e.g., Mittleschule was renamed to oberschule)
+
 mapping <- read.csv("Mapping_schools.csv", sep = ";")
 
 
@@ -533,6 +527,10 @@ youth2010 <- merge(youth2010, mapping_2010, by = "schule")
 library(haven)
 youth2015_school <- read_spss("Files/jugend2015Schule.sav")
 mapping_2015 <- mapping[mapping$Year == 2015,]
+
+# First three numbers of kennung identify schools
+youth2015_school$schule <- substr(test$kennung, 1, 3)
+
 names(mapping_2015)[names(mapping_2015) == "Code"] <- "schule"
 
 mapping_2015 <- mapping_2015[, c("schule", "school_id")]
@@ -541,13 +539,6 @@ youth2015_school <- merge(youth2015_school, mapping_2015, by = "schule", all.x =
 youth2015_school <- youth2015_school[, c("rawid", "school_id")]
 youth2015 <- merge(youth2015, youth2015_school, by = "rawid", all.x = TRUE)
 rm(youth2015_school)
-# Some cases here cannot be matched because the students are not in the Schule.sav
-# data set
-
-##########################
-# THIS, HOWEVER, SHOULD NOT HAPPEN
-##########################
-table(youth2015$school_id, youth2015$schulart)
 
 
 # 2023: Here, we do have a proper variable
