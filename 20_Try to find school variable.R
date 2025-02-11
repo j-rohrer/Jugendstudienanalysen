@@ -3,7 +3,6 @@
 # variable for 2015
 ##########################
 
-load("prep.RData")
 
 
 library(haven)
@@ -31,3 +30,19 @@ check$schule_neu <- substr(test$kennung, 1, 3)
 table(check$schule_neu, check$schulart)
 
 # I think that's it, the correct school variable
+
+# Check consistency across years
+load("prep.RData")
+library(lme4)
+library(lmerTest)
+
+school <- lmer(satis ~ (1|school_id) + (1|year), data = combined[!is.na(combined$school_id) & !is.na(combined$year),]
+)
+noschool <- lmer(satis ~ (1|year), data = combined[!is.na(combined$school_id) & !is.na(combined$year),]
+)
+
+anova(school, noschool)
+
+summary(school)
+0.007929/(0.007929 + 0.015556+ 0.700716)
+# like one percent of the variability
