@@ -863,6 +863,9 @@ round(prop.table(table(combined$german_at_home[combined$year == 2015], useNA = "
 
 round(prop.table(table(combined$german_at_home[combined$year == 2023], useNA = "always")), 2)
 
+# Fix some data types
+# combined$year <- as.factor(combined$year)
+combined$satis <- as.numeric(combined$satis)
 
 save.image("prep.RData")
 
