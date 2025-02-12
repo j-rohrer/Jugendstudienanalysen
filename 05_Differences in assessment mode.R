@@ -135,7 +135,7 @@ vary_gender_2015 <- lmer(satis ~ 1 + gender + (1 + gender|unique_classroom), dat
 summary(vary_gender_2015)
 
 anova(main_gender_2015, vary_gender_2015)
-# diff is not significant, p = .17
+# p = .007
 
 # 2023
 main_gender_2023 <- lmer(satis ~ 1 + gender + (1|unique_classroom), data = combined[combined$year == 2023,])
@@ -144,7 +144,7 @@ vary_gender_2023 <- lmer(satis ~ 1 + gender + (1 + gender|unique_classroom), dat
 summary(vary_gender_2023)
 
 anova(main_gender_2023, vary_gender_2023)
-# diff is significant, p = .02
+# diff is no longer significant?
 
 # So there is some weak evidence for variability 
 

@@ -529,7 +529,7 @@ youth2015_school <- read_spss("Files/jugend2015Schule.sav")
 mapping_2015 <- mapping[mapping$Year == 2015,]
 
 # First three numbers of kennung identify schools
-youth2015_school$schule <- substr(test$kennung, 1, 3)
+youth2015_school$schule <- substr(youth2015_school$kennung, 1, 3)
 
 names(mapping_2015)[names(mapping_2015) == "Code"] <- "schule"
 

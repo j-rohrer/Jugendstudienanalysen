@@ -11,7 +11,7 @@
 
 <meta name="author" content="Julia Rohrer" />
 
-<meta name="date" content="2025-01-10" />
+<meta name="date" content="2025-02-12" />
 
 <title>Cleaning and preparation of the Youth Surveys</title>
 
@@ -353,7 +353,7 @@ display: none;
 <h1 class="title toc-ignore">Cleaning and preparation of the Youth
 Surveys</h1>
 <h4 class="author">Julia Rohrer</h4>
-<h4 class="date">2025-01-10</h4>
+<h4 class="date">2025-02-12</h4>
 
 </div>
 
@@ -1500,14 +1500,7 @@ youth2015$source &lt;- &quot;paper&quot;</code></pre>
 <h3>Match schools across years</h3>
 <p>Generate a variable that identifies each identifies identical schools
 across years.</p>
-<pre class="r"><code>#########################
-# OPEN ISSUES HERE -- the school information for 2015 doesnt seem to work out
-# individual schools have multiple types of schulart
-#########################
-# This is a mapping I manually created to match the schools
-# as even identical schools had slightly different names
-# between the waves (e.g., Mittleschule was renamed to oberschule)
-mapping &lt;- read.csv(&quot;Mapping_schools.csv&quot;, sep = &quot;;&quot;)
+<pre class="r"><code>mapping &lt;- read.csv(&quot;Mapping_schools.csv&quot;, sep = &quot;;&quot;)
 
 
 # 2010
@@ -1523,6 +1516,10 @@ youth2010 &lt;- merge(youth2010, mapping_2010, by = &quot;schule&quot;)
 library(haven)
 youth2015_school &lt;- read_spss(&quot;Files/jugend2015Schule.sav&quot;)
 mapping_2015 &lt;- mapping[mapping$Year == 2015,]
+
+# First three numbers of kennung identify schools
+youth2015_school$schule &lt;- substr(youth2015_school$kennung, 1, 3)
+
 names(mapping_2015)[names(mapping_2015) == &quot;Code&quot;] &lt;- &quot;schule&quot;
 
 mapping_2015 &lt;- mapping_2015[, c(&quot;schule&quot;, &quot;school_id&quot;)]
@@ -1531,46 +1528,9 @@ youth2015_school &lt;- merge(youth2015_school, mapping_2015, by = &quot;schule&q
 youth2015_school &lt;- youth2015_school[, c(&quot;rawid&quot;, &quot;school_id&quot;)]
 youth2015 &lt;- merge(youth2015, youth2015_school, by = &quot;rawid&quot;, all.x = TRUE)
 rm(youth2015_school)
-# Some cases here cannot be matched because the students are not in the Schule.sav
-# data set
 
-##########################
-# THIS, HOWEVER, SHOULD NOT HAPPEN
-##########################
-table(youth2015$school_id, youth2015$schulart)</code></pre>
-<pre><code>##     
-##       1  2  3  4
-##   1  31 34  0  0
-##   2  21 26  0  0
-##   3  26 45  0  3
-##   5   3 45  5  0
-##   6   0 64  0  0
-##   7   5 38 19  0
-##   8  31 16  0  0
-##   9  27 13  0  0
-##   10  0  8 28 13
-##   11 21 37  0  0
-##   13 72 10 20  0
-##   15 93  0  0  0
-##   16 67 26 36  1
-##   17 33  9  0  0
-##   18 57 66  0  0
-##   19 41  0 75  0
-##   20 18  0 36  0
-##   21 37 60 31  0
-##   23 10  0 36  0
-##   24 60 18 25  0
-##   26 38 53 53  0
-##   29 29  8 38 11
-##   32 23  0 76  0
-##   35  0  3 16  0
-##   36 21  5  8  0
-##   39  0  0  1 17
-##   40 86 21  0  0
-##   41 25 10 17 14
-##   42  5  0 21  3
-##   43 41  6  6  0</code></pre>
-<pre class="r"><code># 2023: Here, we do have a proper variable
+
+# 2023: Here, we do have a proper variable
 # in the main dataset, containing all names
 mapping_2023 &lt;- mapping[mapping$Year == 2023,]
 names(mapping_2023)[names(mapping_2023) == &quot;Name&quot;] &lt;- &quot;schule_amt51&quot;
