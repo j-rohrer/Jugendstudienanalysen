@@ -1,0 +1,175 @@
+---
+title: "Ordinal analysis"
+author: "Julia Rohrer"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Ordinal analysis
+
+```{r ordinal}
+load("prep.RData")
+library(marginaleffects)
+library(ggplot2)
+library(MASS)
+
+# Plot histogram
+ggplot(data = combined, aes(x = satis)) +
+  geom_histogram(bins = 5, fill = "white", color = "black") +
+  theme_classic() +
+  xlab("Life satisfaction score") +
+  ylab("Frequency")
+ggsave("Plots/histogram.png", width = 4, height = 3)
+
+combined$satis_factor <- as.factor(combined$satis)
+# Simple model that estimates the means of life satisfaction by gender and survey year
+ordinal <- polr(satis_factor ~ as.factor(year) + gender + gender:as.factor(year), 
+                method = "probit",
+                Hess = TRUE,
+                data = combined)
+
+summary(ordinal)
+
+comps <- avg_comparisons(ordinal, variables = "gender", by = "year")
+comps
+
+
+# Group 1
+# Effect of gender on probability of reporting lowest outcome, 2010 vs 2023
+print(avg_comparisons(ordinal, variables = "gender", by = "year",
+                hypothesis = "b1 = b11"))
+
+# Group 2
+# Effect of gender on probability of reporting second lowest outcome, 2010 vs 2023
+print(avg_comparisons(ordinal, variables = "gender", by = "year",
+                hypothesis = "b2 = b12"))
+
+# Group 3
+# etc
+print(avg_comparisons(ordinal, variables = "gender", by = "year",
+                hypothesis = "b3 = b13"))
+
+# Group 4
+print(avg_comparisons(ordinal, variables = "gender", by = "year",
+                hypothesis = "b4 = b14"))
+
+# Group 5
+print(avg_comparisons(ordinal, variables = "gender", by = "year",
+                hypothesis = "b5 = b15"))
+```
+```{r plotting_hypothetical}
+# Plot fictious thresholds and equal latent gender
+# gaps that imply different manifest gender differences
+
+lower_limit <- -3
+upper_limit <- 3
+
+thresholds <- c(-1.5, -0.25, 0.25, 1.5)
+# helper data frames with the areas to-be-shaded
+shade_1 <- data.frame(x = seq(lower_limit, thresholds[1], length.out = 100))
+shade_1$y <- dnorm(shade_1$x)
+
+shade_2 <- data.frame(x = seq(thresholds[1], thresholds[2], length.out = 100))
+shade_2$y <- dnorm(shade_2$x)
+
+shade_3 <- data.frame(x = seq(thresholds[2], thresholds[3], length.out = 100))
+shade_3$y <- dnorm(shade_3$x)
+
+shade_4 <- data.frame(x = seq(thresholds[3], thresholds[4], length.out = 100))
+shade_4$y <- dnorm(shade_4$x)
+
+shade_5 <- data.frame(x = seq(thresholds[4], upper_limit, length.out = 100))
+shade_5$y <- dnorm(shade_5$x)
+
+
+girls_2010 <- 0.3 # girls in 2010
+boys_2010 <- girls_2010 + 0.7 # boys in 2010
+
+girls_2023 <- -0.35 # girls in 2023
+boys_2023 <-  girls_2023 + 0.7 # boys in 2023
+
+
+ggplot(data.frame(x = c(lower_limit, upper_limit)), aes(x = x)) +
+  stat_function(fun = dnorm, color = "grey") +
+  theme_classic() +
+  # Thresholds of the ordinal model
+  geom_area(data = shade_1, aes(x = x, y = y), fill = "skyblue", alpha = 0.0) +
+  geom_area(data = shade_2, aes(x = x, y = y), fill = "skyblue", alpha = 0.25) +
+  geom_area(data = shade_3, aes(x = x, y = y), fill = "skyblue", alpha = 0.5) +
+  geom_area(data = shade_4, aes(x = x, y = y), fill = "skyblue", alpha = 0.75) +
+  geom_area(data = shade_5, aes(x = x, y = y), fill = "skyblue", alpha = 1) +
+  #geom_vline(xintercept = ordinal$zeta, color = "lightgrey") +
+  # Gender gap 2010
+  geom_segment(aes(x = girls_2010, xend = boys_2010, y = 0.25, yend = 0.25)) +
+  # Gender gap 2023
+  geom_segment(aes(x = girls_2023, xend = boys_2023, y = 0.20, yend = 0.20)) +
+  xlab("Latent life satisfaction") +
+  ylab("Density")
+ggsave("Plots/ordinal_hypothetical.png", width = 4, height = 3)
+
+
+
+```
+
+
+
+```{r plotting_empirical}
+# Plot the thresholds and the model-implied means
+
+# here are the thresholds
+ordinal$zeta
+
+lower_limit <- -3
+upper_limit <- 3
+
+# helper data frames with the areas to-be-shaded
+shade_1 <- data.frame(x = seq(lower_limit, ordinal$zeta[1], length.out = 100))
+shade_1$y <- dnorm(shade_1$x)
+
+shade_2 <- data.frame(x = seq(ordinal$zeta[1], ordinal$zeta[2], length.out = 100))
+shade_2$y <- dnorm(shade_2$x)
+
+shade_3 <- data.frame(x = seq(ordinal$zeta[2], ordinal$zeta[3], length.out = 100))
+shade_3$y <- dnorm(shade_3$x)
+
+shade_4 <- data.frame(x = seq(ordinal$zeta[3], ordinal$zeta[4], length.out = 100))
+shade_4$y <- dnorm(shade_4$x)
+
+shade_5 <- data.frame(x = seq(ordinal$zeta[4], upper_limit, length.out = 100))
+shade_5$y <- dnorm(shade_5$x)
+
+
+girls_2010 <- 0 # girls in 2010
+boys_2010 <- as.numeric(coefficients(ordinal)["gendermale"]) # boys in 2010
+
+girls_2023 <- as.numeric(coefficients(ordinal)["as.factor(year)2023"]) # girls in 2023
+boys_2023 <- as.numeric(coefficients(ordinal)["gendermale"] + coefficients(ordinal)["as.factor(year)2023"] + coefficients(ordinal)["as.factor(year)2023:gendermale"]) # boys in 2023
+
+
+ggplot(data.frame(x = c(lower_limit, upper_limit)), aes(x = x)) +
+  stat_function(fun = dnorm, color = "grey") +
+  theme_classic() +
+  # Thresholds of the ordinal model
+  geom_area(data = shade_1, aes(x = x, y = y), fill = "skyblue", alpha = 0.0) +
+  geom_area(data = shade_2, aes(x = x, y = y), fill = "skyblue", alpha = 0.25) +
+  geom_area(data = shade_3, aes(x = x, y = y), fill = "skyblue", alpha = 0.5) +
+  geom_area(data = shade_4, aes(x = x, y = y), fill = "skyblue", alpha = 0.75) +
+  geom_area(data = shade_5, aes(x = x, y = y), fill = "skyblue", alpha = 1) +
+  #geom_vline(xintercept = ordinal$zeta, color = "lightgrey") +
+  # Gender gap 2010
+  geom_segment(aes(x = girls_2010, xend = boys_2010, y = 0.25, yend = 0.25)) +
+  # Gender gap 2023
+  geom_segment(aes(x = girls_2023, xend = boys_2023, y = 0.20, yend = 0.20)) +
+  xlab("Latent life satisfaction") +
+  ylab("Density")
+ggsave("Plots/ordinal_empirical.png", width = 4, height = 3)
+
+
+
+```

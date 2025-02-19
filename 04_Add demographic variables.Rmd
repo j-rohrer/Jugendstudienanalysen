@@ -1,0 +1,422 @@
+---
+title: "Add demographic variables"
+author: "Julia Rohrer"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Add demographic variables
+### Age
+
+```{r age}
+load("prep.RData")
+library(marginaleffects)
+library(ggplot2)
+library(patchwork)
+
+# are there age differences between the years?
+age_diffs <- lm(age ~ as.factor(year)*gender, data = combined)
+
+print(predictions(age_diffs,
+                 by = c("gender", "year")))
+
+print(avg_comparisons(age_diffs))
+print(avg_comparisons(age_diffs, variable = "gender", by = "year"))
+
+# Visualize the association between age and satisfaction, by gender and year
+
+# Fully categorical
+add_age <- lm(satis ~ gender*as.factor(year)*as.factor(age), 
+                  data = combined)
+
+summary(add_age)
+
+# generate predictions for combinations of gender and year and age
+pred <- predictions(add_age,
+                 by = c("gender", "year", "age"))
+
+cat_age_2010 <- ggplot(pred[pred$year == 2010,], aes(x = age, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("2010") +
+  ylab("Mean life satisfaction") +
+  xlab("Age") +
+  labs(color = "Gender")
+
+cat_age_2015 <- ggplot(pred[pred$year == 2015,], aes(x = age, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("2015") +
+  ylab("Mean life satisfaction") +
+  xlab("Age") +
+  labs(color = "Gender")
+
+cat_age_2023 <- ggplot(pred[pred$year == 2023,], aes(x = age, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("2023") +
+  ylab("Mean life satisfaction") +
+  xlab("Age") +
+  labs(color = "Gender")
+
+library(patchwork)
+combined_cat_age <- (cat_age_2010|cat_age_2015|cat_age_2023) + plot_layout(guides = "collect")
+combined_cat_age
+ggsave("Plots/satis_by_age_categorical.png", width = 6, height = 3)
+
+
+# Do the same as above but in linear
+add_age_linear <- lm(satis ~ gender*as.factor(year)*age, 
+                  data = combined)
+
+summary(add_age_linear)
+
+# generate predictions for combinations of gender and year and age
+pred <- predictions(add_age_linear,
+                 by = c("gender", "year", "age"))
+
+lin_age_2010 <- ggplot(pred[pred$year == 2010,], aes(x = age, group = gender, 
+                 color = gender,
+                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("2010") +
+  ylab("Mean life satisfaction") +
+  xlab("Age") +
+  labs(color = "Gender")
+
+lin_age_2015 <- ggplot(pred[pred$year == 2015,], aes(x = age, group = gender, 
+                 color = gender,
+                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("Mean life satisfaction") +
+  xlab("Age") +
+  labs(color = "Gender") +
+  ggtitle("2015")
+
+lin_age_2023 <- ggplot(pred[pred$year == 2023,], aes(x = age, group = gender, 
+                 color = gender,
+                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("Mean life satisfaction") +
+  xlab("Age") +
+  labs(color = "Gender") +
+  ggtitle("2023")
+
+combined_lin_age <- (lin_age_2010|lin_age_2015|lin_age_2023) + plot_layout(guides = "collect")
+combined_lin_age
+ggsave("Plots/satis_by_age_linear.png", width = 6, height = 3)
+
+
+# Does the explanandum disappear once we account for age?
+explanandum_age <- lm(satis ~ as.factor(year)*gender*as.factor(age), 
+                  data = combined)
+
+
+# generate predictions for combinations of gender and year
+pred <- predictions(explanandum_age,
+                 by = c("gender", "year"))
+
+ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  ylab("Mean life satisfaction") +
+  xlab("Survey year") +
+  labs(color = "Gender")
+
+# Comparisons
+
+comps <- avg_comparisons(explanandum_age, variables = "gender", by = "year")
+print(comps)
+max_comp <- avg_comparisons(explanandum_age, variables = "gender", by = "year",
+                hypothesis = "b1 = b3")
+print(max_comp)
+print(avg_comparisons(explanandum_age, variables = "gender", by = "year",
+                hypothesis = "b1 = b2"))
+print(avg_comparisons(explanandum_age, variables = "gender", by = "year",
+                hypothesis = "b2 = b3"))
+
+# Express differences in SDs
+round(comps$estimate[1]/sd(combined$satis), 2)
+round(comps$estimate[2]/sd(combined$satis), 2)
+round(comps$estimate[3]/sd(combined$satis), 2)
+
+# Express widening gender gap in SDs
+round(max_comp$estimate/sd(combined$satis), 2)
+
+# Carry age forward henceforth
+
+```
+### Schooltype
+
+```{r schooltype}
+# Recode to turn it into a Gymnasium dummy
+combined$gymnasium <- ifelse(combined$schooltype == 2, 1, 0)
+
+# are there age differences between the years?
+schooltype_diffs <- lm(gymnasium ~ as.factor(year)*gender, data = combined)
+
+print(predictions(schooltype_diffs,
+                 by = c("year"), vcov = "HC3"))
+
+print(predictions(schooltype_diffs,
+                 by = c("gender"), vcov = "HC3"))
+
+print(predictions(schooltype_diffs,
+                 by = c("gender", "year"), vcov = "HC3"))
+
+print(avg_comparisons(schooltype_diffs, variable = "gender", by = "year", vcov = "HC3"))
+
+# Visualize the association between schooltype and satisfaction, by gender and year
+
+# Fully categorical
+add_schooltype <- lm(satis ~ gender*as.factor(year)*as.factor(schooltype), 
+                  data = combined)
+
+summary(add_schooltype)
+
+# generate predictions for combinations of gender and year and age
+pred <- predictions(add_schooltype,
+                 by = c("gender", "year", "schooltype"))
+
+cat_schooltype_1 <- ggplot(pred[pred$schooltype == 1,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("General secondary school") +
+  ylab("Mean life satisfaction") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  xlab("Year") +
+  labs(color = "Gender")
+
+cat_schooltype_2 <- ggplot(pred[pred$schooltype == 2,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("Grammar school") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  ylab("Mean life satisfaction") +
+  xlab("Year") +
+  labs(color = "Gender")
+
+
+combined_cat_schooltype <- (cat_schooltype_1|cat_schooltype_2) + plot_layout(guides = "collect")
+combined_cat_schooltype
+ggsave("Plots/satis_by_schooltype_categorical.png", width = 6, height = 3)
+
+
+
+
+
+# Does the explanandum disappear once we account for schooltype?
+explanandum_schooltype <- lm(satis ~ as.factor(year) + gender + as.factor(year):gender +
+                               as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
+                               as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype), 
+                  data = combined)
+
+
+# generate predictions for combinations of gender and year
+pred <- predictions(explanandum_schooltype,
+                 by = c("gender", "year"))
+
+ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  ylab("Mean life satisfaction") +
+  xlab("Survey year") +
+  labs(color = "Gender")
+
+# Comparisons
+
+comps <- avg_comparisons(explanandum_schooltype, variables = "gender", by = "year")
+print(comps)
+max_comp <- avg_comparisons(explanandum_schooltype, variables = "gender", by = "year",
+                hypothesis = "b1 = b3", vcov = ~ unique_classroom)
+print(max_comp)
+print(avg_comparisons(explanandum_schooltype, variables = "gender", by = "year",
+                hypothesis = "b1 = b2", vcov = ~ unique_classroom))
+print(avg_comparisons(explanandum_schooltype, variables = "gender", by = "year",
+                hypothesis = "b2 = b3", vcov = ~ unique_classroom))
+
+# Express differences in SDs
+round(comps$estimate[1]/sd(combined$satis), 2)
+round(comps$estimate[2]/sd(combined$satis), 2)
+round(comps$estimate[3]/sd(combined$satis), 2)
+
+# Express widening gender gap in SDs
+round(max_comp$estimate/sd(combined$satis), 2)
+
+# Carry schooltype forward henceforth
+
+```
+
+### Migback/German at home
+
+```{r germanathome}
+
+# are there age differences between the years?
+german_at_home_diffs <- lm(german_at_home ~ as.factor(year)*gender, data = combined)
+
+print(predictions(german_at_home_diffs,
+                 by = c("year"), vcov = "HC3"))
+
+print(predictions(german_at_home_diffs,
+                 by = c("gender"), vcov = "HC3"))
+
+print(predictions(german_at_home_diffs,
+                 by = c("gender", "year"), vcov = "HC3"))
+
+print(avg_comparisons(german_at_home_diffs, variable = "gender", by = "year", vcov = "HC3"))
+
+# Visualize the association between german_at_home and satisfaction, by gender and year
+
+# Fully categorical
+add_german_at_home <- lm(satis ~ gender*as.factor(year)*as.factor(german_at_home), 
+                  data = combined)
+
+summary(add_german_at_home)
+
+# generate predictions for combinations of gender and year and age
+pred <- predictions(add_german_at_home,
+                 by = c("gender", "year", "german_at_home"))
+
+
+cat_german_at_home_1 <- ggplot(pred[pred$german_at_home == 1,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("German at home") +
+  ylab("Mean life satisfaction") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  xlab("Year") +
+  labs(color = "Gender")
+
+cat_german_at_home_0 <- ggplot(pred[pred$german_at_home == 0,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("No German at home") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  ylab("Mean life satisfaction") +
+  xlab("Year") +
+  labs(color = "Gender")
+
+
+combined_cat_german_at_home <- (cat_german_at_home_1|cat_german_at_home_0) + plot_layout(guides = "collect")
+combined_cat_german_at_home
+ggsave("Plots/satis_by_german_at_home_categorical.png", width = 6, height = 3)
+
+
+
+# Does the explanandum disappear once we account for german_at_home?
+explanandum_german_at_home <- lm(satis ~ as.factor(year) + gender + as.factor(year):gender +
+                                   as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
+                                   as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+                                   as.factor(german_at_home) + as.factor(year):as.factor(german_at_home) + gender:as.factor(german_at_home) + as.factor(year):gender:as.factor(german_at_home), 
+                  data = combined)
+
+
+# generate predictions for combinations of gender and year
+pred <- predictions(explanandum_german_at_home,
+                 by = c("gender", "year"))
+
+ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  ylab("Mean life satisfaction") +
+  xlab("Survey year") +
+  labs(color = "Gender")
+
+# Comparisons
+
+comps <- avg_comparisons(explanandum_german_at_home, variables = "gender", by = "year")
+print(comps)
+max_comp <- avg_comparisons(explanandum_german_at_home, variables = "gender", by = "year",
+                hypothesis = "b1 = b3", vcov = ~ unique_classroom)
+print(max_comp)
+print(avg_comparisons(explanandum_german_at_home, variables = "gender", by = "year",
+                hypothesis = "b1 = b2", vcov = ~ unique_classroom))
+print(avg_comparisons(explanandum_german_at_home, variables = "gender", by = "year",
+                hypothesis = "b2 = b3", vcov = ~ unique_classroom))
+
+# Express differences in SDs
+round(comps$estimate[1]/sd(combined$satis), 2)
+round(comps$estimate[2]/sd(combined$satis), 2)
+round(comps$estimate[3]/sd(combined$satis), 2)
+
+# Express widening gender gap in SDs
+round(max_comp$estimate/sd(combined$satis), 2)
+
+# Carry schooltype forward henceforth
+
+```
