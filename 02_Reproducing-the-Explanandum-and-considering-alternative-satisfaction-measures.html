@@ -11,7 +11,7 @@
 
 <meta name="author" content="Julia Rohrer" />
 
-<meta name="date" content="2025-02-12" />
+<meta name="date" content="2025-02-19" />
 
 <title>Reproducing the explanandum and considering alternative satisfaction measures</title>
 
@@ -353,7 +353,7 @@ display: none;
 <h1 class="title toc-ignore">Reproducing the explanandum and considering
 alternative satisfaction measures</h1>
 <h4 class="author">Julia Rohrer</h4>
-<h4 class="date">2025-02-12</h4>
+<h4 class="date">2025-02-19</h4>
 
 </div>
 
@@ -419,6 +419,8 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
 <pre class="r"><code>ggsave(&quot;Plots/explanandum.png&quot;, width = 4, height = 3)
 
 # Comparisons
+
+
 comps &lt;- avg_comparisons(explanandum, variables = &quot;gender&quot;, by = &quot;year&quot;)
 print(comps)</code></pre>
 <pre><code>## 

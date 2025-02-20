@@ -150,10 +150,21 @@ ggsave("Plots/satis_by_age_linear.png", width = 6, height = 3)
 explanandum_age <- lm(satis ~ as.factor(year)*gender*as.factor(age), 
                   data = combined)
 
+# new data: demographics like in 2010
+temp1 <- combined[combined$year == 2010,]
+temp1$year <- 2010
+temp2 <- combined[combined$year == 2010,]
+temp2$year <- 2015
+temp3 <- combined[combined$year == 2010,]
+temp3$year <- 2023
+
+all2010 <- rbind(temp1, temp2, temp3)
+
 
 # generate predictions for combinations of gender and year
 pred <- predictions(explanandum_age,
-                 by = c("gender", "year"))
+                 by = c("gender", "year"),
+                 newdata = all2010)
 
 ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
   geom_point() +
@@ -168,15 +179,19 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
 
 # Comparisons
 
-comps <- avg_comparisons(explanandum_age, variables = "gender", by = "year")
+comps <- avg_comparisons(explanandum_age, variables = "gender", by = "year",
+                 newdata = all2010)
 print(comps)
 max_comp <- avg_comparisons(explanandum_age, variables = "gender", by = "year",
-                hypothesis = "b1 = b3")
+                hypothesis = "b1 = b3",
+                 newdata = all2010)
 print(max_comp)
 print(avg_comparisons(explanandum_age, variables = "gender", by = "year",
-                hypothesis = "b1 = b2"))
+                hypothesis = "b1 = b2"),
+                 newdata = all2010)
 print(avg_comparisons(explanandum_age, variables = "gender", by = "year",
-                hypothesis = "b2 = b3"))
+                hypothesis = "b2 = b3"),
+                 newdata = all2010)
 
 # Express differences in SDs
 round(comps$estimate[1]/sd(combined$satis), 2)
@@ -186,8 +201,67 @@ round(comps$estimate[3]/sd(combined$satis), 2)
 # Express widening gender gap in SDs
 round(max_comp$estimate/sd(combined$satis), 2)
 
-# Carry age forward henceforth
+# Also calculate widening of gender gap for 2015 and 2023 age distribution
+# new data: demographics like in 2015
+temp1 <- combined[combined$year == 2015,]
+temp1$year <- 2010
+temp2 <- combined[combined$year == 2015,]
+temp2$year <- 2015
+temp3 <- combined[combined$year == 2015,]
+temp3$year <- 2023
 
+all2015 <- rbind(temp1, temp2, temp3)
+max_comp <- avg_comparisons(explanandum_age, variables = "gender", by = "year",
+                hypothesis = "b1 = b3")
+print(max_comp)
+
+temp1 <- combined[combined$year == 2023,]
+temp1$year <- 2010
+temp2 <- combined[combined$year == 2023,]
+temp2$year <- 2015
+temp3 <- combined[combined$year == 2023,]
+temp3$year <- 2023
+
+all2023 <- rbind(temp1, temp2, temp3)
+
+max_comp <- avg_comparisons(explanandum_age, variables = "gender", by = "year",
+                hypothesis = "b1 = b3",
+                 newdata = all2015)
+print(max_comp)
+
+max_comp <- avg_comparisons(explanandum_age, variables = "gender", by = "year",
+                hypothesis = "b1 = b3",
+                 newdata = all2023)
+print(max_comp)
+
+
+# Does age MODIFY the widening of the gender gap?
+
+explanandum_age_lin <- lm(satis ~ as.factor(year)*gender*age, 
+                  data = combined)
+
+
+all_comps <- avg_comparisons(explanandum_age_lin, variables = "gender", by = c("year", "age"))
+print(all_comps)
+
+print(avg_comparisons(explanandum_age_lin, variables = "gender", by = c("year", "age"),
+      hypothesis = "b1 = b15")) # Widening at age 12
+print(avg_comparisons(explanandum_age_lin, variables = "gender", by = c("year", "age"),
+      hypothesis = "b2 = b16")) # Widening at age 13
+print(avg_comparisons(explanandum_age_lin, variables = "gender", by = c("year", "age"),
+      hypothesis = "b3 = b17")) # Widening at age 14
+print(avg_comparisons(explanandum_age_lin, variables = "gender", by = c("year", "age"),
+      hypothesis = "b4 = b18")) # Widening at age 15
+print(avg_comparisons(explanandum_age_lin, variables = "gender", by = c("year", "age"),
+      hypothesis = "b5 = b19")) # Widening at age 16
+print(avg_comparisons(explanandum_age_lin, variables = "gender", by = c("year", "age"),
+      hypothesis = "b6 = b20")) # Widening at age 17
+print(avg_comparisons(explanandum_age_lin, variables = "gender", by = c("year", "age"),
+      hypothesis = "b7 = b21")) # Widening at age 18
+
+# Comparing the gender gaps at 12 and 18
+print(avg_comparisons(explanandum_age_lin, variables = "gender", by = c("year", "age"),
+      hypothesis = "b1 - b15 = b7 - b21"))
 ```
 ### Schooltype
 
@@ -258,8 +332,6 @@ ggsave("Plots/satis_by_schooltype_categorical.png", width = 6, height = 3)
 
 
 
-
-
 # Does the explanandum disappear once we account for schooltype?
 explanandum_schooltype <- lm(satis ~ as.factor(year) + gender + as.factor(year):gender +
                                as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
@@ -269,7 +341,9 @@ explanandum_schooltype <- lm(satis ~ as.factor(year) + gender + as.factor(year):
 
 # generate predictions for combinations of gender and year
 pred <- predictions(explanandum_schooltype,
-                 by = c("gender", "year"))
+                 by = c("gender", "year"),
+                 newdata = all2010,
+                 vcov = ~ unique_classroom)
 
 ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
   geom_point() +
@@ -284,15 +358,17 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
 
 # Comparisons
 
-comps <- avg_comparisons(explanandum_schooltype, variables = "gender", by = "year")
+comps <- avg_comparisons(explanandum_schooltype, variables = "gender", by = "year",
+                         newdata = all2010, 
+                         vcov = ~ unique_classroom)
 print(comps)
 max_comp <- avg_comparisons(explanandum_schooltype, variables = "gender", by = "year",
-                hypothesis = "b1 = b3", vcov = ~ unique_classroom)
+                hypothesis = "b1 = b3", newdata = all2010, vcov = ~ unique_classroom)
 print(max_comp)
 print(avg_comparisons(explanandum_schooltype, variables = "gender", by = "year",
-                hypothesis = "b1 = b2", vcov = ~ unique_classroom))
+                hypothesis = "b1 = b2", newdata = all2010, vcov = ~ unique_classroom))
 print(avg_comparisons(explanandum_schooltype, variables = "gender", by = "year",
-                hypothesis = "b2 = b3", vcov = ~ unique_classroom))
+                hypothesis = "b2 = b3", newdata = all2010, vcov = ~ unique_classroom))
 
 # Express differences in SDs
 round(comps$estimate[1]/sd(combined$satis), 2)
@@ -302,8 +378,40 @@ round(comps$estimate[3]/sd(combined$satis), 2)
 # Express widening gender gap in SDs
 round(max_comp$estimate/sd(combined$satis), 2)
 
-# Carry schooltype forward henceforth
+# Widening of the gap at 2015
+max_comp <- avg_comparisons(explanandum_schooltype, variables = "gender", by = "year",
+                hypothesis = "b1 = b3", newdata = all2015, vcov = ~ unique_classroom)
+print(max_comp)
 
+# Widening of the gap at 2023
+max_comp <- avg_comparisons(explanandum_schooltype, variables = "gender", by = "year",
+                hypothesis = "b1 = b3", newdata = all2023, vcov = ~ unique_classroom)
+print(max_comp)
+
+# Modification by schooltype
+all_comps <- avg_comparisons(explanandum_schooltype, 
+                             variables = "gender", 
+                             by = c("year", "schooltype"), 
+                             vcov = ~ unique_classroom)
+
+print(avg_comparisons(explanandum_schooltype, 
+                             variables = "gender", 
+                             by = c("year", "schooltype"), 
+                             vcov = ~ unique_classroom,
+                      hypothesis = "b1 = b5")) # lower track
+
+print(avg_comparisons(explanandum_schooltype, 
+                             variables = "gender", 
+                             by = c("year", "schooltype"), 
+                             vcov = ~ unique_classroom,
+                      hypothesis = "b2 = b6")) # upper track
+
+# Lower track versus upper track
+print(avg_comparisons(explanandum_schooltype, 
+                             variables = "gender", 
+                             by = c("year", "schooltype"), 
+                             vcov = ~ unique_classroom,
+                      hypothesis = "b1 - b5 = b2 - b6")) 
 ```
 
 ### Migback/German at home
@@ -384,7 +492,9 @@ explanandum_german_at_home <- lm(satis ~ as.factor(year) + gender + as.factor(ye
 
 # generate predictions for combinations of gender and year
 pred <- predictions(explanandum_german_at_home,
-                 by = c("gender", "year"))
+                 by = c("gender", "year"),
+                 newdata = all2010,
+                 vcov = ~ unique_classroom)
 
 ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
   geom_point() +
@@ -399,15 +509,17 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
 
 # Comparisons
 
-comps <- avg_comparisons(explanandum_german_at_home, variables = "gender", by = "year")
+comps <- avg_comparisons(explanandum_german_at_home, variables = "gender", by = "year",
+                 newdata = all2010,
+                 vcov = ~ unique_classroom)
 print(comps)
 max_comp <- avg_comparisons(explanandum_german_at_home, variables = "gender", by = "year",
-                hypothesis = "b1 = b3", vcov = ~ unique_classroom)
+                hypothesis = "b1 = b3", newdata = all2010, vcov = ~ unique_classroom)
 print(max_comp)
 print(avg_comparisons(explanandum_german_at_home, variables = "gender", by = "year",
-                hypothesis = "b1 = b2", vcov = ~ unique_classroom))
+                hypothesis = "b1 = b2", newdata = all2010, vcov = ~ unique_classroom))
 print(avg_comparisons(explanandum_german_at_home, variables = "gender", by = "year",
-                hypothesis = "b2 = b3", vcov = ~ unique_classroom))
+                hypothesis = "b2 = b3", newdata = all2010, vcov = ~ unique_classroom))
 
 # Express differences in SDs
 round(comps$estimate[1]/sd(combined$satis), 2)
@@ -417,6 +529,40 @@ round(comps$estimate[3]/sd(combined$satis), 2)
 # Express widening gender gap in SDs
 round(max_comp$estimate/sd(combined$satis), 2)
 
-# Carry schooltype forward henceforth
+# Evaluation for 2015 distribution
+max_comp <- avg_comparisons(explanandum_german_at_home, variables = "gender", by = "year",
+                hypothesis = "b1 = b3", newdata = all2015, vcov = ~ unique_classroom)
+print(max_comp)
+
+# Evaluation for 2023
+max_comp <- avg_comparisons(explanandum_german_at_home, variables = "gender", by = "year",
+                hypothesis = "b1 = b3", newdata = all2023, vcov = ~ unique_classroom)
+print(max_comp)
+
+
+# Modification by german_at_home
+all_comps <- avg_comparisons(explanandum_german_at_home, 
+                             variables = "gender", 
+                             by = c("year", "german_at_home"), 
+                             vcov = ~ unique_classroom)
+
+print(avg_comparisons(explanandum_german_at_home, 
+                             variables = "gender", 
+                             by = c("year", "german_at_home"), 
+                             vcov = ~ unique_classroom,
+                      hypothesis = "b1 = b5")) # no german at home
+
+print(avg_comparisons(explanandum_german_at_home, 
+                             variables = "gender", 
+                             by = c("year", "german_at_home"), 
+                             vcov = ~ unique_classroom,
+                      hypothesis = "b2 = b6")) # german at home
+
+# German at home vs no german at home
+print(avg_comparisons(explanandum_german_at_home, 
+                             variables = "gender", 
+                             by = c("year", "german_at_home"), 
+                             vcov = ~ unique_classroom,
+                      hypothesis = "b1 - b5 = b2 - b6")) 
 
 ```

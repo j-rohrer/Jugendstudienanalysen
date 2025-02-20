@@ -43,6 +43,8 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
 ggsave("Plots/explanandum.png", width = 4, height = 3)
 
 # Comparisons
+
+
 comps <- avg_comparisons(explanandum, variables = "gender", by = "year")
 print(comps)
 max_comp <- avg_comparisons(explanandum, variables = "gender", by = "year",
