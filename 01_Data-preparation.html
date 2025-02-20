@@ -11,7 +11,7 @@
 
 <meta name="author" content="Julia Rohrer" />
 
-<meta name="date" content="2025-02-12" />
+<meta name="date" content="2025-02-20" />
 
 <title>Cleaning and preparation of the Youth Surveys</title>
 
@@ -353,7 +353,7 @@ display: none;
 <h1 class="title toc-ignore">Cleaning and preparation of the Youth
 Surveys</h1>
 <h4 class="author">Julia Rohrer</h4>
-<h4 class="date">2025-02-12</h4>
+<h4 class="date">2025-02-20</h4>
 
 </div>
 
@@ -588,17 +588,16 @@ table(youth2010$migback, useNA = &quot;always&quot;)</code></pre>
 <pre><code>## 
 ##   both father mother   none   self   &lt;NA&gt; 
 ##     66    123     35   1983    145     59</code></pre>
-<pre class="r"><code># Dichotomous indicator of ASSUMED language at home
+<pre class="r"><code># Dichotomous indicator of Migration background/German not main language
 # we will need this later because in 2015, migration background was
 # not assessed in the same manner
-youth2010$german_at_home[youth2010$migback == &quot;none&quot;|youth2010$migback == &quot;father&quot;|youth2010$migback == &quot;mother&quot;] &lt;- 1 # at most one parent with migback
-youth2010$german_at_home[youth2010$migback == &quot;self&quot;|youth2010$migback == &quot;both&quot;] &lt;- 0
-# here, we assume that if we know that a person was born outside of Germany or both of their parents were
+youth2010$mig_lang[youth2010$migback == &quot;none&quot;|youth2010$migback == &quot;father&quot;|youth2010$migback == &quot;mother&quot;] &lt;- 0
+youth2010$mig_lang[youth2010$migback == &quot;self&quot;|youth2010$migback == &quot;both&quot;] &lt;- 1
 
-table(youth2010$german_at_home, useNA = &quot;always&quot;)</code></pre>
+table(youth2010$mig_lang, useNA = &quot;always&quot;)</code></pre>
 <pre><code>## 
 ##    0    1 &lt;NA&gt; 
-##  211 2141   59</code></pre>
+## 2141  211   59</code></pre>
 <pre class="r"><code># Satisfaction items
 # Students were asked for their satisfaction with various things
 # Here, we will recode the items so that higher values indicate more satisfaction
@@ -678,15 +677,15 @@ table(youth2010$migback)</code></pre>
 <pre><code>## 
 ##   both father mother   none   self 
 ##   0.03   0.05   0.01   0.84   0.06</code></pre>
-<pre class="r"><code># And the assumed language at home
-table(youth2010$german_at_home)</code></pre>
+<pre class="r"><code># Dichotomous indicator
+table(youth2010$mig_lang)</code></pre>
 <pre><code>## 
 ##    0    1 
-##  211 2141</code></pre>
-<pre class="r"><code>round(prop.table(table(youth2010$german_at_home)), digits = 2)</code></pre>
+## 2141  211</code></pre>
+<pre class="r"><code>round(prop.table(table(youth2010$mig_lang)), digits = 2)</code></pre>
 <pre><code>## 
 ##    0    1 
-## 0.09 0.91</code></pre>
+## 0.91 0.09</code></pre>
 </div>
 </div>
 <div id="youth-survey" class="section level2">
@@ -782,7 +781,9 @@ table(youth2015$german_at_home)</code></pre>
 <pre><code>## 
 ##    0    1 
 ##  208 2029</code></pre>
-<pre class="r"><code># Satisfaction items
+<pre class="r"><code>youth2015$mig_lang &lt;- 1 - youth2015$german_at_home
+
+# Satisfaction items
 # Students were asked for their satisfaction with various things
 # Here, we will recode the items so that higher values indicate more satisfaction
 # For all items that are comparable between the 2010, 2015 and 2023 Youth Surveys
@@ -841,14 +842,14 @@ table(youth2015$schooltype)</code></pre>
 # not assessed
 
 # And the language at home
-table(youth2015$german_at_home)</code></pre>
+table(youth2015$mig_lang)</code></pre>
 <pre><code>## 
 ##    0    1 
-##  208 2029</code></pre>
-<pre class="r"><code>round(prop.table(table(youth2015$german_at_home)), digits = 2)</code></pre>
+## 2029  208</code></pre>
+<pre class="r"><code>round(prop.table(table(youth2015$mig_lang)), digits = 2)</code></pre>
 <pre><code>## 
 ##    0    1 
-## 0.09 0.91</code></pre>
+## 0.91 0.09</code></pre>
 </div>
 </div>
 <div id="youth-survey-1" class="section level2">
@@ -967,15 +968,15 @@ table(youth2023$migback, useNA = &quot;always&quot;)</code></pre>
 <pre><code>## 
 ##   both father mother   none   self   &lt;NA&gt; 
 ##    146    133     84   2337    221    115</code></pre>
-<pre class="r"><code># ASSUMED language at home
-youth2023$german_at_home &lt;- NA
-youth2023$german_at_home[youth2023$migback == &quot;none&quot;|youth2023$migback == &quot;mother&quot;|youth2023$migback == &quot;father&quot;] &lt;- 1
-youth2023$german_at_home[youth2023$migback == &quot;self&quot;|youth2023$migback == &quot;both&quot;] &lt;- 0
+<pre class="r"><code># Dichotomous variable
+youth2023$mig_lang &lt;- NA
+youth2023$mig_lang[youth2023$migback == &quot;none&quot;|youth2023$migback == &quot;mother&quot;|youth2023$migback == &quot;father&quot;] &lt;- 0
+youth2023$mig_lang[youth2023$migback == &quot;self&quot;|youth2023$migback == &quot;both&quot;] &lt;- 1
 
-table(youth2023$german_at_home, useNA = &quot;always&quot;)</code></pre>
+table(youth2023$mig_lang, useNA = &quot;always&quot;)</code></pre>
 <pre><code>## 
 ##    0    1 &lt;NA&gt; 
-##  367 2554  115</code></pre>
+## 2554  367  115</code></pre>
 <pre class="r"><code># Satisfaction items
 # Students were asked for their satisfaction with various things
 # Here, we will recode the items so that higher values indicate more satisfaction
@@ -1041,14 +1042,14 @@ table(youth2023$migback)</code></pre>
 ##   both father mother   none   self 
 ##   0.05   0.05   0.03   0.80   0.08</code></pre>
 <pre class="r"><code># And the assumed language at home
-table(youth2023$german_at_home)</code></pre>
+table(youth2023$mig_lang)</code></pre>
 <pre><code>## 
 ##    0    1 
-##  367 2554</code></pre>
-<pre class="r"><code>round(prop.table(table(youth2023$german_at_home)), digits = 2)</code></pre>
+## 2554  367</code></pre>
+<pre class="r"><code>round(prop.table(table(youth2023$mig_lang)), digits = 2)</code></pre>
 <pre><code>## 
 ##    0    1 
-## 0.13 0.87</code></pre>
+## 0.87 0.13</code></pre>
 <pre class="r"><code># And here are the weights
 summary(youth2023$wph)</code></pre>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
@@ -1473,7 +1474,7 @@ names(youth2023)</code></pre>
 ## [641] &quot;f13_30&quot;                   &quot;year&quot;                    
 ## [643] &quot;schooltype&quot;               &quot;gender&quot;                  
 ## [645] &quot;age&quot;                      &quot;migback&quot;                 
-## [647] &quot;german_at_home&quot;           &quot;satis&quot;                   
+## [647] &quot;mig_lang&quot;                 &quot;satis&quot;                   
 ## [649] &quot;satis_money&quot;              &quot;satis_friends&quot;           
 ## [651] &quot;satis_mom&quot;                &quot;satis_dad&quot;               
 ## [653] &quot;satis_leisure&quot;            &quot;satis_dwell&quot;             
@@ -1732,7 +1733,7 @@ youth2015$id &lt;- youth2015$rawid
 youth2023$id &lt;- youth2023$rawid
 
 
-vars &lt;- c(&quot;id&quot;, &quot;year&quot;, &quot;wph&quot;, &quot;schooltype&quot;, &quot;gender&quot;, &quot;age&quot;, &quot;german_at_home&quot;, &quot;migback&quot;,
+vars &lt;- c(&quot;id&quot;, &quot;year&quot;, &quot;wph&quot;, &quot;schooltype&quot;, &quot;gender&quot;, &quot;age&quot;, &quot;mig_lang&quot;, &quot;migback&quot;,
           &quot;satis&quot;, &quot;satis_money&quot;, &quot;satis_friends&quot;, &quot;satis_mom&quot;, &quot;satis_dad&quot;,
           &quot;satis_leisure&quot;, &quot;satis_dwell&quot;, &quot;satis_grades&quot;, &quot;school&quot;, &quot;unique_classroom&quot;, &quot;school_id&quot;, &quot;source&quot;, 
           imp_names, prob_items, disc_items_2010_2015)
@@ -1829,19 +1830,19 @@ round(prop.table(table(combined_original$age[combined_original$year == 2010], us
 <pre><code>## 
 ##   12   13   14   15   16   17   18   19 &lt;NA&gt; 
 ## 0.04 0.13 0.15 0.14 0.12 0.10 0.09 0.21 0.02</code></pre>
-<pre class="r"><code># German language at home
-round(prop.table(table(combined_original$german_at_home[combined_original$year == 2010], useNA = &quot;always&quot;)), 2)</code></pre>
+<pre class="r"><code># Mig
+round(prop.table(table(combined_original$mig_lang[combined_original$year == 2010], useNA = &quot;always&quot;)), 2)</code></pre>
 <pre><code>## 
 ##    0    1 &lt;NA&gt; 
-## 0.09 0.89 0.02</code></pre>
-<pre class="r"><code>round(prop.table(table(combined_original$german_at_home[combined_original$year == 2015], useNA = &quot;always&quot;)), 2)</code></pre>
+## 0.89 0.09 0.02</code></pre>
+<pre class="r"><code>round(prop.table(table(combined_original$mig_lang[combined_original$year == 2015], useNA = &quot;always&quot;)), 2)</code></pre>
 <pre><code>## 
 ##    0    1 &lt;NA&gt; 
-## 0.09 0.90 0.01</code></pre>
-<pre class="r"><code>round(prop.table(table(combined_original$german_at_home[combined_original$year == 2023], useNA = &quot;always&quot;)), 2)</code></pre>
+## 0.90 0.09 0.01</code></pre>
+<pre class="r"><code>round(prop.table(table(combined_original$mig_lang[combined_original$year == 2023], useNA = &quot;always&quot;)), 2)</code></pre>
 <pre><code>## 
 ##    0    1 &lt;NA&gt; 
-## 0.12 0.84 0.04</code></pre>
+## 0.84 0.12 0.04</code></pre>
 <pre class="r"><code># Exclusion criteria/filter
 # Reporting a different gender was not possible in 2010 and 2015
 # We thus cannot compare the gender diverse students in 2023 to gender diverse students in earlier years
@@ -1851,8 +1852,8 @@ combined$gender[combined$gender == &quot;diverse&quot;] &lt;- NA
 # only keep known gender
 combined &lt;- combined[!is.na(combined$gender),]
 
-# known language at home
-combined &lt;- combined[!is.na(combined$german_at_home),]
+# known migback
+combined &lt;- combined[!is.na(combined$mig_lang),]
 
 # known age
 combined &lt;- combined[!is.na(combined$age),]
@@ -1949,20 +1950,24 @@ round(prop.table(table(combined$age[combined$year == 2010], useNA = &quot;always
 <pre><code>## 
 ##   12   13   14   15   16   17   18 &lt;NA&gt; 
 ## 0.06 0.20 0.22 0.20 0.17 0.10 0.06 0.00</code></pre>
-<pre class="r"><code># German language at home
-round(prop.table(table(combined$german_at_home[combined$year == 2010], useNA = &quot;always&quot;)), 2)</code></pre>
+<pre class="r"><code># Mig
+round(prop.table(table(combined$mig_lang[combined$year == 2010], useNA = &quot;always&quot;)), 2)</code></pre>
 <pre><code>## 
 ##    0    1 &lt;NA&gt; 
-##  0.1  0.9  0.0</code></pre>
-<pre class="r"><code>round(prop.table(table(combined$german_at_home[combined$year == 2015], useNA = &quot;always&quot;)), 2)</code></pre>
+##  0.9  0.1  0.0</code></pre>
+<pre class="r"><code>round(prop.table(table(combined$mig_lang[combined$year == 2015], useNA = &quot;always&quot;)), 2)</code></pre>
 <pre><code>## 
 ##    0    1 &lt;NA&gt; 
-## 0.09 0.91 0.00</code></pre>
-<pre class="r"><code>round(prop.table(table(combined$german_at_home[combined$year == 2023], useNA = &quot;always&quot;)), 2)</code></pre>
+## 0.91 0.09 0.00</code></pre>
+<pre class="r"><code>round(prop.table(table(combined$mig_lang[combined$year == 2023], useNA = &quot;always&quot;)), 2)</code></pre>
 <pre><code>## 
 ##    0    1 &lt;NA&gt; 
-## 0.13 0.87 0.00</code></pre>
-<pre class="r"><code>save.image(&quot;prep.RData&quot;)</code></pre>
+## 0.87 0.13 0.00</code></pre>
+<pre class="r"><code># Fix some data types
+# combined$year &lt;- as.factor(combined$year)
+combined$satis &lt;- as.numeric(combined$satis)
+
+save.image(&quot;prep.RData&quot;)</code></pre>
 </div>
 
 

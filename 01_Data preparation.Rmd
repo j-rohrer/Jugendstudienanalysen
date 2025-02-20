@@ -103,14 +103,13 @@ youth2010$migback[!is.na(youth2010$s23bd) & !is.na(youth2010$s23cd)] <- "none"
 table(youth2010$migback, useNA = "always")
 
 
-# Dichotomous indicator of ASSUMED language at home
+# Dichotomous indicator of Migration background/German not main language
 # we will need this later because in 2015, migration background was
 # not assessed in the same manner
-youth2010$german_at_home[youth2010$migback == "none"|youth2010$migback == "father"|youth2010$migback == "mother"] <- 1 # at most one parent with migback
-youth2010$german_at_home[youth2010$migback == "self"|youth2010$migback == "both"] <- 0
-# here, we assume that if we know that a person was born outside of Germany or both of their parents were
+youth2010$mig_lang[youth2010$migback == "none"|youth2010$migback == "father"|youth2010$migback == "mother"] <- 0
+youth2010$mig_lang[youth2010$migback == "self"|youth2010$migback == "both"] <- 1
 
-table(youth2010$german_at_home, useNA = "always")
+table(youth2010$mig_lang, useNA = "always")
 
 # Satisfaction items
 # Students were asked for their satisfaction with various things
@@ -161,9 +160,9 @@ round(prop.table(table(youth2010$schooltype)), digits = 2)
 table(youth2010$migback)
 round(prop.table(table(youth2010$migback)), digits = 2)
 
-# And the assumed language at home
-table(youth2010$german_at_home)
-round(prop.table(table(youth2010$german_at_home)), digits = 2)
+# Dichotomous indicator
+table(youth2010$mig_lang)
+round(prop.table(table(youth2010$mig_lang)), digits = 2)
 ```
 ## 2015 Youth Survey
 The next Youth Survey was conducted five years later. 
@@ -228,6 +227,7 @@ table(youth2015$f19)
 youth2015$german_at_home <- ifelse(youth2015$f19 == 1, 1, 0)
 table(youth2015$german_at_home)
 
+youth2015$mig_lang <- 1 - youth2015$german_at_home
 
 # Satisfaction items
 # Students were asked for their satisfaction with various things
@@ -273,8 +273,8 @@ round(prop.table(table(youth2015$schooltype)), digits = 2)
 # not assessed
 
 # And the language at home
-table(youth2015$german_at_home)
-round(prop.table(table(youth2015$german_at_home)), digits = 2)
+table(youth2015$mig_lang)
+round(prop.table(table(youth2015$mig_lang)), digits = 2)
 ```
 
 ## 2023 Youth Survey
@@ -357,12 +357,12 @@ youth2023$migback[youth2023$staat_geb_person == 2] <- "self"
 youth2023$migback[youth2023$staat_geb_vater == 1 & youth2023$staat_geb_mutter == 1] <- "none"
 table(youth2023$migback, useNA = "always")
 
-# ASSUMED language at home
-youth2023$german_at_home <- NA
-youth2023$german_at_home[youth2023$migback == "none"|youth2023$migback == "mother"|youth2023$migback == "father"] <- 1
-youth2023$german_at_home[youth2023$migback == "self"|youth2023$migback == "both"] <- 0
+# Dichotomous variable
+youth2023$mig_lang <- NA
+youth2023$mig_lang[youth2023$migback == "none"|youth2023$migback == "mother"|youth2023$migback == "father"] <- 0
+youth2023$mig_lang[youth2023$migback == "self"|youth2023$migback == "both"] <- 1
 
-table(youth2023$german_at_home, useNA = "always")
+table(youth2023$mig_lang, useNA = "always")
 
 
 # Satisfaction items
@@ -411,8 +411,8 @@ table(youth2023$migback)
 round(prop.table(table(youth2023$migback)), digits = 2)
 
 # And the assumed language at home
-table(youth2023$german_at_home)
-round(prop.table(table(youth2023$german_at_home)), digits = 2)
+table(youth2023$mig_lang)
+round(prop.table(table(youth2023$mig_lang)), digits = 2)
 
 # And here are the weights
 summary(youth2023$wph)
@@ -714,7 +714,7 @@ youth2015$id <- youth2015$rawid
 youth2023$id <- youth2023$rawid
 
 
-vars <- c("id", "year", "wph", "schooltype", "gender", "age", "german_at_home", "migback",
+vars <- c("id", "year", "wph", "schooltype", "gender", "age", "mig_lang", "migback",
           "satis", "satis_money", "satis_friends", "satis_mom", "satis_dad",
           "satis_leisure", "satis_dwell", "satis_grades", "school", "unique_classroom", "school_id", "source", 
           imp_names, prob_items, disc_items_2010_2015)
@@ -775,12 +775,12 @@ round(prop.table(table(combined_original$age[combined_original$year == 2010], us
 round(prop.table(table(combined_original$age[combined_original$year == 2015], useNA = "always")), 2)
 round(prop.table(table(combined_original$age[combined_original$year == 2023], useNA = "always")), 2)
 
-# German language at home
-round(prop.table(table(combined_original$german_at_home[combined_original$year == 2010], useNA = "always")), 2)
+# Mig
+round(prop.table(table(combined_original$mig_lang[combined_original$year == 2010], useNA = "always")), 2)
 
-round(prop.table(table(combined_original$german_at_home[combined_original$year == 2015], useNA = "always")), 2)
+round(prop.table(table(combined_original$mig_lang[combined_original$year == 2015], useNA = "always")), 2)
 
-round(prop.table(table(combined_original$german_at_home[combined_original$year == 2023], useNA = "always")), 2)
+round(prop.table(table(combined_original$mig_lang[combined_original$year == 2023], useNA = "always")), 2)
 
 # Exclusion criteria/filter
 # Reporting a different gender was not possible in 2010 and 2015
@@ -791,8 +791,8 @@ combined$gender[combined$gender == "diverse"] <- NA
 # only keep known gender
 combined <- combined[!is.na(combined$gender),]
 
-# known language at home
-combined <- combined[!is.na(combined$german_at_home),]
+# known migback
+combined <- combined[!is.na(combined$mig_lang),]
 
 # known age
 combined <- combined[!is.na(combined$age),]
@@ -856,12 +856,12 @@ round(prop.table(table(combined$age[combined$year == 2010], useNA = "always")), 
 round(prop.table(table(combined$age[combined$year == 2015], useNA = "always")), 2)
 round(prop.table(table(combined$age[combined$year == 2023], useNA = "always")), 2)
 
-# German language at home
-round(prop.table(table(combined$german_at_home[combined$year == 2010], useNA = "always")), 2)
+# Mig
+round(prop.table(table(combined$mig_lang[combined$year == 2010], useNA = "always")), 2)
 
-round(prop.table(table(combined$german_at_home[combined$year == 2015], useNA = "always")), 2)
+round(prop.table(table(combined$mig_lang[combined$year == 2015], useNA = "always")), 2)
 
-round(prop.table(table(combined$german_at_home[combined$year == 2023], useNA = "always")), 2)
+round(prop.table(table(combined$mig_lang[combined$year == 2023], useNA = "always")), 2)
 
 # Fix some data types
 # combined$year <- as.factor(combined$year)

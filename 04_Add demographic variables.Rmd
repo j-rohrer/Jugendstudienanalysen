@@ -414,38 +414,38 @@ print(avg_comparisons(explanandum_schooltype,
                       hypothesis = "b1 - b5 = b2 - b6")) 
 ```
 
-### Migback/German at home
+### Migback/German not main language
 
-```{r germanathome}
+```{r mig}
 
 # are there age differences between the years?
-german_at_home_diffs <- lm(german_at_home ~ as.factor(year)*gender, data = combined)
+mig_lang_diffs <- lm(mig_lang ~ as.factor(year)*gender, data = combined)
 
-print(predictions(german_at_home_diffs,
+print(predictions(mig_lang_diffs,
                  by = c("year"), vcov = "HC3"))
 
-print(predictions(german_at_home_diffs,
+print(predictions(mig_lang_diffs,
                  by = c("gender"), vcov = "HC3"))
 
-print(predictions(german_at_home_diffs,
+print(predictions(mig_lang_diffs,
                  by = c("gender", "year"), vcov = "HC3"))
 
-print(avg_comparisons(german_at_home_diffs, variable = "gender", by = "year", vcov = "HC3"))
+print(avg_comparisons(mig_lang_diffs, variable = "gender", by = "year", vcov = "HC3"))
 
-# Visualize the association between german_at_home and satisfaction, by gender and year
+# Visualize the association between mig_lang and satisfaction, by gender and year
 
 # Fully categorical
-add_german_at_home <- lm(satis ~ gender*as.factor(year)*as.factor(german_at_home), 
+add_mig_lang <- lm(satis ~ gender*as.factor(year)*as.factor(mig_lang), 
                   data = combined)
 
-summary(add_german_at_home)
+summary(add_mig_lang)
 
 # generate predictions for combinations of gender and year and age
-pred <- predictions(add_german_at_home,
-                 by = c("gender", "year", "german_at_home"))
+pred <- predictions(add_mig_lang,
+                 by = c("gender", "year", "mig_lang"))
 
 
-cat_german_at_home_1 <- ggplot(pred[pred$german_at_home == 1,], aes(x = year, group = gender, 
+cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender, 
                                  color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
   geom_point(position = position_dodge(width = .5)) +
@@ -454,13 +454,13 @@ cat_german_at_home_1 <- ggplot(pred[pred$german_at_home == 1,], aes(x = year, gr
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("German at home") +
+  ggtitle("No migration background") +
   ylab("Mean life satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
   labs(color = "Gender")
 
-cat_german_at_home_0 <- ggplot(pred[pred$german_at_home == 0,], aes(x = year, group = gender, 
+cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender, 
                                  color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
   geom_point(position = position_dodge(width = .5)) +
@@ -469,29 +469,29 @@ cat_german_at_home_0 <- ggplot(pred[pred$german_at_home == 0,], aes(x = year, gr
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No German at home") +
+  ggtitle("Migration background") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   ylab("Mean life satisfaction") +
   xlab("Year") +
   labs(color = "Gender")
 
 
-combined_cat_german_at_home <- (cat_german_at_home_1|cat_german_at_home_0) + plot_layout(guides = "collect")
-combined_cat_german_at_home
-ggsave("Plots/satis_by_german_at_home_categorical.png", width = 6, height = 3)
+combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
+combined_cat_mig_lang
+ggsave("Plots/satis_by_mig_lang_categorical.png", width = 6, height = 3)
 
 
 
-# Does the explanandum disappear once we account for german_at_home?
-explanandum_german_at_home <- lm(satis ~ as.factor(year) + gender + as.factor(year):gender +
+# Does the explanandum disappear once we account for mig_lang?
+explanandum_mig_lang <- lm(satis ~ as.factor(year) + gender + as.factor(year):gender +
                                    as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
                                    as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
-                                   as.factor(german_at_home) + as.factor(year):as.factor(german_at_home) + gender:as.factor(german_at_home) + as.factor(year):gender:as.factor(german_at_home), 
+                                   as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
                   data = combined)
 
 
 # generate predictions for combinations of gender and year
-pred <- predictions(explanandum_german_at_home,
+pred <- predictions(explanandum_mig_lang,
                  by = c("gender", "year"),
                  newdata = all2010,
                  vcov = ~ unique_classroom)
@@ -509,16 +509,16 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
 
 # Comparisons
 
-comps <- avg_comparisons(explanandum_german_at_home, variables = "gender", by = "year",
+comps <- avg_comparisons(explanandum_mig_lang, variables = "gender", by = "year",
                  newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps)
-max_comp <- avg_comparisons(explanandum_german_at_home, variables = "gender", by = "year",
+max_comp <- avg_comparisons(explanandum_mig_lang, variables = "gender", by = "year",
                 hypothesis = "b1 = b3", newdata = all2010, vcov = ~ unique_classroom)
 print(max_comp)
-print(avg_comparisons(explanandum_german_at_home, variables = "gender", by = "year",
+print(avg_comparisons(explanandum_mig_lang, variables = "gender", by = "year",
                 hypothesis = "b1 = b2", newdata = all2010, vcov = ~ unique_classroom))
-print(avg_comparisons(explanandum_german_at_home, variables = "gender", by = "year",
+print(avg_comparisons(explanandum_mig_lang, variables = "gender", by = "year",
                 hypothesis = "b2 = b3", newdata = all2010, vcov = ~ unique_classroom))
 
 # Express differences in SDs
@@ -530,38 +530,38 @@ round(comps$estimate[3]/sd(combined$satis), 2)
 round(max_comp$estimate/sd(combined$satis), 2)
 
 # Evaluation for 2015 distribution
-max_comp <- avg_comparisons(explanandum_german_at_home, variables = "gender", by = "year",
+max_comp <- avg_comparisons(explanandum_mig_lang, variables = "gender", by = "year",
                 hypothesis = "b1 = b3", newdata = all2015, vcov = ~ unique_classroom)
 print(max_comp)
 
 # Evaluation for 2023
-max_comp <- avg_comparisons(explanandum_german_at_home, variables = "gender", by = "year",
+max_comp <- avg_comparisons(explanandum_mig_lang, variables = "gender", by = "year",
                 hypothesis = "b1 = b3", newdata = all2023, vcov = ~ unique_classroom)
 print(max_comp)
 
 
-# Modification by german_at_home
-all_comps <- avg_comparisons(explanandum_german_at_home, 
+# Modification by mig_lang
+all_comps <- avg_comparisons(explanandum_mig_lang, 
                              variables = "gender", 
-                             by = c("year", "german_at_home"), 
+                             by = c("year", "mig_lang"), 
                              vcov = ~ unique_classroom)
 
-print(avg_comparisons(explanandum_german_at_home, 
+print(avg_comparisons(explanandum_mig_lang, 
                              variables = "gender", 
-                             by = c("year", "german_at_home"), 
+                             by = c("year", "mig_lang"), 
                              vcov = ~ unique_classroom,
-                      hypothesis = "b1 = b5")) # no german at home
+                      hypothesis = "b1 = b5")) # no migback
 
-print(avg_comparisons(explanandum_german_at_home, 
+print(avg_comparisons(explanandum_mig_lang, 
                              variables = "gender", 
-                             by = c("year", "german_at_home"), 
+                             by = c("year", "mig_lang"), 
                              vcov = ~ unique_classroom,
-                      hypothesis = "b2 = b6")) # german at home
+                      hypothesis = "b2 = b6")) # migback
 
-# German at home vs no german at home
-print(avg_comparisons(explanandum_german_at_home, 
+# no migback vs migback
+print(avg_comparisons(explanandum_mig_lang, 
                              variables = "gender", 
-                             by = c("year", "german_at_home"), 
+                             by = c("year", "mig_lang"), 
                              vcov = ~ unique_classroom,
                       hypothesis = "b1 - b5 = b2 - b6")) 
 

@@ -11,7 +11,7 @@
 
 <meta name="author" content="Julia Rohrer" />
 
-<meta name="date" content="2025-02-13" />
+<meta name="date" content="2025-02-20" />
 
 <title>Ordinal analysis</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">Ordinal analysis</h1>
 <h4 class="author">Julia Rohrer</h4>
-<h4 class="date">2025-02-13</h4>
+<h4 class="date">2025-02-20</h4>
 
 </div>
 
@@ -408,18 +408,6 @@ summary(ordinal)</code></pre>
 ## 
 ## Residual Deviance: 11285.03 
 ## AIC: 11303.03</code></pre>
-<pre class="r"><code>pred &lt;- predictions(explanandum, by = c(&quot;gender&quot;, &quot;year&quot;))
-print(pred)</code></pre>
-<pre><code>## 
-##  gender year Estimate 2.5 % 97.5 %
-##  female 2010     3.79  3.73   3.85
-##  female 2015     3.75  3.69   3.81
-##  female 2023     3.43  3.38   3.48
-##  male   2010     4.01  3.94   4.07
-##  male   2015     4.03  3.97   4.09
-##  male   2023     3.91  3.86   3.96
-## 
-## Type:  response</code></pre>
 <pre class="r"><code>comps &lt;- avg_comparisons(ordinal, variables = &quot;gender&quot;, by = &quot;year&quot;)
 comps</code></pre>
 <pre><code>## 
