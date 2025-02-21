@@ -23,6 +23,7 @@ library(ggplot2)
 explanandum <- lm(satis ~ as.factor(year) + gender + gender:as.factor(year), 
                   data = combined)
 
+# Here are the coefficients
 summary(explanandum)
 
 
@@ -30,6 +31,8 @@ summary(explanandum)
 pred <- predictions(explanandum,
                  by = c("gender", "year"))
 
+
+# Plot the model-implied means
 ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
   geom_point() +
   geom_line() +
@@ -42,45 +45,52 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
   labs(color = "Gender")
 ggsave("Plots/explanandum.png", width = 4, height = 3)
 
-# Comparisons
 
-
+# Calculating the gender gap (comparison between levels of gender) by year
 comps <- avg_comparisons(explanandum, variables = "gender", by = "year")
 print(comps)
+
+# Test maximum contrast (gender gap in 2010 vs gender gap in 2023)
 max_comp <- avg_comparisons(explanandum, variables = "gender", by = "year",
                 hypothesis = "b1 = b3")
 print(max_comp)
+
+# Other two contrasts: 2010 vs 2015, 2015 vs 2023
 print(avg_comparisons(explanandum, variables = "gender", by = "year",
                 hypothesis = "b1 = b2"))
 print(avg_comparisons(explanandum, variables = "gender", by = "year",
                 hypothesis = "b2 = b3"))
 
-# Express differences in SDs
+# Express the gender gaps in SD units (SD of life satisfaction across all observations)
 round(comps$estimate[1]/sd(combined$satis), 2)
 round(comps$estimate[2]/sd(combined$satis), 2)
 round(comps$estimate[3]/sd(combined$satis), 2)
 
-# Express widening gender gap in SDs
+# Express widening gender gap in SDs (SD of life satisfaction across all observations)
 round(max_comp$estimate/sd(combined$satis), 2)
 ```
 
 
 ## Alternative measures of satisfaction
 
-```{r other}
+### Satisfaction with the amount of money with which you have to get by (financial satisfaction)
 
-# satis money
+```{r money}
+# Estimate means
 model_money <- lm(satis_money ~ as.factor(year) + gender + gender:as.factor(year), 
                   data = combined)
 summary(model_money)
-
 pred <- predictions(model_money,
                  by = c("gender", "year"))
+
+# Test maximum contrast
 max_comp <- avg_comparisons(model_money, variables = "gender", by = "year",
                             hypothesis = "b1 = b3")
 print(max_comp)
+# Express in SD units
 round(max_comp$estimate/sd(combined$satis_money, na.rm = TRUE), 2)
 
+# Plot
 ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
   geom_point() +
   geom_line() +
@@ -92,21 +102,27 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
   xlab("Survey year") +
   labs(color = "Gender")
 ggsave("Plots/explanandum_money.png", width = 4, height = 3)
+```
 
+### Satisfaction with your relationships to friends
 
-
-# satis friends
+```{r friends}
+# Estimate means
 model_friends <- lm(satis_friends ~ as.factor(year) + gender + gender:as.factor(year), 
                   data = combined)
 summary(model_friends)
 
 pred <- predictions(model_friends,
                  by = c("gender", "year"))
+# Test maximum contrast
 max_comp <- avg_comparisons(model_friends, variables = "gender", by = "year",
                             hypothesis = "b1 = b3")
 print(max_comp)
+
+# Express in SD units
 round(max_comp$estimate/sd(combined$satis_friends, na.rm = TRUE), 2)
 
+# Plot
 ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
   geom_point() +
   geom_line() +
@@ -118,19 +134,26 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
   xlab("Survey year") +
   labs(color = "Gender")
 ggsave("Plots/explanandum_friends.png", width = 4, height = 3)
+```
 
-# satis mom
+### Satisfaction with your relationship to your mother
+
+```{r mom}
+# Estimate means
 model_mom <- lm(satis_mom ~ as.factor(year) + gender + gender:as.factor(year), 
                   data = combined)
 summary(model_mom)
-
 pred <- predictions(model_mom,
                  by = c("gender", "year"))
+# Test maximum contrast
 max_comp <- avg_comparisons(model_mom, variables = "gender", by = "year",
                             hypothesis = "b1 = b3")
 print(max_comp)
+
+# Express in SD units
 round(max_comp$estimate/sd(combined$satis_mom, na.rm = TRUE), 2)
 
+# Plot
 ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
   geom_point() +
   geom_line() +
@@ -142,19 +165,27 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
   xlab("Survey year") +
   labs(color = "Gender")
 ggsave("Plots/explanandum_mom.png", width = 4, height = 3)
+```
 
-# satis dad
+### Satisfaction with your relationship to your father
+
+```{r dad}
+# Estimate means
 model_dad <- lm(satis_dad ~ as.factor(year) + gender + gender:as.factor(year), 
                   data = combined)
 summary(model_dad)
-
 pred <- predictions(model_dad,
                  by = c("gender", "year"))
+
+# Test maximum contrast
 max_comp <- avg_comparisons(model_dad, variables = "gender", by = "year",
                             hypothesis = "b1 = b3")
 print(max_comp)
+
+# Express in SD units
 round(max_comp$estimate/sd(combined$satis_dad, na.rm = TRUE), 2)
 
+# Plot
 ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
   geom_point() +
   geom_line() +
@@ -166,19 +197,27 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
   xlab("Survey year") +
   labs(color = "Gender")
 ggsave("Plots/explanandum_dad.png", width = 4, height = 3)
+```
 
-# satis leisure
+### Satisfaction with your leisute time activities
+
+```{r leisure}
+# Estimate means
 model_leisure <- lm(satis_leisure ~ as.factor(year) + gender + gender:as.factor(year), 
                   data = combined)
 summary(model_leisure)
-
 pred <- predictions(model_leisure,
                  by = c("gender", "year"))
+
+# Test maximum contrast
 max_comp <- avg_comparisons(model_leisure, variables = "gender", by = "year",
                             hypothesis = "b1 = b3")
 print(max_comp)
+
+# Express in SD units
 round(max_comp$estimate/sd(combined$satis_leisure, na.rm = TRUE), 2)
 
+# Plot
 ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
   geom_point() +
   geom_line() +
@@ -190,19 +229,27 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
   xlab("Survey year") +
   labs(color = "Gender")
 ggsave("Plots/explanandum_leisure.png", width = 4, height = 3)
+```
 
-# satis grades
+### Satisfaction with your school grades
+
+```{r grades}
+# Estimate means
 model_grades <- lm(satis_grades ~ as.factor(year) + gender + gender:as.factor(year), 
                   data = combined)
 summary(model_grades)
-
 pred <- predictions(model_grades,
                  by = c("gender", "year"))
+
+# Test maximum contrast
 max_comp <- avg_comparisons(model_grades, variables = "gender", by = "year",
                             hypothesis = "b1 = b3")
 print(max_comp)
+
+# Express in SD units
 round(max_comp$estimate/sd(combined$satis_grades, na.rm = TRUE), 2)
 
+# Plot
 ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
   geom_point() +
   geom_line() +
@@ -214,20 +261,27 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
   xlab("Survey year") +
   labs(color = "Gender")
 ggsave("Plots/explanandum_grades.png", width = 4, height = 3)
+```
 
+### Satisfaction with your housing situation
 
-# satis dwell
+```{r dwell}
+# Estimate means
 model_dwell <- lm(satis_dwell ~ as.factor(year) + gender + gender:as.factor(year), 
                   data = combined)
 summary(model_dwell)
-
 pred <- predictions(model_dwell,
                  by = c("gender", "year"))
+
+# Test maximum contrast
 max_comp <- avg_comparisons(model_dwell, variables = "gender", by = "year",
                             hypothesis = "b1 = b3")
 print(max_comp)
+
+# Express in SD units
 round(max_comp$estimate/sd(combined$satis_dwell, na.rm = TRUE), 2)
 
+# Plot
 ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
   geom_point() +
   geom_line() +
@@ -239,7 +293,4 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
   xlab("Survey year") +
   labs(color = "Gender")
 ggsave("Plots/explanandum_dwell.png", width = 4, height = 3)
-
-
-
 ```
