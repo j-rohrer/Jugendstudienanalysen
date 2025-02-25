@@ -16,14 +16,39 @@ library(ggplot2)
 library(gridExtra)
 library(dplyr)
 
+combined$source <- as.factor(combined$source)
+
 ```
 
-## Agenda
 In 2023, the survey was conducted with tablets whenever they were available in the schools.
 Here, we are going to look at the possibility that this might have affected how students report their life satisfaction.
 
+## Does life satisfaction vary by survey mode?
+First, we will simply see whether gender and mode jointly predict life satisfaction in 2023.
+```{r mode_satis}
+mode_effects <- lm(satis ~ source*gender, data = combined[combined$year == 2023,])
+summary(mode_effects)
 
-## Let's look at the distribution of response mode in 2023
+pred <- avg_predictions(mode_effects, variables = c("source", "gender"), vcov = ~ unique_classroom)
+
+print(avg_predictions(mode_effects, variables = c("source", "gender"),
+                hypothesis = "b1 = b3"), vcov = ~ unique_classroom) # Girls: Paper versus online
+
+print(avg_predictions(mode_effects, variables = c("source", "gender"),
+                hypothesis = "b2 = b4"), vcov = ~ unique_classroom) # Boys: paper versus online
+
+# Girls are less satisfied on the tablet
+# Boys are pretty much the same
+
+# Compare the predictions
+print(avg_predictions(mode_effects, variables = c("source", "gender", "year"),
+                hypothesis = "b1-b3 = b2-b4", vcov = ~ unique_classroom))
+
+```
+
+## Let's look at whether survey mode covaries with other variables
+Maybe survey mode predicts life satisfaction because it covaries with other factors?
+To check this possibility, let's see how the samples differ
 
 ```{r distribution}
 # Extract 2023 final data for convenience
@@ -50,7 +75,6 @@ assessment_modes$count <- assessment_modes$has_paper + assessment_modes$has_tabl
 prop.table(table(assessment_modes$count))
 # 63 percent of schools had only one mode, 36 percent of schools had both
 
-
 # Is response mode correlated with the type of school?
 prop.table(table(combined_2023$schooltype, combined_2023$source), margin = 1)
 chisq.test(table(combined_2023$schooltype, combined_2023$source))
@@ -63,60 +87,83 @@ mean(combined_2023$age[combined_2023$source == "paper"], na.rm = TRUE)
 mean(combined_2023$age[combined_2023$source == "online"], na.rm = TRUE)
 # Students who filled out on tablet are slightly but significantly older
 ```
-## Does life satisfaction vary by response mode?
-```{r mode_satis}
-mode_effects <- lm(satis ~ as.factor(source)*gender, data = combined_2023)
-summary(mode_effects)
 
-print(avg_comparisons(mode_effects, variable = "gender", by = "source", vcov = ~ school_id))
-print(avg_comparisons(mode_effects, variable = "gender", by = "source", vcov = ~ school_id,
-                hypothesis = "b1 = b2"))
+## Does life satisfaction vary by response mode? Let's check with controls
+To rule out that the associations between survey mode and life satisfaction are due to confounding with demographics, let's again adjust for demographics
 
+```{r mode_satis_controlled}
+
+mode_effects_controlled <- lm(satis ~ source*gender +
+                                age + age:gender + age:source +
+                                as.factor(schooltype) + as.factor(schooltype):gender + as.factor(schooltype):source +
+                                as.factor(mig_lang) + as.factor(mig_lang):gender + as.factor(mig_lang):source, data = combined[combined$year == 2023,])
+summary(mode_effects_controlled)
+
+# Take counterfactual contrasts: everybody with paper vs everybody online
+contrasts <- avg_comparisons(mode_effects_controlled, variables = "source", by = "gender", vcov = ~ unique_classroom)
 # Girls are less satisfied on the tablet
 # Boys are pretty much the same
 
-# What if we include school fixed effects within the years?
-mode_effects_school <- lm(satis ~ as.factor(source)*gender + as.factor(school_id), data = combined[combined$year == 2023,])
-summary(mode_effects_school)
-# there is a weak interaction here
-print(avg_comparisons(mode_effects_school, variable = "gender", by = "source", vcov = ~ school_id))
-print(avg_comparisons(mode_effects_school, variable = "gender", by = "source", vcov = ~ school_id,
-                hypothesis = "b1 = b2"))
-
-
-# What about if we allow the gender-gap to vary by school?
-mode_effects_school2 <- lm(satis ~ as.factor(source)*gender + gender*as.factor(school_id), data = combined_2023)
-summary(mode_effects_school2)
-print(avg_predictions(mode_effects_school2, variables = c("gender", "source")))
-
-print(avg_comparisons(mode_effects_school2, variable = "gender", by = "source", vcov = ~ school_id))
-print(avg_comparisons(mode_effects_school2, variable = "gender", by = "source", vcov = ~ school_id,
-                hypothesis = "b1 = b2"))
-# We still observe the interaction here 
-
-# Check the other way
-print(avg_comparisons(mode_effects_school2, variable = "source", by = "gender", vcov = ~ school_id))
-print(avg_comparisons(mode_effects_school2, variable = "source", by = "gender", vcov = ~ school_id,
+print(avg_comparisons(mode_effects_controlled, variables = "source", by = "gender", vcov = ~ unique_classroom,
                 hypothesis = "b1 = b2"))
 
 ```
 
+## School fixed effects
+Of course, survey mode may also correlate with some other unobserved variable (e.g., SES) that ultimately explains its associations with life satisfaction.
+As survey mode was randomized, we cannot rule out this possibility.
+However, let's assume that within schools, these unobserved variables are approximately constant.
+In that scenario, we can compare classrooms that used different modes within the same school.
+
+So, if we still find that survey mode is associated with life satisfaction, we can rule out that the association is explained away by unobserved variables on the school level.
+
+```{r fixed_effects}
+# Determine which schools used both assessment modes
+schools_with_both <- assessment_modes$school_id[assessment_modes$count == 2]
+
+# Run a fixed effects model
+# These model include a school-wise intercept 
+# and allow the effect of gender to vary between schools
+# (in completely arbitrary ways)
+
+mode_effects_controlled_fe <- lm(satis ~ source*gender +
+                                   age + age:gender + age:source +
+                                   as.factor(schooltype) + as.factor(schooltype):gender + as.factor(schooltype):source +
+                                   as.factor(mig_lang) + as.factor(mig_lang):gender + as.factor(mig_lang):source +
+                                   as.factor(school_id) + as.factor(school_id):gender, 
+                                 data = combined[combined$year == 2023 & combined$school_id %in% schools_with_both,])
+summary(mode_effects_controlled_fe)
+
+# Let's again look at mode effects by gender
+contrasts <- avg_comparisons(mode_effects_controlled_fe, variables = "source", by = "gender", vcov = ~ unique_classroom)
+# Once again, girls are less satisfied on tablet
+# Boys are pretty much the same
+
+print(avg_comparisons(mode_effects_controlled_fe, variables = "source", by = "gender", vcov = ~ unique_classroom,
+                hypothesis = "b1 = b2"))
+# Difference pf 0.25, p < .03
+
+# This speaks against the idea that survey mode is correlated with some unobserved school-level
+# variable that ultimately explains differences in the gender gaps
+```
 
 
-## What happens to the explanandum if we take into account source
+
+## What happens to the explanandum if we take into account survey mode?
+So, let's assume that the (gender-specific) associations between survey mode and life satisfaction actually reflect mode effects: answering the survey on a tablet makes girls (but not boys) report lower levels of satisfaction.
+What does the widening of the gender gap look like if we hold survey mode constant?
+Tablets were only introduced in 2023, and so we cannot see how the gender gap widens for this assessment mode.
+However, paper was used throughout, and so we can look at the widening of the gender gap for this survey mode
+
 ```{r mode_explanandum}
-# We take our previous full model
-# And now additionally allow gender to interact with assessment mode
-# (not that we cannot let survey mode interact with assessment mode
-# because survey mode only varied in 2023)
-explanandum_mig_lang_mode <- lm(satis ~ as.factor(year) + gender + as.factor(year):gender +
+explanandum_paper_only <- lm(satis ~ as.factor(year) + gender + as.factor(year):gender +
                                  as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
                                  as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
-                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang) +
-                                 as.factor(source) + as.factor(source):gender, 
-                  data = combined)
+                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
+                  data = combined[combined$source == "paper",])
 
-# New hypothetical data: demographics like in 2010
+# We will evaluate this for various data grids
+# Demographics like in 2010
 temp1 <- combined[combined$year == 2010,]
 temp1$year <- 2010
 temp2 <- combined[combined$year == 2010,]
@@ -125,250 +172,140 @@ temp3 <- combined[combined$year == 2010,]
 temp3$year <- 2023
 all2010 <- rbind(temp1, temp2, temp3)
 
-
-pred <- predictions(explanandum_mig_lang_mode,
-                 by = c("gender", "year"),
-                 newdata = all2010,
-                 vcov = ~ unique_classroom)
-
-print(pred)
-# Look at the average widening if the gap
-comps <- avg_comparisons(explanandum_mig_lang_mode, variables = "gender", by = "year",
-                 newdata = all2010)
-print(comps)
-
-max_comp <- avg_comparisons(explanandum_mig_lang_mode, variables = "gender", by = "year",
-                hypothesis = "b1 = b3",
-                 newdata = all2010)
-print(max_comp)
-# The widening of the gap is much reduced and statistically weaker
-
-# Look at widening of the gap within levels of migback
-all_comps <- avg_comparisons(explanandum_mig_lang_mode, 
-                             variables = "gender", 
-                             by = c("year", "mig_lang"), 
-                             vcov = ~ unique_classroom)
-print(all_comps)
-
-# Widening of the gap for no migration background
-print(avg_comparisons(explanandum_mig_lang_mode, 
-                             variables = "gender", 
-                             by = c("year", "mig_lang"), 
-                             vcov = ~ unique_classroom,
-                      hypothesis = "b1 = b5")) 
-# 0.2, p < .001
-
-# Widening of the gap for migration background
-print(avg_comparisons(explanandum_mig_lang_mode, 
-                             variables = "gender", 
-                             by = c("year", "mig_lang"), 
-                             vcov = ~ unique_classroom,
-                      hypothesis = "b2 = b6")) # migback
-# 0.7 (!), p < .001
-
-```
-## QUICK DETOUR
-Maybe we should have done school fixed effects all along?
-
-```{r fixed_effects}
-
-# Does it make sense to estimate it that way?
-# Maybe upfront restrict it to schools included in all years
-
-fe_test <- lm(satis ~ as.factor(year) + gender + as.factor(year):gender +
-                                 as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
-                                 as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
-                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang) +
-                                 as.factor(source) + as.factor(source):gender +
-                                  as.factor(school_id) + as.factor(school_id):gender + as.factor(school_id):as.factor(year), 
-                  data = combined)
-
-
-pred <- predictions(fe_test,
-                 by = c("gender", "year"),
-                 newdata = all2010,
-                 vcov = ~ unique_classroom)
-
-print(pred)
-# Look at the average widening if the gap
-comps <- avg_comparisons(fe_test, variables = "gender", by = "year",
-                 newdata = all2010,
-                 vcov = ~ unique_classroom)
-print(comps)
-
-max_comp <- avg_comparisons(fe_test, variables = "gender", by = "year",
-                hypothesis = "b1 = b3",
-                 newdata = all2010,
-                 vcov = ~ unique_classroom)
-print(max_comp)
-# The widening of the gap is much reduced and no longer statistically significant
-# That does not seem right -- how can the average effect be no longer significant, 
-# but both stratum specific effects still be significant?
-
-# Look at widening of the gap within levels of migback
-all_comps <- avg_comparisons(fe_test, 
-                             variables = "gender", 
-                             newdata = all2010,
-                             by = c("year", "mig_lang"), 
-                             vcov = ~ unique_classroom)
-print(all_comps)
-
-# Widening of the gap for no migration background
-print(avg_comparisons(fe_test, 
-                             variables = "gender", 
-                             by = c("year", "mig_lang"), 
-                      newdata = all2010,
-                             vcov = ~ unique_classroom,
-                      hypothesis = "b1 = b5")) 
-# 0.10, p = .323
-
-# Widening of the gap for migration background
-print(avg_comparisons(fe_test, 
-                             variables = "gender", 
-                             by = c("year", "mig_lang"), 
-                      newdata = all2010,
-                             vcov = ~ unique_classroom,
-                      hypothesis = "b2 = b6")) # migback
-# -0.54, p < .04
-
-
-
-#######################
-# Maybe upfront restrict it to schools included in all years
-mapping$included <- mapping$match_2010 + mapping$match_2015 + mapping$match_2023
-table(mapping$included)
-
-combined_limited <- combined[combined$school_id %in% mapping$school_id[mapping$included == 3], ]
-
-fe_test <- lm(satis ~ as.factor(year) + gender + as.factor(year):gender +
-                                 as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
-                                 as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
-                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang) +
-                                 as.factor(source) + as.factor(source):gender +
-                                  as.factor(school_id) + as.factor(school_id):gender + as.factor(school_id):as.factor(year), 
-                  data = combined_limited)
-
-# New hypothetical data: demographics like in 2010
-temp1 <- combined_limited[combined_limited$year == 2010,]
+# Demographics like in 2015
+temp1 <- combined[combined$year == 2015,]
 temp1$year <- 2010
-temp2 <- combined_limited[combined_limited$year == 2010,]
+temp2 <- combined[combined$year == 2015,]
 temp2$year <- 2015
-temp3 <- combined_limited[combined_limited$year == 2010,]
+temp3 <- combined[combined$year == 2015,]
 temp3$year <- 2023
-all2010_limited <- rbind(temp1, temp2, temp3)
+all2015 <- rbind(temp1, temp2, temp3)
 
-pred <- predictions(fe_test,
+# Demographics like in 2023
+temp1 <- combined[combined$year == 2023,]
+temp1$year <- 2010
+temp2 <- combined[combined$year == 2023,]
+temp2$year <- 2015
+temp3 <- combined[combined$year == 2023,]
+temp3$year <- 2023
+all2023 <- rbind(temp1, temp2, temp3)
+
+# Demographics like 2023, but only those who actually used paper
+temp1 <- combined[combined$year == 2023 & combined$source == "paper",]
+temp1$year <- 2010
+temp2 <- combined[combined$year == 2023 & combined$source == "paper",]
+temp2$year <- 2015
+temp3 <- combined[combined$year == 2023 & combined$source == "paper",]
+temp3$year <- 2023
+all2023_paper <- rbind(temp1, temp2, temp3)
+
+
+##########################
+# Use 2010 distribution
+##########################
+pred <- predictions(explanandum_paper_only,
                  by = c("gender", "year"),
-                 newdata = all2010_limited,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
 
-print(pred)
 
-# Look at the average widening if the gap
-comps <- avg_comparisons(fe_test, variables = "gender", by = "year",
-                 newdata = all2010_limited,
+comps <- avg_comparisons(explanandum_paper_only, variables = "gender", by = "year",
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps)
 
-max_comp <- avg_comparisons(fe_test, variables = "gender", by = "year",
+max_comp <- avg_comparisons(explanandum_paper_only, variables = "gender", by = "year",
                 hypothesis = "b1 = b3",
-                 newdata = all2010_limited,
+                 newdata = all2010,
+                vcov = ~ unique_classroom)
+print(max_comp)
+# Gap from previously 0.27 to 0.17
+
+##########################
+# Use 2015 distribution
+##########################
+max_comp <- avg_comparisons(explanandum_paper_only, variables = "gender", by = "year",
+                hypothesis = "b1 = b3",
+                 newdata = all2015,
+                vcov = ~ unique_classroom)
+print(max_comp)
+# Gap from 0.33 to 0.24
+
+##########################
+# Use 2023 distribution
+##########################
+max_comp <- avg_comparisons(explanandum_paper_only, variables = "gender", by = "year",
+                hypothesis = "b1 = b3",
+                 newdata = all2023,
+                vcov = ~ unique_classroom)
+print(max_comp)
+# Gap from 0.31 to 0.21
+```
+## Paper only, modification by migback
+Before, we had already noted that the widening of the gender gap strongly differed depending on migration background/language at home.
+So let's see how migration background modifies the widening of the gender gap if we hold constant survey mode by only analyzing responses collected on paper.
+
+```{r mode_migback_modify}
+comps_by_migback <- avg_comparisons(explanandum_paper_only, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
-print(max_comp)
-# The widening of the gap is much reduced and no longer statistically significant
-# That does not seem right -- how can the average effect be no longer significant, 
-# but both stratum specific effects still be significant?
-
-# Look at widening of the gap within levels of migback
-all_comps <- avg_comparisons(fe_test, 
-                             variables = "gender", 
-                             newdata = all2010_limited,
-                             by = c("year", "mig_lang"), 
-                             vcov = ~ unique_classroom)
-print(all_comps)
+print(comps_by_migback)
 
 # Widening of the gap for no migration background
-print(avg_comparisons(fe_test, 
-                             variables = "gender", 
-                             by = c("year", "mig_lang"), 
-                      newdata = all2010_limited,
-                             vcov = ~ unique_classroom,
-                      hypothesis = "b1 = b5")) 
-# 0.11, p = .323
+# 2010
+print(avg_comparisons(explanandum_paper_only, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2010,
+                 vcov = ~ unique_classroom,
+      hypothesis = "b1 = b5"))
+# 0.1, p = .363
+
+# 2015
+print(avg_comparisons(explanandum_paper_only, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2015,
+                 vcov = ~ unique_classroom,
+      hypothesis = "b1 = b5"))
+# 0.17, p = .132
+
+# 2023
+print(avg_comparisons(explanandum_paper_only, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom,
+      hypothesis = "b1 = b5"))
+# 0.12, p = .25
+
+print(avg_comparisons(explanandum_paper_only, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023_paper,
+                 vcov = ~ unique_classroom,
+      hypothesis = "b1 = b5"))
+# 0.09, p = .384
 
 # Widening of the gap for migration background
-print(avg_comparisons(fe_test, 
-                             variables = "gender", 
-                             by = c("year", "mig_lang"), 
-                      newdata = all2010_limited,
-                             vcov = ~ unique_classroom,
-                      hypothesis = "b2 = b6")) # migback
-# -0.54, p < .04
+# 2010
+print(avg_comparisons(explanandum_paper_only, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2010,
+                 vcov = ~ unique_classroom,
+                 hypothesis = "b2 = b6"))
+# .87, p = .004
 
-# OKAY! I think this model loses a lot of power
-# So shall we do a multilevel model instead?
+# 2015
+print(avg_comparisons(explanandum_paper_only, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2015,
+                 vcov = ~ unique_classroom,
+                 hypothesis = "b2 = b6"))
+# 0.93, .003
 
+# 2023
+print(avg_comparisons(explanandum_paper_only, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom,
+                 hypothesis = "b2 = b6"))
+# 0.88, .004
+print(avg_comparisons(explanandum_paper_only, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023_paper,
+                 vcov = ~ unique_classroom,
+                 hypothesis = "b2 = b6"))
+# 0.87, p = .004
 
-# Do we still have a source effect within
-
-```
-```{r }
-# Do a multilevel model for better power
-
-library(brms)
-
-re_test <- brm(satis ~ as.factor(year) + gender + as.factor(year):gender +
-                                 as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
-                                 as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
-                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang) +
-                                 as.factor(source) + as.factor(source):gender + (gender + as.factor(year)|school_id), 
-               data = combined_limited,
-               cores = 4)
-
-
-# Look at the average widening if the gap
-comps <- avg_comparisons(re_test, variables = "gender", by = "year",
-                 newdata = all2010_limited)
-print(comps)
-
-max_comp <- avg_comparisons(re_test, variables = "gender", by = "year",
-                hypothesis = "b1 = b3",
-                 newdata = all2010_limited)
-print(max_comp)
-# The widening of the gap is much reduced and no longer statistically significant
-# That does not seem right -- how can the average effect be no longer significant, 
-# but both stratum specific effects still be significant?
-
-# Look at widening of the gap within levels of migback
-all_comps <- avg_comparisons(re_test, 
-                             variables = "gender", 
-                             newdata = all2010_limited,
-                             by = c("year", "mig_lang"))
-print(all_comps)
-
-# Widening of the gap for no migration background
-print(avg_comparisons(re_test, 
-                             variables = "gender", 
-                             by = c("year", "mig_lang"), 
-                      newdata = all2010_limited,
-                      hypothesis = "b1 = b5")) 
-# 0.10, -0.33 to 0.12
-
-
-# Widening of the gap for migration background
-print(avg_comparisons(re_test, 
-                             variables = "gender", 
-                             by = c("year", "mig_lang"), 
-                      newdata = all2010_limited,
-                      hypothesis = "b2 = b6")) # migback
-# -0.82, -0.30 to -1.32
-
-# This definitely implies a bigger effect
-
-```
-
-```{r }
-# Do fixed effects explain away the source effect?
 
 ```
 
