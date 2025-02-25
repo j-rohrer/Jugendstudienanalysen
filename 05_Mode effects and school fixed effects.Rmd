@@ -15,6 +15,8 @@ library(marginaleffects)
 library(ggplot2)
 library(gridExtra)
 library(dplyr)
+library(patchwork)
+
 
 combined$source <- as.factor(combined$source)
 
@@ -86,6 +88,11 @@ t.test(combined_2023$age[combined_2023$source == "paper"], combined_2023$age[com
 mean(combined_2023$age[combined_2023$source == "paper"], na.rm = TRUE)
 mean(combined_2023$age[combined_2023$source == "online"], na.rm = TRUE)
 # Students who filled out on tablet are slightly but significantly older
+
+# Is response mode correlated with migration background?
+prop.table(table(combined_2023$mig_lang, combined_2023$source), margin = 1)
+chisq.test(table(combined_2023$mig_lang, combined_2023$source))
+
 ```
 
 ## Does life satisfaction vary by response mode? Let's check with controls
@@ -141,7 +148,7 @@ contrasts <- avg_comparisons(mode_effects_controlled_fe, variables = "source", b
 
 print(avg_comparisons(mode_effects_controlled_fe, variables = "source", by = "gender", vcov = ~ unique_classroom,
                 hypothesis = "b1 = b2"))
-# Difference pf 0.25, p < .03
+# Difference of 0.25, p < .03
 
 # This speaks against the idea that survey mode is correlated with some unobserved school-level
 # variable that ultimately explains differences in the gender gaps
@@ -203,16 +210,6 @@ all2023_paper <- rbind(temp1, temp2, temp3)
 ##########################
 # Use 2010 distribution
 ##########################
-pred <- predictions(explanandum_paper_only,
-                 by = c("gender", "year"),
-                 newdata = all2010,
-                 vcov = ~ unique_classroom)
-
-
-comps <- avg_comparisons(explanandum_paper_only, variables = "gender", by = "year",
-                 newdata = all2010,
-                 vcov = ~ unique_classroom)
-print(comps)
 
 max_comp <- avg_comparisons(explanandum_paper_only, variables = "gender", by = "year",
                 hypothesis = "b1 = b3",
@@ -234,6 +231,17 @@ print(max_comp)
 ##########################
 # Use 2023 distribution
 ##########################
+pred <- predictions(explanandum_paper_only,
+                 by = c("gender", "year"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+
+
+comps <- avg_comparisons(explanandum_paper_only, variables = "gender", by = "year",
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+print(comps)
+
 max_comp <- avg_comparisons(explanandum_paper_only, variables = "gender", by = "year",
                 hypothesis = "b1 = b3",
                  newdata = all2023,
@@ -305,6 +313,53 @@ print(avg_comparisons(explanandum_paper_only, variables = "gender", by = c("year
                  vcov = ~ unique_classroom,
                  hypothesis = "b2 = b6"))
 # 0.87, p = .004
+
+```
+## Plot the implied means of this final model
+```{r final_plot}
+# Generate predictions for combinations of gender and year and age
+pred <- avg_predictions(explanandum_paper_only,
+                        newdata = all2023,
+                        by = c("gender", "year", "mig_lang"),
+                        vcov = ~ unique_classroom)
+
+# Plot the results
+# No migration background
+cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("No migration background") +
+  ylab("Mean life satisfaction") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# With migration background
+cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("Migration background") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  ylab("Mean life satisfaction") +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# Combine into single plot
+combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
+combined_cat_mig_lang
+ggsave("Plots/paper_satis_by_mig_lang_categorical.png", width = 6, height = 3)
 
 
 ```

@@ -632,4 +632,21 @@ print(avg_comparisons(explanandum_mig_lang,
                       newdata = all2010,
                       hypothesis = "b1 - b5 = b2 - b6")) 
 
+# Widening of the gap for no migration background, 2023 demographics
+print(avg_comparisons(explanandum_mig_lang, 
+                             variables = "gender", 
+                             by = c("year", "mig_lang"), 
+                      newdata = all2023,
+                             vcov = ~ unique_classroom,
+                      hypothesis = "b1 = b5")) 
+
+# Widening of the gap for migration background, 2023 demographics
+print(avg_comparisons(explanandum_mig_lang, 
+                             variables = "gender", 
+                             by = c("year", "mig_lang"), 
+                             vcov = ~ unique_classroom,
+                      newdata = all2023,
+                      hypothesis = "b2 = b6")) # migback
+
+
 ```

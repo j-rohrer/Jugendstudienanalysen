@@ -1508,6 +1508,30 @@ print(avg_comparisons(explanandum_mig_lang,
 ##  b1-b5=b2-b6    0.496       0.23 2.16   0.0311 5.0 0.0451  0.948
 ## 
 ## Type:  response</code></pre>
+<pre class="r"><code># Widening of the gap for no migration background, 2023 demographics
+print(avg_comparisons(explanandum_mig_lang, 
+                             variables = &quot;gender&quot;, 
+                             by = c(&quot;year&quot;, &quot;mig_lang&quot;), 
+                      newdata = all2023,
+                             vcov = ~ unique_classroom,
+                      hypothesis = &quot;b1 = b5&quot;)) </code></pre>
+<pre><code>## 
+##  Hypothesis Estimate Std. Error    z Pr(&gt;|z|)    S 2.5 % 97.5 %
+##       b1=b5   -0.244     0.0697 -3.5   &lt;0.001 11.0 -0.38 -0.107
+## 
+## Type:  response</code></pre>
+<pre class="r"><code># Widening of the gap for migration background, 2023 demographics
+print(avg_comparisons(explanandum_mig_lang, 
+                             variables = &quot;gender&quot;, 
+                             by = c(&quot;year&quot;, &quot;mig_lang&quot;), 
+                             vcov = ~ unique_classroom,
+                      newdata = all2023,
+                      hypothesis = &quot;b2 = b6&quot;)) # migback</code></pre>
+<pre><code>## 
+##  Hypothesis Estimate Std. Error     z Pr(&gt;|z|)    S 2.5 % 97.5 %
+##       b2=b6   -0.741      0.219 -3.39   &lt;0.001 10.5 -1.17 -0.312
+## 
+## Type:  response</code></pre>
 </div>
 </div>
 </div>

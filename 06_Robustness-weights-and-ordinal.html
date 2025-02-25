@@ -11,9 +11,9 @@
 
 <meta name="author" content="Julia Rohrer" />
 
-<meta name="date" content="2025-02-25" />
+<meta name="date" content="2025-02-28" />
 
-<title>Mode effects and school fixed effects</title>
+<title>Check whether results are robust with ordinal model</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -350,65 +350,68 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Mode effects and school fixed effects</h1>
+<h1 class="title toc-ignore">Check whether results are robust with
+ordinal model</h1>
 <h4 class="author">Julia Rohrer</h4>
-<h4 class="date">2025-02-25</h4>
+<h4 class="date">2025-02-28</h4>
 
 </div>
 
 <div id="TOC">
 <ul>
-<li><a href="#does-life-satisfaction-vary-by-survey-mode" id="toc-does-life-satisfaction-vary-by-survey-mode">Does life
-satisfaction vary by survey mode?</a></li>
-<li><a href="#lets-look-at-whether-survey-mode-covaries-with-other-variables" id="toc-lets-look-at-whether-survey-mode-covaries-with-other-variables">Let’s
-look at whether survey mode covaries with other variables</a></li>
-<li><a href="#does-life-satisfaction-vary-by-response-mode-lets-check-with-controls" id="toc-does-life-satisfaction-vary-by-response-mode-lets-check-with-controls">Does
-life satisfaction vary by response mode? Let’s check with
-controls</a></li>
-<li><a href="#school-fixed-effects" id="toc-school-fixed-effects">School
-fixed effects</a></li>
-<li><a href="#what-happens-to-the-explanandum-if-we-take-into-account-survey-mode" id="toc-what-happens-to-the-explanandum-if-we-take-into-account-survey-mode">What
-happens to the explanandum if we take into account survey mode?</a></li>
-<li><a href="#paper-only-modification-by-migback" id="toc-paper-only-modification-by-migback">Paper only, modification by
-migback</a></li>
+<li><a href="#do-we-get-the-same-pattern-if-we-once-again-use-an-ordinal-model" id="toc-do-we-get-the-same-pattern-if-we-once-again-use-an-ordinal-model">Do
+we get the same pattern if we once again use an ordinal model?</a></li>
 </ul>
 </div>
 
-<p>In 2023, the survey was conducted with tablets whenever they were
-available in the schools. Here, we are going to look at the possibility
-that this might have affected how students report their life
-satisfaction.</p>
-<div id="does-life-satisfaction-vary-by-survey-mode" class="section level2">
-<h2>Does life satisfaction vary by survey mode?</h2>
-<p>First, we will simply see whether gender and mode jointly predict
-life satisfaction in 2023.</p>
-<pre class="r"><code>mode_effects &lt;- lm(satis ~ source*gender, data = combined[combined$year == 2023,])
-summary(mode_effects)</code></pre>
-<pre><code>## 
-## Call:
-## lm(formula = satis ~ source * gender, data = combined[combined$year == 
-##     2023, ])
-## 
-## Residuals:
-##      Min       1Q   Median       3Q      Max 
-## -2.91186 -0.37681  0.08814  0.62319  1.62319 
-## 
-## Coefficients:
-##                        Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)             3.37681    0.03298 102.376  &lt; 2e-16 ***
-## sourcepaper             0.16990    0.05853   2.903  0.00374 ** 
-## gendermale              0.53505    0.04659  11.484  &lt; 2e-16 ***
-## sourcepaper:gendermale -0.17098    0.08379  -2.041  0.04143 *  
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## Residual standard error: 0.822 on 1799 degrees of freedom
-## Multiple R-squared:  0.0829, Adjusted R-squared:  0.08137 
-## F-statistic: 54.21 on 3 and 1799 DF,  p-value: &lt; 2.2e-16</code></pre>
-<pre class="r"><code>pred &lt;- avg_predictions(mode_effects, variables = c(&quot;source&quot;, &quot;gender&quot;), vcov = ~ unique_classroom)
+<div id="do-we-get-the-same-pattern-if-we-once-again-use-an-ordinal-model" class="section level2">
+<h2>Do we get the same pattern if we once again use an ordinal
+model?</h2>
+<pre class="r"><code># Fit model in ordinal
+# We are using brms here simply because polr() does not support
+# the postestimation routine of marginaleffects on the link scale
+#explanandum_paper_only_ordinal &lt;- brm(satis ~ as.factor(year) + gender + as.factor(year):gender +
+#                                        as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
+#                                        as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+#                                        as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
+#                                 family = cumulative(&quot;probit&quot;),
+#                                 cores = 4,
+#                  data = combined[combined$source == &quot;paper&quot;,])
+# saveRDS(explanandum_paper_only_ordinal, file = &quot;explanandum_paper_only_ordinal&quot;)
+explanandum_paper_only_ordinal &lt;- readRDS(&quot;explanandum_paper_only_ordinal&quot;)
 
-print(avg_predictions(mode_effects, variables = c(&quot;source&quot;, &quot;gender&quot;),
-                hypothesis = &quot;b1 = b3&quot;), vcov = ~ unique_classroom) # Girls: Paper versus online</code></pre>
+# Demographics like in 2023
+temp1 &lt;- combined[combined$year == 2023,]
+temp1$year &lt;- 2010
+temp2 &lt;- combined[combined$year == 2023,]
+temp2$year &lt;- 2015
+temp3 &lt;- combined[combined$year == 2023,]
+temp3$year &lt;- 2023
+all2023 &lt;- rbind(temp1, temp2, temp3)
+
+
+pred &lt;- avg_predictions(explanandum_paper_only_ordinal,
+                 by = c(&quot;gender&quot;, &quot;year&quot;),
+                 newdata = all2023,
+                 type = &quot;link&quot;)
+
+comps &lt;- avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = &quot;year&quot;,
+                 newdata = all2023,
+                 type = &quot;link&quot;)
+print(comps)</code></pre>
+<pre><code>## 
+##  year Estimate  2.5 % 97.5 %
+##  2010    0.225 0.0959  0.355
+##  2015    0.368 0.2419  0.488
+##  2023    0.516 0.2923  0.743
+## 
+## Term: gender
+## Type:  link 
+## Comparison: male - female</code></pre>
+<pre class="r"><code>max_comp &lt;- avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = &quot;year&quot;,
+                hypothesis = &quot;b1 = b3&quot;,
+                 newdata = all2023,
+                 type = &quot;link&quot;)</code></pre>
 <pre><code>## Warning: 
 ## It is essential to check the order of estimates when specifying hypothesis tests using positional indices like b1, b2, etc. The indices of estimates can change depending on the order of rows in the original dataset, user-supplied arguments, model-fitting package, and version of `marginaleffects`.
 ## 
@@ -427,499 +430,32 @@ print(avg_predictions(mode_effects, variables = c(&quot;source&quot;, &quot;gend
 ## 
 ## Disable this warning with: `options(marginaleffects_safe = FALSE)`
 ##  This warning appears once per session.</code></pre>
+<pre class="r"><code>print(max_comp)</code></pre>
 <pre><code>## 
-##  Hypothesis Estimate Std. Error    z Pr(&gt;|z|)   S  2.5 %  97.5 %
-##       b1=b3    -0.17     0.0585 -2.9   0.0037 8.1 -0.285 -0.0552
+##  Hypothesis Estimate  2.5 % 97.5 %
+##       b1=b3   -0.295 -0.545 -0.043
 ## 
-## Type:  response</code></pre>
-<pre class="r"><code>print(avg_predictions(mode_effects, variables = c(&quot;source&quot;, &quot;gender&quot;),
-                hypothesis = &quot;b2 = b4&quot;), vcov = ~ unique_classroom) # Boys: paper versus online</code></pre>
-<pre><code>## 
-##  Hypothesis Estimate Std. Error     z Pr(&gt;|z|)   S  2.5 % 97.5 %
-##       b2=b4  0.00108       0.06 0.018    0.986 0.0 -0.116  0.119
-## 
-## Type:  response</code></pre>
-<pre class="r"><code># Girls are less satisfied on the tablet
-# Boys are pretty much the same
-
-# Compare the predictions
-print(avg_predictions(mode_effects, variables = c(&quot;source&quot;, &quot;gender&quot;, &quot;year&quot;),
-                hypothesis = &quot;b1-b3 = b2-b4&quot;, vcov = ~ unique_classroom))</code></pre>
-<pre><code>## 
-##   Hypothesis Estimate Std. Error     z Pr(&gt;|z|)   S  2.5 %  97.5 %
-##  b1-b3=b2-b4   -0.171     0.0772 -2.21   0.0269 5.2 -0.322 -0.0196
-## 
-## Type:  response</code></pre>
-</div>
-<div id="lets-look-at-whether-survey-mode-covaries-with-other-variables" class="section level2">
-<h2>Let’s look at whether survey mode covaries with other variables</h2>
-<p>Maybe survey mode predicts life satisfaction because it covaries with
-other factors? To check this possibility, let’s see how the samples
-differ</p>
-<pre class="r"><code># Extract 2023 final data for convenience
-combined_2023 &lt;- combined[combined$year == 2023,]
-prop.table(table(combined_2023$source))</code></pre>
-<pre><code>## 
-##    online     paper 
-## 0.6905158 0.3094842</code></pre>
-<pre class="r"><code># Which schools have which assessment mode(s)
-has_tablet &lt;- unique(combined_2023$school_id[combined_2023$source == &quot;online&quot; &amp; !is.na(combined_2023$school_id)])
-has_paper &lt;- unique(combined_2023$school_id[combined_2023$source == &quot;paper&quot; &amp; !is.na(combined_2023$school_id)])
-has_tablet</code></pre>
-<pre><code>##  [1] 49  2  3 58 41 60 68 13 20 63 50 72 40 10 66 15 16 71 52 18  6 59 57 55 61
-## [26] 53 48 11 14</code></pre>
-<pre class="r"><code>has_paper</code></pre>
-<pre><code>##  [1]  2 60 13 63 40 66 15 16 17 71 46  7 59 57 53 21</code></pre>
-<pre class="r"><code># Assessment mode table
-assessment_modes &lt;- data.frame(matrix(NA, ncol = 3,nrow = length(unique(combined_2023$school_id[!is.na(combined_2023$school_id)]))))
-names(assessment_modes) &lt;- c(&quot;school_id&quot;, &quot;has_paper&quot;, &quot;has_tablet&quot;)
-assessment_modes$school_id &lt;- unique(combined_2023$school_id[!is.na(combined_2023$school_id)])
-
-for (i in 1:nrow(assessment_modes)) {
-  assessment_modes$has_paper[i] &lt;-  assessment_modes$school_id[i] %in% has_paper
-  assessment_modes$has_tablet[i] &lt;-  assessment_modes$school_id[i] %in% has_tablet
-}
-
-assessment_modes$count &lt;- assessment_modes$has_paper + assessment_modes$has_tablet
-prop.table(table(assessment_modes$count))</code></pre>
-<pre><code>## 
-##         1         2 
-## 0.6363636 0.3636364</code></pre>
-<pre class="r"><code># 63 percent of schools had only one mode, 36 percent of schools had both
-
-# Is response mode correlated with the type of school?
-prop.table(table(combined_2023$schooltype, combined_2023$source), margin = 1)</code></pre>
-<pre><code>##    
-##        online     paper
-##   1 0.8876404 0.1123596
-##   2 0.5864407 0.4135593</code></pre>
-<pre class="r"><code>chisq.test(table(combined_2023$schooltype, combined_2023$source))</code></pre>
-<pre><code>## 
-##  Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
-## 
-## data:  table(combined_2023$schooltype, combined_2023$source)
-## X-squared = 171.68, df = 1, p-value &lt; 2.2e-16</code></pre>
-<pre class="r"><code># Significantly more tablets in Mittelschule
-
-# Is response mode correlated with age?
-prop.table(table(combined_2023$age, combined_2023$source), margin = 1)</code></pre>
-<pre><code>##     
-##         online     paper
-##   12 0.6194690 0.3805310
-##   13 0.5949008 0.4050992
-##   14 0.7326478 0.2673522
-##   15 0.7459016 0.2540984
-##   16 0.6577181 0.3422819
-##   17 0.7028571 0.2971429
-##   18 0.8073394 0.1926606</code></pre>
-<pre class="r"><code>t.test(combined_2023$age[combined_2023$source == &quot;paper&quot;], combined_2023$age[combined_2023$source == &quot;online&quot;])</code></pre>
-<pre><code>## 
-##  Welch Two Sample t-test
-## 
-## data:  combined_2023$age[combined_2023$source == &quot;paper&quot;] and combined_2023$age[combined_2023$source == &quot;online&quot;]
-## t = -3.4147, df = 1066, p-value = 0.0006626
-## alternative hypothesis: true difference in means is not equal to 0
-## 95 percent confidence interval:
-##  -0.4411449 -0.1191695
-## sample estimates:
-## mean of x mean of y 
-##  14.55197  14.83213</code></pre>
-<pre class="r"><code>mean(combined_2023$age[combined_2023$source == &quot;paper&quot;], na.rm = TRUE)</code></pre>
-<pre><code>## [1] 14.55197</code></pre>
-<pre class="r"><code>mean(combined_2023$age[combined_2023$source == &quot;online&quot;], na.rm = TRUE)</code></pre>
-<pre><code>## [1] 14.83213</code></pre>
-<pre class="r"><code># Students who filled out on tablet are slightly but significantly older</code></pre>
-</div>
-<div id="does-life-satisfaction-vary-by-response-mode-lets-check-with-controls" class="section level2">
-<h2>Does life satisfaction vary by response mode? Let’s check with
-controls</h2>
-<p>To rule out that the associations between survey mode and life
-satisfaction are due to confounding with demographics, let’s again
-adjust for demographics</p>
-<pre class="r"><code>mode_effects_controlled &lt;- lm(satis ~ source*gender +
-                                age + age:gender + age:source +
-                                as.factor(schooltype) + as.factor(schooltype):gender + as.factor(schooltype):source +
-                                as.factor(mig_lang) + as.factor(mig_lang):gender + as.factor(mig_lang):source, data = combined[combined$year == 2023,])
-summary(mode_effects_controlled)</code></pre>
-<pre><code>## 
-## Call:
-## lm(formula = satis ~ source * gender + age + age:gender + age:source + 
-##     as.factor(schooltype) + as.factor(schooltype):gender + as.factor(schooltype):source + 
-##     as.factor(mig_lang) + as.factor(mig_lang):gender + as.factor(mig_lang):source, 
-##     data = combined[combined$year == 2023, ])
-## 
-## Residuals:
-##      Min       1Q   Median       3Q      Max 
-## -3.02722 -0.41117  0.07225  0.58883  1.75369 
-## 
-## Coefficients:
-##                                    Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)                         3.57581    0.26876  13.305  &lt; 2e-16 ***
-## sourcepaper                         0.77184    0.38705   1.994  0.04628 *  
-## gendermale                          1.09801    0.36170   3.036  0.00243 ** 
-## age                                -0.01098    0.01833  -0.599  0.54933    
-## as.factor(schooltype)2             -0.03324    0.06580  -0.505  0.61345    
-## as.factor(mig_lang)1               -0.12064    0.08980  -1.343  0.17930    
-## sourcepaper:gendermale             -0.15366    0.08873  -1.732  0.08350 .  
-## gendermale:age                     -0.03876    0.02455  -1.579  0.11456    
-## sourcepaper:age                    -0.04651    0.02634  -1.766  0.07759 .  
-## gendermale:as.factor(schooltype)2  -0.04266    0.08721  -0.489  0.62478    
-## sourcepaper:as.factor(schooltype)2  0.06644    0.11671   0.569  0.56923    
-## gendermale:as.factor(mig_lang)1     0.21208    0.11515   1.842  0.06566 .  
-## sourcepaper:as.factor(mig_lang)1    0.16810    0.12781   1.315  0.18862    
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## Residual standard error: 0.8181 on 1790 degrees of freedom
-## Multiple R-squared:  0.09614,    Adjusted R-squared:  0.09008 
-## F-statistic: 15.87 on 12 and 1790 DF,  p-value: &lt; 2.2e-16</code></pre>
-<pre class="r"><code># Take counterfactual contrasts: everybody with paper vs everybody online
-contrasts &lt;- avg_comparisons(mode_effects_controlled, variables = &quot;source&quot;, by = &quot;gender&quot;, vcov = ~ unique_classroom)
-# Girls are less satisfied on the tablet
-# Boys are pretty much the same
-
-print(avg_comparisons(mode_effects_controlled, variables = &quot;source&quot;, by = &quot;gender&quot;, vcov = ~ unique_classroom,
-                hypothesis = &quot;b1 = b2&quot;))</code></pre>
-<pre><code>## 
-##  Hypothesis Estimate Std. Error    z Pr(&gt;|z|)   S     2.5 % 97.5 %
-##       b1=b2    0.153     0.0784 1.96   0.0502 4.3 -0.000167  0.307
-## 
-## Type:  response</code></pre>
-</div>
-<div id="school-fixed-effects" class="section level2">
-<h2>School fixed effects</h2>
-<p>Of course, survey mode may also correlate with some other unobserved
-variable (e.g., SES) that ultimately explains its associations with life
-satisfaction. As survey mode was randomized, we cannot rule out this
-possibility. However, let’s assume that within schools, these unobserved
-variables are approximately constant. In that scenario, we can compare
-classrooms that used different modes within the same school.</p>
-<p>So, if we still find that survey mode is associated with life
-satisfaction, we can rule out that the association is explained away by
-unobserved variables on the school level.</p>
-<pre class="r"><code># Determine which schools used both assessment modes
-schools_with_both &lt;- assessment_modes$school_id[assessment_modes$count == 2]
-
-# Run a fixed effects model
-# These model include a school-wise intercept 
-# and allow the effect of gender to vary between schools
-# (in completely arbitrary ways)
-
-mode_effects_controlled_fe &lt;- lm(satis ~ source*gender +
-                                   age + age:gender + age:source +
-                                   as.factor(schooltype) + as.factor(schooltype):gender + as.factor(schooltype):source +
-                                   as.factor(mig_lang) + as.factor(mig_lang):gender + as.factor(mig_lang):source +
-                                   as.factor(school_id) + as.factor(school_id):gender, 
-                                 data = combined[combined$year == 2023 &amp; combined$school_id %in% schools_with_both,])
-summary(mode_effects_controlled_fe)</code></pre>
-<pre><code>## 
-## Call:
-## lm(formula = satis ~ source * gender + age + age:gender + age:source + 
-##     as.factor(schooltype) + as.factor(schooltype):gender + as.factor(schooltype):source + 
-##     as.factor(mig_lang) + as.factor(mig_lang):gender + as.factor(mig_lang):source + 
-##     as.factor(school_id) + as.factor(school_id):gender, data = combined[combined$year == 
-##     2023 &amp; combined$school_id %in% schools_with_both, ])
-## 
-## Residuals:
-##      Min       1Q   Median       3Q      Max 
-## -3.02017 -0.48204  0.09228  0.53921  2.12345 
-## 
-## Coefficients: (2 not defined because of singularities)
-##                                     Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)                         4.302010   0.524491   8.202 9.63e-16 ***
-## sourcepaper                         0.422818   0.662028   0.639   0.5232    
-## gendermale                         -0.014770   0.637617  -0.023   0.9815    
-## age                                -0.054658   0.032752  -1.669   0.0955 .  
-## as.factor(schooltype)2             -0.191256   0.314644  -0.608   0.5435    
-## as.factor(mig_lang)1               -0.287006   0.165237  -1.737   0.0828 .  
-## as.factor(school_id)13              0.239432   0.212650   1.126   0.2605    
-## as.factor(school_id)15              0.245816   0.213056   1.154   0.2489    
-## as.factor(school_id)16             -0.035368   0.205822  -0.172   0.8636    
-## as.factor(school_id)40              0.156274   0.247700   0.631   0.5283    
-## as.factor(school_id)53             -0.068715   0.289480  -0.237   0.8124    
-## as.factor(school_id)57             -0.560875   0.385290  -1.456   0.1459    
-## as.factor(school_id)59              0.194040   0.229732   0.845   0.3986    
-## as.factor(school_id)60             -0.127329   0.209972  -0.606   0.5444    
-## as.factor(school_id)63              0.167377   0.202135   0.828   0.4079    
-## as.factor(school_id)66             -0.046511   0.332170  -0.140   0.8887    
-## as.factor(school_id)71                    NA         NA      NA       NA    
-## sourcepaper:gendermale             -0.260579   0.156769  -1.662   0.0969 .  
-## gendermale:age                      0.037880   0.039555   0.958   0.3385    
-## sourcepaper:age                    -0.004506   0.044915  -0.100   0.9201    
-## gendermale:as.factor(schooltype)2   0.046624   0.395833   0.118   0.9063    
-## sourcepaper:as.factor(schooltype)2 -0.212376   0.258786  -0.821   0.4121    
-## gendermale:as.factor(mig_lang)1     0.295085   0.200281   1.473   0.1411    
-## sourcepaper:as.factor(mig_lang)1    0.296458   0.197610   1.500   0.1340    
-## gendermale:as.factor(school_id)13  -0.172736   0.288729  -0.598   0.5498    
-## gendermale:as.factor(school_id)15  -0.625635   0.296758  -2.108   0.0353 *  
-## gendermale:as.factor(school_id)16  -0.052948   0.281728  -0.188   0.8510    
-## gendermale:as.factor(school_id)40  -0.037689   0.358678  -0.105   0.9163    
-## gendermale:as.factor(school_id)53   0.140860   0.376072   0.375   0.7081    
-## gendermale:as.factor(school_id)57   0.200625   0.563266   0.356   0.7218    
-## gendermale:as.factor(school_id)59  -0.070848   0.335227  -0.211   0.8327    
-## gendermale:as.factor(school_id)60   0.107017   0.301415   0.355   0.7226    
-## gendermale:as.factor(school_id)63  -0.004590   0.276371  -0.017   0.9868    
-## gendermale:as.factor(school_id)66  -0.193394   0.428318  -0.452   0.6517    
-## gendermale:as.factor(school_id)71         NA         NA      NA       NA    
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## Residual standard error: 0.8474 on 784 degrees of freedom
-## Multiple R-squared:  0.1126, Adjusted R-squared:  0.07643 
-## F-statistic:  3.11 on 32 and 784 DF,  p-value: 3.116e-08</code></pre>
-<pre class="r"><code># Let&#39;s again look at mode effects by gender
-contrasts &lt;- avg_comparisons(mode_effects_controlled_fe, variables = &quot;source&quot;, by = &quot;gender&quot;, vcov = ~ unique_classroom)
-# Once again, girls are less satisfied on tablet
-# Boys are pretty much the same
-
-print(avg_comparisons(mode_effects_controlled_fe, variables = &quot;source&quot;, by = &quot;gender&quot;, vcov = ~ unique_classroom,
-                hypothesis = &quot;b1 = b2&quot;))</code></pre>
-<pre><code>## 
-##  Hypothesis Estimate Std. Error   z Pr(&gt;|z|)   S 2.5 % 97.5 %
-##       b1=b2    0.252      0.115 2.2   0.0282 5.2 0.027  0.478
-## 
-## Type:  response</code></pre>
-<pre class="r"><code># Difference pf 0.25, p &lt; .03
-
-# This speaks against the idea that survey mode is correlated with some unobserved school-level
-# variable that ultimately explains differences in the gender gaps</code></pre>
-</div>
-<div id="what-happens-to-the-explanandum-if-we-take-into-account-survey-mode" class="section level2">
-<h2>What happens to the explanandum if we take into account survey
-mode?</h2>
-<p>So, let’s assume that the (gender-specific) associations between
-survey mode and life satisfaction actually reflect mode effects:
-answering the survey on a tablet makes girls (but not boys) report lower
-levels of satisfaction. What does the widening of the gender gap look
-like if we hold survey mode constant? Tablets were only introduced in
-2023, and so we cannot see how the gender gap widens for this assessment
-mode. However, paper was used throughout, and so we can look at the
-widening of the gender gap for this survey mode</p>
-<pre class="r"><code>explanandum_paper_only &lt;- lm(satis ~ as.factor(year) + gender + as.factor(year):gender +
-                                 as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
-                                 as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
-                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
-                  data = combined[combined$source == &quot;paper&quot;,])
-
-# We will evaluate this for various data grids
-# Demographics like in 2010
-temp1 &lt;- combined[combined$year == 2010,]
-temp1$year &lt;- 2010
-temp2 &lt;- combined[combined$year == 2010,]
-temp2$year &lt;- 2015
-temp3 &lt;- combined[combined$year == 2010,]
-temp3$year &lt;- 2023
-all2010 &lt;- rbind(temp1, temp2, temp3)
-
-# Demographics like in 2015
-temp1 &lt;- combined[combined$year == 2015,]
-temp1$year &lt;- 2010
-temp2 &lt;- combined[combined$year == 2015,]
-temp2$year &lt;- 2015
-temp3 &lt;- combined[combined$year == 2015,]
-temp3$year &lt;- 2023
-all2015 &lt;- rbind(temp1, temp2, temp3)
-
-# Demographics like in 2023
-temp1 &lt;- combined[combined$year == 2023,]
-temp1$year &lt;- 2010
-temp2 &lt;- combined[combined$year == 2023,]
-temp2$year &lt;- 2015
-temp3 &lt;- combined[combined$year == 2023,]
-temp3$year &lt;- 2023
-all2023 &lt;- rbind(temp1, temp2, temp3)
-
-# Demographics like 2023, but only those who actually used paper
-temp1 &lt;- combined[combined$year == 2023 &amp; combined$source == &quot;paper&quot;,]
-temp1$year &lt;- 2010
-temp2 &lt;- combined[combined$year == 2023 &amp; combined$source == &quot;paper&quot;,]
-temp2$year &lt;- 2015
-temp3 &lt;- combined[combined$year == 2023 &amp; combined$source == &quot;paper&quot;,]
-temp3$year &lt;- 2023
-all2023_paper &lt;- rbind(temp1, temp2, temp3)
-
-
-##########################
-# Use 2010 distribution
-##########################
-pred &lt;- predictions(explanandum_paper_only,
-                 by = c(&quot;gender&quot;, &quot;year&quot;),
-                 newdata = all2010,
-                 vcov = ~ unique_classroom)
-
-
-comps &lt;- avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = &quot;year&quot;,
-                 newdata = all2010,
-                 vcov = ~ unique_classroom)
-print(comps)</code></pre>
-<pre><code>## 
-##  year Estimate Std. Error    z Pr(&gt;|z|)    S 2.5 % 97.5 %
-##  2010    0.222     0.0466 4.77   &lt;0.001 19.1 0.131  0.314
-##  2015    0.317     0.0495 6.42   &lt;0.001 32.8 0.221  0.414
-##  2023    0.399     0.0918 4.35   &lt;0.001 16.1 0.219  0.579
-## 
-## Term: gender
-## Type:  response 
-## Comparison: male - female</code></pre>
-<pre class="r"><code>max_comp &lt;- avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = &quot;year&quot;,
-                hypothesis = &quot;b1 = b3&quot;,
-                 newdata = all2010,
-                vcov = ~ unique_classroom)
-print(max_comp)</code></pre>
-<pre><code>## 
-##  Hypothesis Estimate Std. Error     z Pr(&gt;|z|)   S  2.5 % 97.5 %
-##       b1=b3   -0.177      0.103 -1.72   0.0861 3.5 -0.378 0.0251
-## 
-## Type:  response</code></pre>
-<pre class="r"><code># Gap from previously 0.27 to 0.17
-
-##########################
-# Use 2015 distribution
-##########################
-max_comp &lt;- avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = &quot;year&quot;,
-                hypothesis = &quot;b1 = b3&quot;,
-                 newdata = all2015,
-                vcov = ~ unique_classroom)
-print(max_comp)</code></pre>
-<pre><code>## 
-##  Hypothesis Estimate Std. Error     z Pr(&gt;|z|)   S  2.5 %  97.5 %
-##       b1=b3   -0.244       0.11 -2.21    0.027 5.2 -0.459 -0.0278
-## 
-## Type:  response</code></pre>
-<pre class="r"><code># Gap from 0.33 to 0.24
-
-##########################
-# Use 2023 distribution
-##########################
-max_comp &lt;- avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = &quot;year&quot;,
-                hypothesis = &quot;b1 = b3&quot;,
+## Type:  link</code></pre>
+<pre class="r"><code># 2023
+print(avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
                  newdata = all2023,
-                vcov = ~ unique_classroom)
-print(max_comp)</code></pre>
+      hypothesis = &quot;b1 = b5&quot;,
+                 type = &quot;link&quot;))</code></pre>
 <pre><code>## 
-##  Hypothesis Estimate Std. Error     z Pr(&gt;|z|)   S  2.5 %  97.5 %
-##       b1=b3   -0.218     0.0971 -2.24    0.025 5.3 -0.408 -0.0274
+##  Hypothesis Estimate 2.5 % 97.5 %
+##       b1=b5   -0.164 -0.43  0.101
 ## 
-## Type:  response</code></pre>
-<pre class="r"><code># Gap from 0.31 to 0.21</code></pre>
-</div>
-<div id="paper-only-modification-by-migback" class="section level2">
-<h2>Paper only, modification by migback</h2>
-<p>Before, we had already noted that the widening of the gender gap
-strongly differed depending on migration background/language at home. So
-let’s see how migration background modifies the widening of the gender
-gap if we hold constant survey mode by only analyzing responses
-collected on paper.</p>
-<pre class="r"><code>comps_by_migback &lt;- avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
-                 newdata = all2010,
-                 vcov = ~ unique_classroom)
-print(comps_by_migback)</code></pre>
-<pre><code>## 
-##  year mig_lang Estimate Std. Error      z Pr(&gt;|z|)    S   2.5 % 97.5 %
-##  2010        0   0.2542     0.0464  5.475  &lt; 0.001 24.4  0.1632  0.345
-##  2010        1  -0.0628     0.1816 -0.346  0.72968  0.5 -0.4187  0.293
-##  2015        0   0.3208     0.0509  6.298  &lt; 0.001 31.6  0.2209  0.421
-##  2015        1   0.2883     0.1397  2.063  0.03910  4.7  0.0144  0.562
-##  2023        0   0.3533     0.0988  3.578  &lt; 0.001 11.5  0.1598  0.547
-##  2023        1   0.8074     0.2461  3.281  0.00104  9.9  0.3250  1.290
-## 
-## Term: gender
-## Type:  response 
-## Comparison: male - female</code></pre>
-<pre class="r"><code># Widening of the gap for no migration background
-# 2010
-print(avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
-                 newdata = all2010,
-                 vcov = ~ unique_classroom,
-      hypothesis = &quot;b1 = b5&quot;))</code></pre>
-<pre><code>## 
-##  Hypothesis Estimate Std. Error      z Pr(&gt;|z|)   S  2.5 % 97.5 %
-##       b1=b5  -0.0992      0.109 -0.909    0.363 1.5 -0.313  0.115
-## 
-## Type:  response</code></pre>
-<pre class="r"><code># 0.1, p = .363
-
-# 2015
-print(avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
-                 newdata = all2015,
-                 vcov = ~ unique_classroom,
-      hypothesis = &quot;b1 = b5&quot;))</code></pre>
-<pre><code>## 
-##  Hypothesis Estimate Std. Error     z Pr(&gt;|z|)   S  2.5 % 97.5 %
-##       b1=b5   -0.173      0.115 -1.51    0.132 2.9 -0.398 0.0521
-## 
-## Type:  response</code></pre>
-<pre class="r"><code># 0.17, p = .132
-
-# 2023
-print(avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
+## Type:  link</code></pre>
+<pre class="r"><code># 2023
+print(avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
                  newdata = all2023,
-                 vcov = ~ unique_classroom,
-      hypothesis = &quot;b1 = b5&quot;))</code></pre>
+                 hypothesis = &quot;b2 = b6&quot;,
+                 type = &quot;link&quot;))</code></pre>
 <pre><code>## 
-##  Hypothesis Estimate Std. Error     z Pr(&gt;|z|)   S 2.5 % 97.5 %
-##       b1=b5   -0.119      0.103 -1.16    0.247 2.0 -0.32 0.0822
+##  Hypothesis Estimate 2.5 % 97.5 %
+##       b2=b6    -1.17 -1.85  -0.51
 ## 
-## Type:  response</code></pre>
-<pre class="r"><code># 0.12, p = .25
-
-print(avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
-                 newdata = all2023_paper,
-                 vcov = ~ unique_classroom,
-      hypothesis = &quot;b1 = b5&quot;))</code></pre>
-<pre><code>## 
-##  Hypothesis Estimate Std. Error      z Pr(&gt;|z|)   S  2.5 % 97.5 %
-##       b1=b5  -0.0874        0.1 -0.871    0.384 1.4 -0.284  0.109
-## 
-## Type:  response</code></pre>
-<pre class="r"><code># 0.09, p = .384
-
-# Widening of the gap for migration background
-# 2010
-print(avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
-                 newdata = all2010,
-                 vcov = ~ unique_classroom,
-                 hypothesis = &quot;b2 = b6&quot;))</code></pre>
-<pre><code>## 
-##  Hypothesis Estimate Std. Error     z Pr(&gt;|z|)   S 2.5 % 97.5 %
-##       b2=b6    -0.87      0.306 -2.84  0.00444 7.8 -1.47 -0.271
-## 
-## Type:  response</code></pre>
-<pre class="r"><code># .87, p = .004
-
-# 2015
-print(avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
-                 newdata = all2015,
-                 vcov = ~ unique_classroom,
-                 hypothesis = &quot;b2 = b6&quot;))</code></pre>
-<pre><code>## 
-##  Hypothesis Estimate Std. Error     z Pr(&gt;|z|)   S 2.5 % 97.5 %
-##       b2=b6   -0.926      0.318 -2.91  0.00362 8.1 -1.55 -0.302
-## 
-## Type:  response</code></pre>
-<pre class="r"><code># 0.93, .003
-
-# 2023
-print(avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
-                 newdata = all2023,
-                 vcov = ~ unique_classroom,
-                 hypothesis = &quot;b2 = b6&quot;))</code></pre>
-<pre><code>## 
-##  Hypothesis Estimate Std. Error     z Pr(&gt;|z|)   S 2.5 % 97.5 %
-##       b2=b6   -0.884      0.308 -2.87   0.0041 7.9 -1.49  -0.28
-## 
-## Type:  response</code></pre>
-<pre class="r"><code># 0.88, .004
-print(avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
-                 newdata = all2023_paper,
-                 vcov = ~ unique_classroom,
-                 hypothesis = &quot;b2 = b6&quot;))</code></pre>
-<pre><code>## 
-##  Hypothesis Estimate Std. Error     z Pr(&gt;|z|)   S 2.5 % 97.5 %
-##       b2=b6   -0.869      0.301 -2.88  0.00393 8.0 -1.46 -0.278
-## 
-## Type:  response</code></pre>
-<pre class="r"><code># 0.87, p = .004</code></pre>
+## Type:  link</code></pre>
 </div>
 
 
