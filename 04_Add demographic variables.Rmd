@@ -605,12 +605,14 @@ print(max_comp)
 all_comps <- avg_comparisons(explanandum_mig_lang, 
                              variables = "gender", 
                              by = c("year", "mig_lang"), 
+                             newdata = all2010,
                              vcov = ~ unique_classroom)
 
 # Widening of the gap for no migration background
 print(avg_comparisons(explanandum_mig_lang, 
                              variables = "gender", 
                              by = c("year", "mig_lang"), 
+                      newdata = all2010,
                              vcov = ~ unique_classroom,
                       hypothesis = "b1 = b5")) 
 
@@ -619,6 +621,7 @@ print(avg_comparisons(explanandum_mig_lang,
                              variables = "gender", 
                              by = c("year", "mig_lang"), 
                              vcov = ~ unique_classroom,
+                      newdata = all2010,
                       hypothesis = "b2 = b6")) # migback
 
 # Compare the widening of the gap between no migration background and migration background
@@ -626,6 +629,7 @@ print(avg_comparisons(explanandum_mig_lang,
                              variables = "gender", 
                              by = c("year", "mig_lang"), 
                              vcov = ~ unique_classroom,
+                      newdata = all2010,
                       hypothesis = "b1 - b5 = b2 - b6")) 
 
 ```
