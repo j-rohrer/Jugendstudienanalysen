@@ -434,7 +434,7 @@ combined_cat_mig_lang
 ggsave("Plots/paper_satis_dad.png", width = 6, height = 3)
 ```
 
-### Satisfaction with your leisute time activities
+### Satisfaction with your leisure time activities
 
 ```{r leisure}
 # Fit the model
