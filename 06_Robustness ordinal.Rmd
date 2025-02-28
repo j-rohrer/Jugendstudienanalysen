@@ -81,4 +81,3 @@ print(avg_comparisons(explanandum_paper_only_ordinal, variables = "gender", by =
 
 
 
-
