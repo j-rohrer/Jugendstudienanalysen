@@ -233,7 +233,7 @@ ggsave("Plots/paper_satis_friends.png", width = 6, height = 3)
 
 ```{r mom}
 # Fit the model
-explanandum_paper_only_money <- lm(satis_money ~ as.factor(year) + gender + as.factor(year):gender +
+explanandum_paper_only_mom <- lm(satis_mom ~ as.factor(year) + gender + as.factor(year):gender +
                                  as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
                                  as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
                                  as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
@@ -249,45 +249,45 @@ temp3$year <- 2023
 all2023 <- rbind(temp1, temp2, temp3)
 
 # Predictions
-pred <- predictions(explanandum_paper_only_money,
+pred <- predictions(explanandum_paper_only_mom,
                  by = c("gender", "year"),
                  newdata = all2023,
                  vcov = ~ unique_classroom)
 
 # Gender gap by year
-comps <- avg_comparisons(explanandum_paper_only_money, variables = "gender", by = "year",
+comps <- avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = "year",
                  newdata = all2023,
                  vcov = ~ unique_classroom)
 print(comps)
 
 # Test biggest contrast: 2010 versus 2023
-max_comp <- avg_comparisons(explanandum_paper_only_money, variables = "gender", by = "year",
+max_comp <- avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = "year",
                 hypothesis = "b1 = b3",
                  newdata = all2023,
                 vcov = ~ unique_classroom)
 print(max_comp)
 
 # Gender gap by year and migration background
-comps_by_migback <- avg_comparisons(explanandum_paper_only_money, variables = "gender", by = c("year", "mig_lang"),
+comps_by_migback <- avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2023,
                  vcov = ~ unique_classroom)
 print(comps_by_migback)
 
 # Widening of the gap for no migration background
 # 2023
-print(avg_comparisons(explanandum_paper_only_money, variables = "gender", by = c("year", "mig_lang"),
+print(avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2023,
                  vcov = ~ unique_classroom,
       hypothesis = "b1 = b5"))
 
 # Widening of the gap for migration background
 # 2023
-print(avg_comparisons(explanandum_paper_only_money, variables = "gender", by = c("year", "mig_lang"),
+print(avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2023,
                  vcov = ~ unique_classroom,
                  hypothesis = "b2 = b6"))
 
-pred <- avg_predictions(explanandum_paper_only_money,
+pred <- avg_predictions(explanandum_paper_only_mom,
                         newdata = all2023,
                         by = c("gender", "year", "mig_lang"),
                         vcov = ~ unique_classroom)
@@ -304,7 +304,7 @@ cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
   ggtitle("No migration background") +
-  ylab("Mean satisfaction w mother") +
+  ylab("Mean satisfaction w mom") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
   labs(color = "Gender")
@@ -321,14 +321,14 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
   theme(plot.title = element_text(hjust = 0.5)) +
   ggtitle("Migration background") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
-  ylab("Mean satisfaction w mother") +
+  ylab("Mean satisfaction w mom") +
   xlab("Year") +
   labs(color = "Gender")
 
 # Combine into single plot
 combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
 combined_cat_mig_lang
-ggsave("Plots/paper_satis_money.png", width = 6, height = 3)
+ggsave("Plots/paper_satis_mother.png", width = 6, height = 3)
 
 ```
 
