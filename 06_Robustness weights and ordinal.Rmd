@@ -18,7 +18,7 @@ combined$source <- as.factor(combined$source)
 
 ```
 
-## Do we get the same pattern if we once again use an ordinal model? lll
+## Do we get the same pattern if we once again use an ordinal model?
 
 ```{r ordinal}
 
