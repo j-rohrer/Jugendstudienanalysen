@@ -611,7 +611,7 @@ all_comps <- avg_comparisons(explanandum_mig_lang,
                              by = c("year", "mig_lang"), 
                              newdata = all2010,
                              vcov = ~ unique_classroom)
-
+print(all_comps)
 # Widening of the gap for no migration background
 print(avg_comparisons(explanandum_mig_lang, 
                              variables = "gender", 
