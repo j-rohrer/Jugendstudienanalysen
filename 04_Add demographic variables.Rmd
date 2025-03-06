@@ -191,6 +191,8 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
   ylab("Mean life satisfaction") +
   xlab("Survey year") +
   labs(color = "Gender")
+ggsave("Plots/explanandum_age_controlled.png", width = 4, height = 3)
+
 
 # Calculate the gender gaps on the hypothetical data
 comps <- avg_comparisons(explanandum_age, variables = "gender", by = "year",
@@ -385,6 +387,7 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
   ylab("Mean life satisfaction") +
   xlab("Survey year") +
   labs(color = "Gender")
+ggsave("Plots/explanandum_age_schooltype_controlled.png", width = 4, height = 3)
 
 # Gender gap by year
 # For the 2010 schooltype distribution
@@ -559,6 +562,7 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
   ylab("Mean life satisfaction") +
   xlab("Survey year") +
   labs(color = "Gender")
+ggsave("Plots/explanandum_age_schooltype_migrant_controlled.png", width = 4, height = 3)
 
 # Gender gaps by year
 comps <- avg_comparisons(explanandum_mig_lang, variables = "gender", by = "year",
