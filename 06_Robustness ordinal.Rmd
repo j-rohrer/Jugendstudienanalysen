@@ -75,6 +75,11 @@ print(avg_comparisons(explanandum_paper_only_ordinal, variables = "gender", by =
                  newdata = all2023,
                  hypothesis = "b2 = b6",
                  type = "link"))
+# Comparison
+print(avg_comparisons(explanandum_paper_only_ordinal, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 hypothesis = "b1 - b5 = b2 - b6",
+                 type = "link"))
 ```
 
 

@@ -11,7 +11,7 @@
 
 <meta name="author" content="Julia Rohrer" />
 
-<meta name="date" content="2025-02-28" />
+<meta name="date" content="2025-03-06" />
 
 <title>Check whether results are robust with ordinal model</title>
 
@@ -353,7 +353,7 @@ display: none;
 <h1 class="title toc-ignore">Check whether results are robust with
 ordinal model</h1>
 <h4 class="author">Julia Rohrer</h4>
-<h4 class="date">2025-02-28</h4>
+<h4 class="date">2025-03-06</h4>
 
 </div>
 
@@ -454,6 +454,16 @@ print(avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&q
 <pre><code>## 
 ##  Hypothesis Estimate 2.5 % 97.5 %
 ##       b2=b6    -1.17 -1.85  -0.51
+## 
+## Type:  link</code></pre>
+<pre class="r"><code># Comparison
+print(avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
+                 newdata = all2023,
+                 hypothesis = &quot;b1 - b5 = b2 - b6&quot;,
+                 type = &quot;link&quot;))</code></pre>
+<pre><code>## 
+##   Hypothesis Estimate 2.5 % 97.5 %
+##  b1-b5=b2-b6        1 0.304   1.72
 ## 
 ## Type:  link</code></pre>
 </div>
