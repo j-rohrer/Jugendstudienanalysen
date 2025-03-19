@@ -557,6 +557,39 @@ youth2023$school_id[youth2023$schule_amt51 == "Ruth-Pfau-Schule, BSZ für Gesund
 
 
 ```
+## Additional variables: Leisure time media usage 2023
+
+```{r}
+#############################
+# Leisure time media usage in 2023
+#############################
+table(youth2023$f04f) # Computer/console/online/mobile games
+# daily more than 4 hrs
+# daily 2 to 4 hours
+# daily less than 2 hours
+# multiple times per week
+# once a week
+# less than that
+# never
+youth2023$gaming <- 8 - youth2023$f04f
+
+table(youth2023$f04h) # Social media
+youth2023$socialmedia <- 8 - youth2023$f04h
+
+table(youth2023$f04i) # TV and streaming
+youth2023$streaming <- 8 - youth2023$f04i
+
+youth2010$gaming <- NA
+youth2010$socialmedia <- NA
+youth2010$streaming <- NA
+
+youth2015$gaming <- NA
+youth2015$socialmedia <- NA
+youth2015$streaming <- NA
+
+
+```
+
 ## Additional variables: What is important in life
 
 ```{r}
@@ -717,7 +750,8 @@ youth2023$id <- youth2023$rawid
 vars <- c("id", "year", "wph", "schooltype", "gender", "age", "mig_lang", "migback",
           "satis", "satis_money", "satis_friends", "satis_mom", "satis_dad",
           "satis_leisure", "satis_dwell", "satis_grades", "school", "unique_classroom", "school_id", "source", 
-          imp_names, prob_items, disc_items_2010_2015)
+          imp_names, prob_items, disc_items_2010_2015,
+          "gaming", "socialmedia", "streaming")
 combined <- rbind(youth2010[, vars], youth2015[, vars], youth2023[, vars])
 
 
