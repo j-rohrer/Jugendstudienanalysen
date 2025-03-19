@@ -55,6 +55,7 @@ max_comp <- avg_comparisons(explanandum, variables = "gender", by = "year",
                 hypothesis = "b1 = b3")
 print(max_comp)
 
+
 # Other two contrasts: 2010 vs 2015, 2015 vs 2023
 print(avg_comparisons(explanandum, variables = "gender", by = "year",
                 hypothesis = "b1 = b2"))
