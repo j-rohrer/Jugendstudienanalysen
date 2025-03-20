@@ -562,6 +562,7 @@ youth2023$school_id[youth2023$schule_amt51 == "Ruth-Pfau-Schule, BSZ für Gesund
 ```{r}
 #############################
 # Leisure time media usage in 2023
+# plus time it took them to fill out he survey
 #############################
 table(youth2023$f04f) # Computer/console/online/mobile games
 # daily more than 4 hrs
@@ -587,6 +588,8 @@ youth2015$gaming <- NA
 youth2015$socialmedia <- NA
 youth2015$streaming <- NA
 
+youth2010$duration_seconds <- NA
+youth2015$duration_seconds <- NA
 
 ```
 
@@ -633,6 +636,9 @@ prop.table(table(youth2015$imp_kids))
 
 prop.table(table(youth2023[,imp_2023[10]]))
 prop.table(table(youth2023$imp_kids))
+
+
+
 
 ```
 
@@ -751,7 +757,7 @@ vars <- c("id", "year", "wph", "schooltype", "gender", "age", "mig_lang", "migba
           "satis", "satis_money", "satis_friends", "satis_mom", "satis_dad",
           "satis_leisure", "satis_dwell", "satis_grades", "school", "unique_classroom", "school_id", "source", 
           imp_names, prob_items, disc_items_2010_2015,
-          "gaming", "socialmedia", "streaming")
+          "gaming", "socialmedia", "streaming", "duration_seconds")
 combined <- rbind(youth2010[, vars], youth2015[, vars], youth2023[, vars])
 
 

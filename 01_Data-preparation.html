@@ -11,7 +11,7 @@
 
 <meta name="author" content="Julia Rohrer" />
 
-<meta name="date" content="2025-03-19" />
+<meta name="date" content="2025-03-20" />
 
 <title>Cleaning and preparation of the Youth Surveys</title>
 
@@ -353,7 +353,7 @@ display: none;
 <h1 class="title toc-ignore">Cleaning and preparation of the Youth
 Surveys</h1>
 <h4 class="author">Julia Rohrer</h4>
-<h4 class="date">2025-03-19</h4>
+<h4 class="date">2025-03-20</h4>
 
 </div>
 
@@ -1557,6 +1557,7 @@ youth2023$school_id[youth2023$schule_amt51 == &quot;Ruth-Pfau-Schule, BSZ für G
 <h2>Additional variables: Leisure time media usage 2023</h2>
 <pre class="r"><code>#############################
 # Leisure time media usage in 2023
+# plus time it took them to fill out he survey
 #############################
 table(youth2023$f04f) # Computer/console/online/mobile games</code></pre>
 <pre><code>## 
@@ -1589,7 +1590,10 @@ youth2010$streaming &lt;- NA
 
 youth2015$gaming &lt;- NA
 youth2015$socialmedia &lt;- NA
-youth2015$streaming &lt;- NA</code></pre>
+youth2015$streaming &lt;- NA
+
+youth2010$duration_seconds &lt;- NA
+youth2015$duration_seconds &lt;- NA</code></pre>
 </div>
 <div id="additional-variables-what-is-important-in-life" class="section level2">
 <h2>Additional variables: What is important in life</h2>
@@ -1777,7 +1781,7 @@ vars &lt;- c(&quot;id&quot;, &quot;year&quot;, &quot;wph&quot;, &quot;schooltype
           &quot;satis&quot;, &quot;satis_money&quot;, &quot;satis_friends&quot;, &quot;satis_mom&quot;, &quot;satis_dad&quot;,
           &quot;satis_leisure&quot;, &quot;satis_dwell&quot;, &quot;satis_grades&quot;, &quot;school&quot;, &quot;unique_classroom&quot;, &quot;school_id&quot;, &quot;source&quot;, 
           imp_names, prob_items, disc_items_2010_2015,
-          &quot;gaming&quot;, &quot;socialmedia&quot;, &quot;streaming&quot;)
+          &quot;gaming&quot;, &quot;socialmedia&quot;, &quot;streaming&quot;, &quot;duration_seconds&quot;)
 combined &lt;- rbind(youth2010[, vars], youth2015[, vars], youth2023[, vars])
 
 
