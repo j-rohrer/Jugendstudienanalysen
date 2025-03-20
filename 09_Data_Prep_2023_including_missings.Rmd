@@ -1,0 +1,185 @@
+---
+title: "Data prep 2023, not discarding missings"
+author: "Julia Rohrer"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Overview
+
+Let's keep the 2023 data once again.
+We are going to keep all missings in the data and look at that by survey mode.
+Also search for the time it took them to respond.
+
+```{r read2023}
+# Read 2023 data
+library(haven)
+youth2023 <- readRDS("Files/jugend2023.rds")
+
+# prepare some basic variables
+# add year
+youth2023$year <- 2023
+
+# schooltype
+# existing variable
+table(youth2023$schulart)
+# 1: Beruchsfachschule
+# 2: Berufsschule
+# 3: Förderschule
+# 4: Gymnasium
+# 5: Oberschule
+
+youth2023$schooltype <- NA
+youth2023$schooltype[youth2023$schulart == 5] <- 1 # Mittelschule/Oberschule
+youth2023$schooltype[youth2023$schulart == 4] <- 2 # Gymnasium
+youth2023$schooltype[youth2023$schulart == 1 | youth2023$schulart == 2] <- 3 # Berufs-/Fachoberschule
+youth2023$schooltype[youth2023$schulart == 3] <- 4 # Förderschule
+
+# gender
+table(youth2023$geschl)
+youth2023$gender <- NA
+youth2023$gender[youth2023$geschl == 1] <- "male"
+youth2023$gender[youth2023$geschl == 2] <- "female"
+youth2023$gender[youth2023$geschl == 3] <- "diverse"
+table(youth2023$gender, youth2023$geschl)
+
+# age
+table(youth2023$alter)
+youth2023$age <- youth2023$alter
+
+# migback
+# country of birth, Germany or other
+table(youth2023$staat_geb_person) # self
+table(youth2023$staat_geb_vater) # father
+table(youth2023$staat_geb_mutter) # mother
+
+youth2023$migback <- NA
+# Self, father, mother born in Germany
+youth2023$migback[youth2023$staat_geb_person == 1 & youth2023$staat_geb_vater == 1 & youth2023$staat_geb_mutter == 1] <- "none"
+# Self born in Germany, father mother not born in Germany
+youth2023$migback[youth2023$staat_geb_person == 1 & youth2023$staat_geb_vater == 2 & youth2023$staat_geb_mutter == 2] <- "both"
+# Self born in Germany, father not born in Germany, mother born in Germany
+youth2023$migback[youth2023$staat_geb_person == 1 & youth2023$staat_geb_vater == 2 & youth2023$staat_geb_mutter == 1] <- "father"
+# Self born in Germany, father born in Germany, mother not born in Germany
+youth2023$migback[youth2023$staat_geb_person == 1 & youth2023$staat_geb_vater == 1 & youth2023$staat_geb_mutter == 2] <- "mother"
+# Self not born in Germany
+youth2023$migback[youth2023$staat_geb_person == 2] <- "self"
+
+
+# If both parents in Germany, assume self is also born in germany
+# Only relevant for missing reports of own country
+youth2023$migback[youth2023$staat_geb_vater == 1 & youth2023$staat_geb_mutter == 1] <- "none"
+table(youth2023$migback, useNA = "always")
+
+# Dichotomous variable
+youth2023$mig_lang <- NA
+youth2023$mig_lang[youth2023$migback == "none"|youth2023$migback == "mother"|youth2023$migback == "father"] <- 0
+youth2023$mig_lang[youth2023$migback == "self"|youth2023$migback == "both"] <- 1
+
+table(youth2023$mig_lang, useNA = "always")
+
+
+# Satisfaction items
+# Students were asked for their satisfaction with various things
+# Here, we will recode the items so that higher values indicate more satisfaction
+# For all items that are comparable between the 2010, 2015 and 2023 Youth Surveys
+youth2023$satis <- 6 - youth2023$f02a
+youth2023$satis_money <- 6 - youth2023$f02b
+youth2023$satis_friends <- 6 - youth2023$f02c
+youth2023$satis_mom <- 6 - youth2023$f02d
+youth2023$satis_dad <- 6 - youth2023$f02e
+youth2023$satis_leisure <- 6 - youth2023$f02h
+youth2023$satis_dwell <- 6 - youth2023$f02i
+youth2023$satis_grades <- 6 - youth2023$f02f
+
+
+```
+
+
+```{r weights}
+
+# What do the 2023 weights add up to?
+sum(youth2023$wph, na.rm = TRUE)
+# That is approximately, but not exactly the number of observations with assigned weights
+sum(!is.na(youth2023$wph))
+# So the weights are not exactly normalized (in which case they would add up to the number of observations)
+# but close enough
+
+
+```
+
+### Unique classroom IDs
+Generate a variable that identifies each unique classroom in the data.
+
+```{r classroomid}
+
+# youth2023
+names(youth2023)
+# klassenstufe, schulart, schule_amt51, klasse_amt51, schulart
+#table(youth2023$schule_amt51, useNA = "always")
+#table(youth2023$klasse_amt51, useNA = "always")
+youth2023$test <- paste0("2023_", youth2023$schule_amt51, youth2023$klasse_amt51)
+length(unique(youth2023$test)) # 168 -- these must identify unique classrooms
+youth2023$unique_classroom <- youth2023$test
+youth2023$school <- paste0("2023_", youth2023$schule_amt51)
+
+
+
+
+```
+
+
+
+## Additional variables: Leisure time media usage 2023
+
+```{r}
+#############################
+# Leisure time media usage in 2023
+#############################
+table(youth2023$f04f) # Computer/console/online/mobile games
+# daily more than 4 hrs
+# daily 2 to 4 hours
+# daily less than 2 hours
+# multiple times per week
+# once a week
+# less than that
+# never
+youth2023$gaming <- 8 - youth2023$f04f
+
+table(youth2023$f04h) # Social media
+youth2023$socialmedia <- 8 - youth2023$f04h
+
+table(youth2023$f04i) # TV and streaming
+youth2023$streaming <- 8 - youth2023$f04i
+
+
+```
+
+```{r missings}
+# 3036 rows
+sum(is.na(youth2023$satis[youth2023$source == "online"]))
+sum(is.na(youth2023$satis[youth2023$source == "paper"]))
+
+# So I assume missings were not allowed online. However, there are so few missings anyway that it should not matter I believe
+
+```
+```{r duration}
+# Let's look at how long it took them to fill out
+hist(youth2023$duration_seconds)
+
+mean(youth2023$duration_seconds, na.rm = TRUE)/60
+# On average: 24 minutes
+summary(youth2023$duration_seconds)
+
+# range from 8 to 200 minutes
+
+table(youth2023$source[is.na(youth2023$duration_seconds)])
+# We will carry that forward separately in the original file
+
+```

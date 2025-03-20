@@ -154,6 +154,24 @@ print(avg_comparisons(media_usage_socialmedia, variables = "source", by = "gende
                 hypothesis = "b1 = b2"))
 
 
+# Plot over age
+comp_gaming <- avg_predictions(media_usage_gaming, by = c("gender", "age"), vcov = ~ unique_classroom)
+ggplot(data = comp_gaming, aes(y = estimate, x = age, group = gender, color = gender)) +
+  geom_point() +
+  geom_line() +
+  theme_classic()
+
+comp_socialmedia <- avg_predictions(media_usage_socialmedia, by = c("gender", "age"), vcov = ~ unique_classroom)
+ggplot(data = comp_socialmedia, aes(y = estimate, x = age, group = gender, color = gender)) +
+  geom_point() +
+  geom_line() +
+  theme_classic()
+
+comp_streaming <- avg_predictions(media_usage_streaming, by = c("gender", "age"), vcov = ~ unique_classroom)
+ggplot(data = comp_streaming, aes(y = estimate, x = age, group = gender, color = gender)) +
+  geom_point() +
+  geom_line() +
+  theme_classic()
 ```
 
 I'm not sure what's the best way here to check whether gender differences in media usage can explain away the effects of survey mode.
