@@ -1,0 +1,655 @@
+---
+title: "Add demographic variables"
+author: "Julia Rohrer"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Add demographic variables
+## Age
+### Age differences between the years?
+
+```{r age_diffs}
+load("prep.RData")
+library(marginaleffects)
+library(ggplot2)
+library(patchwork)
+
+# Are there age differences between the years?
+age_diffs <- lm(age ~ as.factor(year)*gender, data = combined)
+
+print(predictions(age_diffs,
+                 by = c("gender", "year")))
+print(avg_comparisons(age_diffs))
+print(avg_comparisons(age_diffs, variable = "gender", by = "year"))
+```
+
+### Age and life satisfaction
+
+```{r age_satis}
+# Visualize the association between age and satisfaction, by gender and year
+
+# Fully categorical model
+add_age <- lm(satis ~ gender*as.factor(year)*as.factor(age), 
+                  data = combined)
+summary(add_age)
+
+# Generate predictions for combinations of gender and year and age
+pred <- predictions(add_age,
+                 by = c("gender", "year", "age"))
+
+# Visualize
+# 2010
+cat_age_2010 <- ggplot(pred[pred$year == 2010,], aes(x = age, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("2010") +
+  ylab("Mean life satisfaction") +
+  xlab("Age") +
+  labs(color = "Gender")
+
+# 2015
+cat_age_2015 <- ggplot(pred[pred$year == 2015,], aes(x = age, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("2015") +
+  ylab("Mean life satisfaction") +
+  xlab("Age") +
+  labs(color = "Gender")
+
+# 2023
+cat_age_2023 <- ggplot(pred[pred$year == 2023,], aes(x = age, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("2023") +
+  ylab("Mean life satisfaction") +
+  xlab("Age") +
+  labs(color = "Gender")
+
+# Combine plots
+library(patchwork)
+combined_cat_age <- (cat_age_2010|cat_age_2015|cat_age_2023) + plot_layout(guides = "collect")
+combined_cat_age
+ggsave("Plots/satis_by_age_categorical.png", width = 6, height = 3)
+
+
+# Re-fit the model including only the linear age effect
+add_age_linear <- lm(satis ~ gender*as.factor(year)*age, 
+                  data = combined)
+summary(add_age_linear)
+
+# generate predictions for combinations of gender and year and age
+pred <- predictions(add_age_linear,
+                 by = c("gender", "year", "age"))
+
+# Plot the results
+# 2010
+lin_age_2010 <- ggplot(pred[pred$year == 2010,], aes(x = age, group = gender, 
+                 color = gender,
+                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("2010") +
+  ylab("Mean life satisfaction") +
+  xlab("Age") +
+  labs(color = "Gender")
+
+# 2015
+lin_age_2015 <- ggplot(pred[pred$year == 2015,], aes(x = age, group = gender, 
+                 color = gender,
+                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("Mean life satisfaction") +
+  xlab("Age") +
+  labs(color = "Gender") +
+  ggtitle("2015")
+
+# 2023
+lin_age_2023 <- ggplot(pred[pred$year == 2023,], aes(x = age, group = gender, 
+                 color = gender,
+                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ylab("Mean life satisfaction") +
+  xlab("Age") +
+  labs(color = "Gender") +
+  ggtitle("2023")
+
+# Combine into single plot
+combined_lin_age <- (lin_age_2010|lin_age_2015|lin_age_2023) + plot_layout(guides = "collect")
+combined_lin_age
+ggsave("Plots/satis_by_age_linear.png", width = 6, height = 3)
+```
+
+### Does age explain away the explanandum?
+
+```{r age_explain}
+# Fit model including age
+explanandum_age <- lm(satis ~ as.factor(year)*gender*as.factor(age), 
+                  data = combined)
+
+# New hypothetical data: demographics like in 2010
+temp1 <- combined[combined$year == 2010,]
+temp1$year <- 2010
+temp2 <- combined[combined$year == 2010,]
+temp2$year <- 2015
+temp3 <- combined[combined$year == 2010,]
+temp3$year <- 2023
+all2010 <- rbind(temp1, temp2, temp3)
+
+
+# Generate predictions for combinations of gender and year
+pred <- predictions(explanandum_age,
+                 by = c("gender", "year"),
+                 newdata = all2010)
+
+# Plot the results
+ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  ylab("Mean life satisfaction") +
+  xlab("Survey year") +
+  labs(color = "Gender")
+ggsave("Plots/explanandum_age_controlled.png", width = 4, height = 3)
+
+
+# Calculate the gender gaps on the hypothetical data
+comps <- avg_comparisons(explanandum_age, variables = "gender", by = "year",
+                 newdata = all2010)
+print(comps)
+
+# Compare gender gaps 2010 vs 2023
+max_comp <- avg_comparisons(explanandum_age, variables = "gender", by = "year",
+                hypothesis = "b1 = b3",
+                 newdata = all2010)
+print(max_comp)
+
+# Compare gender gaps 2010 vs 2015
+print(avg_comparisons(explanandum_age, variables = "gender", by = "year",
+                hypothesis = "b1 = b2"),
+                 newdata = all2010)
+
+# Compare gender gaps 2015 vs 2023
+print(avg_comparisons(explanandum_age, variables = "gender", by = "year",
+                hypothesis = "b2 = b3"),
+                 newdata = all2010)
+
+# Express differences in SDs
+round(comps$estimate[1]/sd(combined$satis), 2)
+round(comps$estimate[2]/sd(combined$satis), 2)
+round(comps$estimate[3]/sd(combined$satis), 2)
+
+# Express widening gender gap in SDs
+round(max_comp$estimate/sd(combined$satis), 2)
+
+# Also calculate widening of gender gap for 2015 and 2023 age distribution
+
+# new data: demographics like in 2015
+temp1 <- combined[combined$year == 2015,]
+temp1$year <- 2010
+temp2 <- combined[combined$year == 2015,]
+temp2$year <- 2015
+temp3 <- combined[combined$year == 2015,]
+temp3$year <- 2023
+all2015 <- rbind(temp1, temp2, temp3)
+# max comparison for 2015 age distribution
+max_comp <- avg_comparisons(explanandum_age, variables = "gender", by = "year",
+                hypothesis = "b1 = b3")
+print(max_comp)
+
+# new data: demographics like in 2023
+temp1 <- combined[combined$year == 2023,]
+temp1$year <- 2010
+temp2 <- combined[combined$year == 2023,]
+temp2$year <- 2015
+temp3 <- combined[combined$year == 2023,]
+temp3$year <- 2023
+all2023 <- rbind(temp1, temp2, temp3)
+# max comparison for 2023 age distribution
+max_comp <- avg_comparisons(explanandum_age, variables = "gender", by = "year",
+                hypothesis = "b1 = b3",
+                 newdata = all2015)
+print(max_comp)
+```
+
+### Does age modify the widening of the gender gap?
+
+```{r age_modify}
+# Use the linear model for this purpose
+# As otherwise the cells get very small
+explanandum_age_lin <- lm(satis ~ as.factor(year)*gender*age, 
+                  data = combined)
+
+# Calculate the gender gaps for each survey year and each age
+all_comps <- avg_comparisons(explanandum_age_lin, variables = "gender", by = c("year", "age"))
+print(all_comps)
+
+# Calculate the widenings of the gender gap for each age group
+print(avg_comparisons(explanandum_age_lin, variables = "gender", by = c("year", "age"),
+      hypothesis = "b1 = b15")) # Widening at age 12
+print(avg_comparisons(explanandum_age_lin, variables = "gender", by = c("year", "age"),
+      hypothesis = "b2 = b16")) # Widening at age 13
+print(avg_comparisons(explanandum_age_lin, variables = "gender", by = c("year", "age"),
+      hypothesis = "b3 = b17")) # Widening at age 14
+print(avg_comparisons(explanandum_age_lin, variables = "gender", by = c("year", "age"),
+      hypothesis = "b4 = b18")) # Widening at age 15
+print(avg_comparisons(explanandum_age_lin, variables = "gender", by = c("year", "age"),
+      hypothesis = "b5 = b19")) # Widening at age 16
+print(avg_comparisons(explanandum_age_lin, variables = "gender", by = c("year", "age"),
+      hypothesis = "b6 = b20")) # Widening at age 17
+print(avg_comparisons(explanandum_age_lin, variables = "gender", by = c("year", "age"),
+      hypothesis = "b7 = b21")) # Widening at age 18
+
+# Comparing the widening of the gender gaps at 12 and 18
+print(avg_comparisons(explanandum_age_lin, variables = "gender", by = c("year", "age"),
+      hypothesis = "b1 - b15 = b7 - b21"))
+```
+
+## Schooltype
+### Different schooltype distributions between the years?
+
+```{r schooltype_diffs}
+# Recode to turn it into a Gymnasium dummy
+combined$gymnasium <- ifelse(combined$schooltype == 2, 1, 0)
+
+# Are there age differences between the years?
+# Fit a simple linear model to estimate probabilities
+schooltype_diffs <- lm(gymnasium ~ as.factor(year)*gender, data = combined)
+# Differences between years
+print(predictions(schooltype_diffs,
+                 by = c("year"), vcov = "HC3"))
+# Differences between genders
+print(predictions(schooltype_diffs,
+                 by = c("gender"), vcov = "HC3"))
+# Differences between genders and years
+print(predictions(schooltype_diffs,
+                 by = c("gender", "year"), vcov = "HC3"))
+
+# Gender gap by year
+print(avg_comparisons(schooltype_diffs, variable = "gender", by = "year", vcov = "HC3"))
+```
+
+### Schooltype and life satisfaction
+
+```{r schooltype_satis}
+# Fully categorical
+add_schooltype <- lm(satis ~ gender*as.factor(year)*as.factor(schooltype), 
+                  data = combined)
+summary(add_schooltype)
+
+# Generate predictions for combinations of gender and year and age
+pred <- predictions(add_schooltype,
+                 by = c("gender", "year", "schooltype"))
+
+# Plot the results
+# Schooltype 1 (general secondary)
+cat_schooltype_1 <- ggplot(pred[pred$schooltype == 1,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("General secondary school") +
+  ylab("Mean life satisfaction") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# Schooltype 2 (grammar school)
+cat_schooltype_2 <- ggplot(pred[pred$schooltype == 2,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("Grammar school") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  ylab("Mean life satisfaction") +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# Combine into single plot
+combined_cat_schooltype <- (cat_schooltype_1|cat_schooltype_2) + plot_layout(guides = "collect")
+combined_cat_schooltype
+ggsave("Plots/satis_by_schooltype_categorical.png", width = 6, height = 3)
+```
+
+### Does schooltype explain away the explanandum?
+
+```{r schooltype_explain}
+# Fit linear model including both age and schooltype
+explanandum_schooltype <- lm(satis ~ as.factor(year) + gender + as.factor(year):gender +
+                               as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
+                               as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype), 
+                  data = combined)
+
+# Generate predictions for combinations of gender and year
+pred <- predictions(explanandum_schooltype,
+                 by = c("gender", "year"),
+                 newdata = all2010,
+                 vcov = ~ unique_classroom)
+
+# Plot the results
+ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  ylab("Mean life satisfaction") +
+  xlab("Survey year") +
+  labs(color = "Gender")
+ggsave("Plots/explanandum_age_schooltype_controlled.png", width = 4, height = 3)
+
+# Gender gap by year
+# For the 2010 schooltype distribution
+comps <- avg_comparisons(explanandum_schooltype, variables = "gender", by = "year",
+                         newdata = all2010, 
+                         vcov = ~ unique_classroom)
+print(comps)
+
+# Test widening from 2010 to 2023
+max_comp <- avg_comparisons(explanandum_schooltype, variables = "gender", by = "year",
+                hypothesis = "b1 = b3", newdata = all2010, vcov = ~ unique_classroom)
+print(max_comp)
+
+# Gender gap 2010 vs 2015
+print(avg_comparisons(explanandum_schooltype, variables = "gender", by = "year",
+                hypothesis = "b1 = b2", newdata = all2010, vcov = ~ unique_classroom))
+
+# Gender gap 2015 vs 2023
+print(avg_comparisons(explanandum_schooltype, variables = "gender", by = "year",
+                hypothesis = "b2 = b3", newdata = all2010, vcov = ~ unique_classroom))
+
+# Express differences in SDs
+round(comps$estimate[1]/sd(combined$satis), 2)
+round(comps$estimate[2]/sd(combined$satis), 2)
+round(comps$estimate[3]/sd(combined$satis), 2)
+
+# Express widening gender gap in SDs
+round(max_comp$estimate/sd(combined$satis), 2)
+
+# Widening of the gap from 2010 to 2023 at 2015 schooltype distribution
+max_comp <- avg_comparisons(explanandum_schooltype, variables = "gender", by = "year",
+                hypothesis = "b1 = b3", newdata = all2015, vcov = ~ unique_classroom)
+print(max_comp)
+
+# Widening of the gap from 2010 to 2023 at 2023 schooltype distribution
+max_comp <- avg_comparisons(explanandum_schooltype, variables = "gender", by = "year",
+                hypothesis = "b1 = b3", newdata = all2023, vcov = ~ unique_classroom)
+print(max_comp)
+```
+
+### Does schooltype modify the widening of the gender gap?
+
+```{r schooltype_modify}
+# Gender gap for each year and each schooltype
+all_comps <- avg_comparisons(explanandum_schooltype, 
+                             variables = "gender", 
+                             by = c("year", "schooltype"), 
+                             vcov = ~ unique_classroom)
+
+# Test widening of gender gap for the lower track students
+print(avg_comparisons(explanandum_schooltype, 
+                             variables = "gender", 
+                             by = c("year", "schooltype"), 
+                             vcov = ~ unique_classroom,
+                      hypothesis = "b1 = b5")) 
+
+# Test widening of the gender gap for upper track students
+print(avg_comparisons(explanandum_schooltype, 
+                             variables = "gender", 
+                             by = c("year", "schooltype"), 
+                             vcov = ~ unique_classroom,
+                      hypothesis = "b2 = b6")) # upper track
+
+# Compare widening of the gaps between upper and lower track
+# Lower track versus upper track
+print(avg_comparisons(explanandum_schooltype, 
+                             variables = "gender", 
+                             by = c("year", "schooltype"), 
+                             vcov = ~ unique_classroom,
+                      hypothesis = "b1 - b5 = b2 - b6")) 
+```
+
+## Migration background/German not main language
+### Changes in migration background distributions between the years?
+
+```{r migback_diffs}
+# Simple linear probability model predicting a migration background
+mig_lang_diffs <- lm(mig_lang ~ as.factor(year)*gender, data = combined)
+
+# Means by survey year
+print(predictions(mig_lang_diffs,
+                 by = c("year"), vcov = "HC3"))
+
+# Means by gender
+print(predictions(mig_lang_diffs,
+                 by = c("gender"), vcov = "HC3"))
+
+# Means by gender and year
+print(predictions(mig_lang_diffs,
+                 by = c("gender", "year"), vcov = "HC3"))
+
+# Gender gaps per year
+print(avg_comparisons(mig_lang_diffs, variable = "gender", by = "year", vcov = "HC3"))
+```
+
+### Migration background and life satisfaction
+
+```{r migback_satis}
+# Predict life satisfaction from migration background
+add_mig_lang <- lm(satis ~ gender*as.factor(year)*as.factor(mig_lang), 
+                  data = combined)
+summary(add_mig_lang)
+
+# Generate predictions for combinations of gender and year and age
+pred <- predictions(add_mig_lang,
+                 by = c("gender", "year", "mig_lang"))
+
+# Plot the results
+# No migration background
+cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("No migration background") +
+  ylab("Mean life satisfaction") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# With migration background
+cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("Migration background") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  ylab("Mean life satisfaction") +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# Combine into single plot
+combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
+combined_cat_mig_lang
+ggsave("Plots/satis_by_mig_lang_categorical.png", width = 6, height = 3)
+```
+
+### Does migration background explain away the explanandum?
+
+```{r migback_explain}
+# Full model including the previous controls
+explanandum_mig_lang <- lm(satis ~ as.factor(year) + gender + as.factor(year):gender +
+                                   as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
+                                   as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+                                   as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
+                  data = combined)
+
+# Generate predictions for combinations of gender and year
+# Given the 2010 distribution of covariates
+pred <- predictions(explanandum_mig_lang,
+                 by = c("gender", "year"),
+                 newdata = all2010,
+                 vcov = ~ unique_classroom)
+
+# Plot the results
+ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(width = .5) +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  ylab("Mean life satisfaction") +
+  xlab("Survey year") +
+  labs(color = "Gender")
+ggsave("Plots/explanandum_age_schooltype_migrant_controlled.png", width = 4, height = 3)
+
+# Gender gaps by year
+comps <- avg_comparisons(explanandum_mig_lang, variables = "gender", by = "year",
+                 newdata = all2010,
+                 vcov = ~ unique_classroom)
+print(comps)
+
+# Test gender gap 2010 vs 2023
+max_comp <- avg_comparisons(explanandum_mig_lang, variables = "gender", by = "year",
+                hypothesis = "b1 = b3", newdata = all2010, vcov = ~ unique_classroom)
+print(max_comp)
+
+# Test gender gap 2010 vs 2015
+print(avg_comparisons(explanandum_mig_lang, variables = "gender", by = "year",
+                hypothesis = "b1 = b2", newdata = all2010, vcov = ~ unique_classroom))
+
+# Test gender gap 2015 vs 2023
+print(avg_comparisons(explanandum_mig_lang, variables = "gender", by = "year",
+                hypothesis = "b2 = b3", newdata = all2010, vcov = ~ unique_classroom))
+
+# Express differences in SDs
+round(comps$estimate[1]/sd(combined$satis), 2)
+round(comps$estimate[2]/sd(combined$satis), 2)
+round(comps$estimate[3]/sd(combined$satis), 2)
+
+# Express widening gender gap in SDs
+round(max_comp$estimate/sd(combined$satis), 2)
+
+# Compare gender gap 2010 vs 2023, this time for the 2015 distribution of covariates
+max_comp <- avg_comparisons(explanandum_mig_lang, variables = "gender", by = "year",
+                hypothesis = "b1 = b3", newdata = all2015, vcov = ~ unique_classroom)
+print(max_comp)
+
+# Compare gender gap 2010 vs 2023, this time for the 2023 distribution of covariates
+max_comp <- avg_comparisons(explanandum_mig_lang, variables = "gender", by = "year",
+                hypothesis = "b1 = b3", newdata = all2023, vcov = ~ unique_classroom)
+print(max_comp)
+```
+
+### Does migration background modify the widening of the gender gap?
+
+```{r migback_modify}
+# Calculate gender gaps for each year and each level of migration background
+all_comps <- avg_comparisons(explanandum_mig_lang, 
+                             variables = "gender", 
+                             by = c("year", "mig_lang"), 
+                             newdata = all2010,
+                             vcov = ~ unique_classroom)
+print(all_comps)
+# Widening of the gap for no migration background
+print(avg_comparisons(explanandum_mig_lang, 
+                             variables = "gender", 
+                             by = c("year", "mig_lang"), 
+                      newdata = all2010,
+                             vcov = ~ unique_classroom,
+                      hypothesis = "b1 = b5")) 
+
+# Widening of the gap for migration background
+print(avg_comparisons(explanandum_mig_lang, 
+                             variables = "gender", 
+                             by = c("year", "mig_lang"), 
+                             vcov = ~ unique_classroom,
+                      newdata = all2010,
+                      hypothesis = "b2 = b6")) # migback
+
+# Compare the widening of the gap between no migration background and migration background
+print(avg_comparisons(explanandum_mig_lang, 
+                             variables = "gender", 
+                             by = c("year", "mig_lang"), 
+                             vcov = ~ unique_classroom,
+                      newdata = all2010,
+                      hypothesis = "b1 - b5 = b2 - b6")) 
+
+# Widening of the gap for no migration background, 2023 demographics
+print(avg_comparisons(explanandum_mig_lang, 
+                             variables = "gender", 
+                             by = c("year", "mig_lang"), 
+                      newdata = all2023,
+                             vcov = ~ unique_classroom,
+                      hypothesis = "b1 = b5")) 
+
+# Widening of the gap for migration background, 2023 demographics
+print(avg_comparisons(explanandum_mig_lang, 
+                             variables = "gender", 
+                             by = c("year", "mig_lang"), 
+                             vcov = ~ unique_classroom,
+                      newdata = all2023,
+                      hypothesis = "b2 = b6")) # migback
+
+```

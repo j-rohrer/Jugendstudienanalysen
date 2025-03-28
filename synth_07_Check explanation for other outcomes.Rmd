@@ -1,0 +1,742 @@
+---
+title: "Check our explanation for different outcomes"
+author: "Julia Rohrer"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+load("prep.RData")
+library(haven)
+library(marginaleffects)
+library(ggplot2)
+library(patchwork)
+combined$source <- as.factor(combined$source)
+```
+
+## Check other outcomes
+Let's see whether our favored explanation also holds up for the other satisfaction variables
+
+
+### Satisfaction with the amount of money with which you have to get by (financial satisfaction)
+```{r satis_money}
+# Fit the model
+explanandum_paper_only_money <- lm(satis_money ~ as.factor(year) + gender + as.factor(year):gender +
+                                 as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
+                                 as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
+                  data = combined[combined$source == "paper",])
+
+# Demographics like in 2023
+temp1 <- combined[combined$year == 2023,]
+temp1$year <- 2010
+temp2 <- combined[combined$year == 2023,]
+temp2$year <- 2015
+temp3 <- combined[combined$year == 2023,]
+temp3$year <- 2023
+all2023 <- rbind(temp1, temp2, temp3)
+
+# Predictions
+pred <- predictions(explanandum_paper_only_money,
+                 by = c("gender", "year"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+
+# Gender gap by year
+comps <- avg_comparisons(explanandum_paper_only_money, variables = "gender", by = "year",
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+print(comps)
+
+# Test biggest contrast: 2010 versus 2023
+max_comp <- avg_comparisons(explanandum_paper_only_money, variables = "gender", by = "year",
+                hypothesis = "b1 = b3",
+                 newdata = all2023,
+                vcov = ~ unique_classroom)
+print(max_comp)
+
+# Gender gap by year and migration background
+comps_by_migback <- avg_comparisons(explanandum_paper_only_money, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+print(comps_by_migback)
+
+# Widening of the gap for no migration background
+# 2023
+print(avg_comparisons(explanandum_paper_only_money, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom,
+      hypothesis = "b1 = b5"))
+
+# Widening of the gap for migration background
+# 2023
+print(avg_comparisons(explanandum_paper_only_money, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom,
+                 hypothesis = "b2 = b6"))
+
+pred <- avg_predictions(explanandum_paper_only_money,
+                        newdata = all2023,
+                        by = c("gender", "year", "mig_lang"),
+                        vcov = ~ unique_classroom)
+
+# Plot the results
+# No migration background
+cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("No migration background") +
+  ylab("Mean financial satisfaction") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# With migration background
+cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("Migration background") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  ylab("Mean financial satisfaction") +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# Combine into single plot
+combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
+combined_cat_mig_lang
+ggsave("Plots/paper_satis_money.png", width = 6, height = 3)
+
+```
+
+
+
+### Satisfaction with your relationships to friends
+
+```{r satis_friends}
+# Fit the model
+explanandum_paper_only_friends <- lm(satis_friends ~ as.factor(year) + gender + as.factor(year):gender +
+                                 as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
+                                 as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
+                  data = combined[combined$source == "paper",])
+
+# Demographics like in 2023
+temp1 <- combined[combined$year == 2023,]
+temp1$year <- 2010
+temp2 <- combined[combined$year == 2023,]
+temp2$year <- 2015
+temp3 <- combined[combined$year == 2023,]
+temp3$year <- 2023
+all2023 <- rbind(temp1, temp2, temp3)
+
+# Predictions
+pred <- predictions(explanandum_paper_only_friends,
+                 by = c("gender", "year"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+
+# Gender gap by year
+comps <- avg_comparisons(explanandum_paper_only_friends, variables = "gender", by = "year",
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+print(comps)
+
+# Test biggest contrast: 2010 versus 2023
+max_comp <- avg_comparisons(explanandum_paper_only_friends, variables = "gender", by = "year",
+                hypothesis = "b1 = b3",
+                 newdata = all2023,
+                vcov = ~ unique_classroom)
+print(max_comp)
+
+# Gender gap by year and migration background
+comps_by_migback <- avg_comparisons(explanandum_paper_only_friends, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+print(comps_by_migback)
+
+# Widening of the gap for no migration background
+# 2023
+print(avg_comparisons(explanandum_paper_only_friends, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom,
+      hypothesis = "b1 = b5"))
+
+# Widening of the gap for migration background
+# 2023
+print(avg_comparisons(explanandum_paper_only_friends, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom,
+                 hypothesis = "b2 = b6"))
+
+pred <- avg_predictions(explanandum_paper_only_friends,
+                        newdata = all2023,
+                        by = c("gender", "year", "mig_lang"),
+                        vcov = ~ unique_classroom)
+
+# Plot the results
+# No migration background
+cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("No migration background") +
+  ylab("Mean friendship satisfaction") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# With migration background
+cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("Migration background") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  ylab("Mean friendship satisfaction") +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# Combine into single plot
+combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
+combined_cat_mig_lang
+ggsave("Plots/paper_satis_friends.png", width = 6, height = 3)
+
+```
+
+
+### Satisfaction with your relationship to your mother
+
+```{r mom}
+# Fit the model
+explanandum_paper_only_mom <- lm(satis_mom ~ as.factor(year) + gender + as.factor(year):gender +
+                                 as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
+                                 as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
+                  data = combined[combined$source == "paper",])
+
+# Demographics like in 2023
+temp1 <- combined[combined$year == 2023,]
+temp1$year <- 2010
+temp2 <- combined[combined$year == 2023,]
+temp2$year <- 2015
+temp3 <- combined[combined$year == 2023,]
+temp3$year <- 2023
+all2023 <- rbind(temp1, temp2, temp3)
+
+# Predictions
+pred <- predictions(explanandum_paper_only_mom,
+                 by = c("gender", "year"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+
+# Gender gap by year
+comps <- avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = "year",
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+print(comps)
+
+# Test biggest contrast: 2010 versus 2023
+max_comp <- avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = "year",
+                hypothesis = "b1 = b3",
+                 newdata = all2023,
+                vcov = ~ unique_classroom)
+print(max_comp)
+
+# Gender gap by year and migration background
+comps_by_migback <- avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+print(comps_by_migback)
+
+# Widening of the gap for no migration background
+# 2023
+print(avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom,
+      hypothesis = "b1 = b5"))
+
+# Widening of the gap for migration background
+# 2023
+print(avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom,
+                 hypothesis = "b2 = b6"))
+
+pred <- avg_predictions(explanandum_paper_only_mom,
+                        newdata = all2023,
+                        by = c("gender", "year", "mig_lang"),
+                        vcov = ~ unique_classroom)
+
+# Plot the results
+# No migration background
+cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("No migration background") +
+  ylab("Mean satisfaction w mom") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# With migration background
+cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("Migration background") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  ylab("Mean satisfaction w mom") +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# Combine into single plot
+combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
+combined_cat_mig_lang
+ggsave("Plots/paper_satis_mother.png", width = 6, height = 3)
+
+```
+
+### Satisfaction with your relationship to your father
+
+```{r dad}
+# Fit the model
+explanandum_paper_only_dad <- lm(satis_dad ~ as.factor(year) + gender + as.factor(year):gender +
+                                 as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
+                                 as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
+                  data = combined[combined$source == "paper",])
+
+# Demographics like in 2023
+temp1 <- combined[combined$year == 2023,]
+temp1$year <- 2010
+temp2 <- combined[combined$year == 2023,]
+temp2$year <- 2015
+temp3 <- combined[combined$year == 2023,]
+temp3$year <- 2023
+all2023 <- rbind(temp1, temp2, temp3)
+
+# Predictions
+pred <- predictions(explanandum_paper_only_dad,
+                 by = c("gender", "year"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+
+# Gender gap by year
+comps <- avg_comparisons(explanandum_paper_only_dad, variables = "gender", by = "year",
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+print(comps)
+
+# Test biggest contrast: 2010 versus 2023
+max_comp <- avg_comparisons(explanandum_paper_only_dad, variables = "gender", by = "year",
+                hypothesis = "b1 = b3",
+                 newdata = all2023,
+                vcov = ~ unique_classroom)
+print(max_comp)
+
+# Gender gap by year and migration background
+comps_by_migback <- avg_comparisons(explanandum_paper_only_dad, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+print(comps_by_migback)
+
+# Widening of the gap for no migration background
+# 2023
+print(avg_comparisons(explanandum_paper_only_dad, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom,
+      hypothesis = "b1 = b5"))
+
+# Widening of the gap for migration background
+# 2023
+print(avg_comparisons(explanandum_paper_only_dad, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom,
+                 hypothesis = "b2 = b6"))
+
+pred <- avg_predictions(explanandum_paper_only_dad,
+                        newdata = all2023,
+                        by = c("gender", "year", "mig_lang"),
+                        vcov = ~ unique_classroom)
+
+# Plot the results
+# No migration background
+cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("No migration background") +
+  ylab("Mean satisfaction w father") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# With migration background
+cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("Migration background") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  ylab("Mean satisfaction w father") +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# Combine into single plot
+combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
+combined_cat_mig_lang
+ggsave("Plots/paper_satis_dad.png", width = 6, height = 3)
+```
+
+### Satisfaction with your leisure time activities
+
+```{r leisure}
+# Fit the model
+explanandum_paper_only_leisure <- lm(satis_leisure ~ as.factor(year) + gender + as.factor(year):gender +
+                                 as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
+                                 as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
+                  data = combined[combined$source == "paper",])
+
+# Demographics like in 2023
+temp1 <- combined[combined$year == 2023,]
+temp1$year <- 2010
+temp2 <- combined[combined$year == 2023,]
+temp2$year <- 2015
+temp3 <- combined[combined$year == 2023,]
+temp3$year <- 2023
+all2023 <- rbind(temp1, temp2, temp3)
+
+# Predictions
+pred <- predictions(explanandum_paper_only_leisure,
+                 by = c("gender", "year"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+
+# Gender gap by year
+comps <- avg_comparisons(explanandum_paper_only_leisure, variables = "gender", by = "year",
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+print(comps)
+
+# Test biggest contrast: 2010 versus 2023
+max_comp <- avg_comparisons(explanandum_paper_only_leisure, variables = "gender", by = "year",
+                hypothesis = "b1 = b3",
+                 newdata = all2023,
+                vcov = ~ unique_classroom)
+print(max_comp)
+
+# Gender gap by year and migration background
+comps_by_migback <- avg_comparisons(explanandum_paper_only_leisure, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+print(comps_by_migback)
+
+# Widening of the gap for no migration background
+# 2023
+print(avg_comparisons(explanandum_paper_only_leisure, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom,
+      hypothesis = "b1 = b5"))
+
+# Widening of the gap for migration background
+# 2023
+print(avg_comparisons(explanandum_paper_only_leisure, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom,
+                 hypothesis = "b2 = b6"))
+
+pred <- avg_predictions(explanandum_paper_only_leisure,
+                        newdata = all2023,
+                        by = c("gender", "year", "mig_lang"),
+                        vcov = ~ unique_classroom)
+
+# Plot the results
+# No migration background
+cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("No migration background") +
+  ylab("Mean leisure satisfaction") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# With migration background
+cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("Migration background") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  ylab("Mean leisure satisfaction") +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# Combine into single plot
+combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
+combined_cat_mig_lang
+ggsave("Plots/paper_satis_leisure.png", width = 6, height = 3)
+```
+
+
+### Satisfaction with your school grades
+
+```{r grades}
+# Fit the model
+explanandum_paper_only_grades <- lm(satis_grades ~ as.factor(year) + gender + as.factor(year):gender +
+                                 as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
+                                 as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
+                  data = combined[combined$source == "paper",])
+
+# Demographics like in 2023
+temp1 <- combined[combined$year == 2023,]
+temp1$year <- 2010
+temp2 <- combined[combined$year == 2023,]
+temp2$year <- 2015
+temp3 <- combined[combined$year == 2023,]
+temp3$year <- 2023
+all2023 <- rbind(temp1, temp2, temp3)
+
+# Predictions
+pred <- predictions(explanandum_paper_only_grades,
+                 by = c("gender", "year"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+
+# Gender gap by year
+comps <- avg_comparisons(explanandum_paper_only_grades, variables = "gender", by = "year",
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+print(comps)
+
+# Test biggest contrast: 2010 versus 2023
+max_comp <- avg_comparisons(explanandum_paper_only_grades, variables = "gender", by = "year",
+                hypothesis = "b1 = b3",
+                 newdata = all2023,
+                vcov = ~ unique_classroom)
+print(max_comp)
+
+# Gender gap by year and migration background
+comps_by_migback <- avg_comparisons(explanandum_paper_only_grades, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+print(comps_by_migback)
+
+# Widening of the gap for no migration background
+# 2023
+print(avg_comparisons(explanandum_paper_only_grades, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom,
+      hypothesis = "b1 = b5"))
+
+# Widening of the gap for migration background
+# 2023
+print(avg_comparisons(explanandum_paper_only_grades, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom,
+                 hypothesis = "b2 = b6"))
+
+pred <- avg_predictions(explanandum_paper_only_grades,
+                        newdata = all2023,
+                        by = c("gender", "year", "mig_lang"),
+                        vcov = ~ unique_classroom)
+
+# Plot the results
+# No migration background
+cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("No migration background") +
+  ylab("Mean school grades satisfaction") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# With migration background
+cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("Migration background") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  ylab("Mean school grades satisfaction") +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# Combine into single plot
+combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
+combined_cat_mig_lang
+ggsave("Plots/paper_satis_grades.png", width = 6, height = 3)
+```
+
+### Satisfaction with your housing situation
+
+```{r dwell}
+# Fit the model
+explanandum_paper_only_dwell <- lm(satis_dwell ~ as.factor(year) + gender + as.factor(year):gender +
+                                 as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
+                                 as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
+                  data = combined[combined$source == "paper",])
+
+# Demographics like in 2023
+temp1 <- combined[combined$year == 2023,]
+temp1$year <- 2010
+temp2 <- combined[combined$year == 2023,]
+temp2$year <- 2015
+temp3 <- combined[combined$year == 2023,]
+temp3$year <- 2023
+all2023 <- rbind(temp1, temp2, temp3)
+
+# Predictions
+pred <- predictions(explanandum_paper_only_dwell,
+                 by = c("gender", "year"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+
+# Gender gap by year
+comps <- avg_comparisons(explanandum_paper_only_dwell, variables = "gender", by = "year",
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+print(comps)
+
+# Test biggest contrast: 2010 versus 2023
+max_comp <- avg_comparisons(explanandum_paper_only_dwell, variables = "gender", by = "year",
+                hypothesis = "b1 = b3",
+                 newdata = all2023,
+                vcov = ~ unique_classroom)
+print(max_comp)
+
+# Gender gap by year and migration background
+comps_by_migback <- avg_comparisons(explanandum_paper_only_dwell, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom)
+print(comps_by_migback)
+
+# Widening of the gap for no migration background
+# 2023
+print(avg_comparisons(explanandum_paper_only_dwell, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom,
+      hypothesis = "b1 = b5"))
+
+# Widening of the gap for migration background
+# 2023
+print(avg_comparisons(explanandum_paper_only_dwell, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2023,
+                 vcov = ~ unique_classroom,
+                 hypothesis = "b2 = b6"))
+
+pred <- avg_predictions(explanandum_paper_only_dwell,
+                        newdata = all2023,
+                        by = c("gender", "year", "mig_lang"),
+                        vcov = ~ unique_classroom)
+
+# Plot the results
+# No migration background
+cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("No migration background") +
+  ylab("Mean housing satisfaction") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# With migration background
+cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender, 
+                                 color = gender,
+                                 y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_point(position = position_dodge(width = .5)) +
+  geom_line(position = position_dodge(width = .5)) +
+  geom_errorbar(width = .5, position = position_dodge(width = .5)) +
+  coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("Migration background") +
+  scale_x_continuous(breaks = c(2010, 2015, 2023)) +
+  ylab("Mean housing satisfaction") +
+  xlab("Year") +
+  labs(color = "Gender")
+
+# Combine into single plot
+combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
+combined_cat_mig_lang
+ggsave("Plots/paper_satis_dwell.png", width = 6, height = 3)
+```

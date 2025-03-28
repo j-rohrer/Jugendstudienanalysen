@@ -40,9 +40,31 @@ syn_dat$schooltype <- as.numeric(split_vars[, 1])
 syn_dat$school_id <- factor(split_vars[, 2])
 syn_dat$year <- as.numeric(split_vars[, 3])
 
-# HIER WEITER
+
 # generate classrooms afterwards
 # based on schooltype, schoolid, year, and age
-# DANN: TESTEN
+
+# We take students with the same schoolid and same year and put them into a bucket
+syn_dat$bucket <- with(syn_dat, paste(school_id, year, sep = "_"))
+
+# then we put the students into grade levels depending on their age
+# most likely grade: age minus 6 (plus minus 1)
+syn_dat$grade <- NA
+for (i in 1:nrow(syn_dat)) {
+  syn_dat$grade[i] <- sample(c(rep(syn_dat$age[i] - 6, times = 4), syn_dat$age[i] - 5, syn_dat$age[i] - 7), size = 1)
+}
+
+
+# logical checks
+# lowest grade is 7, highest is 12
+syn_dat$grade[syn_dat$grade < 7] <- 7
+syn_dat$grade[syn_dat$grade > 12] <- 12
+
+# Oberschule only goes until grade 10
+syn_dat$grade[syn_dat$grade > 10 & syn_dat$schooltype == 1] <- 10
+
+# A classroom is a combination of a bucket with a grade
+syn_dat$unique_classroom <- paste(syn_dat$bucket, syn_dat$grade, sep = "_")
+
 
 save(syn_dat, file = "synthetic_data")
