@@ -11,7 +11,7 @@
 
 <meta name="author" content="Julia Rohrer" />
 
-<meta name="date" content="2025-03-20" />
+<meta name="date" content="2025-03-27" />
 
 <title>Cleaning and preparation of the Youth Surveys</title>
 
@@ -353,7 +353,7 @@ display: none;
 <h1 class="title toc-ignore">Cleaning and preparation of the Youth
 Surveys</h1>
 <h4 class="author">Julia Rohrer</h4>
-<h4 class="date">2025-03-20</h4>
+<h4 class="date">2025-03-27</h4>
 
 </div>
 
@@ -1783,6 +1783,12 @@ vars &lt;- c(&quot;id&quot;, &quot;year&quot;, &quot;wph&quot;, &quot;schooltype
           imp_names, prob_items, disc_items_2010_2015,
           &quot;gaming&quot;, &quot;socialmedia&quot;, &quot;streaming&quot;, &quot;duration_seconds&quot;)
 combined &lt;- rbind(youth2010[, vars], youth2015[, vars], youth2023[, vars])
+
+# Anonymize unique_classrooms
+combined$unique_classroom &lt;- as.factor(combined$unique_classroom)
+combined$unique_classroom &lt;- factor(combined$unique_classroom, 
+                                     levels = levels(combined$unique_classroom), 
+                                     labels = seq_along(levels(combined$unique_classroom)))
 
 
 table(youth2010$gender)</code></pre>

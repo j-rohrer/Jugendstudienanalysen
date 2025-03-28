@@ -120,10 +120,7 @@ First, we will check differences in self-reported media usage -- between the gen
 Keeping in mind that source "effects" can reflect either selection effects, or actual effects of the survey mode.
 
 ```{r media_usage}
-media_usage_gaming <- lm(gaming ~ source*gender +
-                    age + age:gender + age:source +
-                    as.factor(schooltype) + as.factor(schooltype):gender + as.factor(schooltype):source +
-                    as.factor(mig_lang) + as.factor(mig_lang):gender + as.factor(mig_lang):source, data = combined[combined$year == 2023,])
+media_usage_gaming <- lm(gaming ~ source*gender*age*as.factor(schooltype)*as.factor(mig_lang), data = combined[combined$year == 2023,])
 summary(media_usage_gaming)
 print(avg_predictions(media_usage_gaming, variables = c("gender", "source"), vcov = ~ unique_classroom))
 print(avg_comparisons(media_usage_gaming, variables = "gender",  vcov = ~ unique_classroom))
@@ -131,10 +128,7 @@ print(avg_comparisons(media_usage_gaming, variables = "source", by = "gender", v
 print(avg_comparisons(media_usage_gaming, variables = "source", by = "gender", vcov = ~ unique_classroom,
                 hypothesis = "b1 = b2"))
 
-media_usage_streaming <- lm(streaming ~ source*gender +
-                    age + age:gender + age:source +
-                    as.factor(schooltype) + as.factor(schooltype):gender + as.factor(schooltype):source +
-                    as.factor(mig_lang) + as.factor(mig_lang):gender + as.factor(mig_lang):source, data = combined[combined$year == 2023,])
+media_usage_streaming <- lm(streaming ~ source*gender*age*as.factor(schooltype)*as.factor(mig_lang), data = combined[combined$year == 2023,])
 summary(media_usage_streaming)
 print(avg_predictions(media_usage_streaming, variables = c("gender", "source"), vcov = ~ unique_classroom))
 print(avg_comparisons(media_usage_streaming, variables = "gender",  vcov = ~ unique_classroom))
@@ -142,10 +136,7 @@ print(avg_comparisons(media_usage_streaming, variables = "source", by = "gender"
 print(avg_comparisons(media_usage_streaming, variables = "source", by = "gender", vcov = ~ unique_classroom,
                 hypothesis = "b1 = b2"))
 
-media_usage_socialmedia <- lm(socialmedia ~ source*gender +
-                    age + age:gender + age:source +
-                    as.factor(schooltype) + as.factor(schooltype):gender + as.factor(schooltype):source +
-                    as.factor(mig_lang) + as.factor(mig_lang):gender + as.factor(mig_lang):source, data = combined[combined$year == 2023,])
+media_usage_socialmedia <- lm(socialmedia ~ source*gender*age*as.factor(schooltype)*as.factor(mig_lang), data = combined[combined$year == 2023,])
 summary(media_usage_socialmedia)
 print(avg_predictions(media_usage_socialmedia, variables = c("gender", "source"), vcov = ~ unique_classroom))
 print(avg_comparisons(media_usage_socialmedia, variables = "gender",  vcov = ~ unique_classroom))
@@ -159,18 +150,21 @@ comp_gaming <- avg_predictions(media_usage_gaming, by = c("gender", "age"), vcov
 ggplot(data = comp_gaming, aes(y = estimate, x = age, group = gender, color = gender)) +
   geom_point() +
   geom_line() +
+  geom_ribbon(alpha = .1, color = NA, aes(ymin = conf.low, ymax = conf.high, fill = gender)) +
   theme_classic()
 
 comp_socialmedia <- avg_predictions(media_usage_socialmedia, by = c("gender", "age"), vcov = ~ unique_classroom)
 ggplot(data = comp_socialmedia, aes(y = estimate, x = age, group = gender, color = gender)) +
   geom_point() +
   geom_line() +
+  geom_ribbon(alpha = .1, color = NA, aes(ymin = conf.low, ymax = conf.high, fill = gender)) +
   theme_classic()
 
 comp_streaming <- avg_predictions(media_usage_streaming, by = c("gender", "age"), vcov = ~ unique_classroom)
 ggplot(data = comp_streaming, aes(y = estimate, x = age, group = gender, color = gender)) +
   geom_point() +
   geom_line() +
+  geom_ribbon(alpha = .1, color = NA, aes(ymin = conf.low, ymax = conf.high, fill = gender)) +
   theme_classic()
 ```
 
@@ -204,10 +198,66 @@ ggplot(data = predictions_mode_age, aes(y = estimate, x = age, group = interacti
 
 ggplot(data = predictions_mode_effects_age, aes(y = estimate, x = age, group = gender, color = gender)) +
   geom_point() +
+  geom_ribbon(alpha = .1, color = NA, aes(ymin = conf.low, ymax = conf.high, fill = gender)) +
   geom_line() +
+  geom_hline(yintercept = 0) +
   theme_classic()
 
 
 
 ```
+
+## Duration
+```{r time}
+hist(combined$duration_seconds)
+combined$duration_min <- combined$duration_seconds/60
+
+duration <- lm(duration_min ~ gender*age*as.factor(schooltype)*mig_lang, data = combined[combined$year == 2023,])
+
+
+predictions_duration <- avg_predictions(duration, variables = c("gender", "age"), vcov = ~ unique_classroom)
+
+print(avg_comparisons(duration, variables = "gender", by = "age", vcov = ~ unique_classroom))
+
+
+
+ggplot(data = predictions_duration, aes(y = estimate, x = age, group = gender, color = gender,
+                                        ymin = conf.low, ymax = conf.high, fill = gender)) +
+  geom_point() +
+  geom_line() +
+  geom_ribbon(alpha = .1, color = NA) +
+  theme_classic()
+
+# lets split this by schooltype because it looks wonky
+
+predictions_duration_schooltype <- avg_predictions(duration, variables = c("gender", "age", "schooltype"), vcov = ~ unique_classroom)
+
+
+ggplot(data = predictions_duration_schooltype[predictions_duration_schooltype$schooltype == 1,], aes(y = estimate, x = age, group = gender, color = gender,
+                                        ymin = conf.low, ymax = conf.high, fill = gender)) +
+  geom_point() +
+  geom_line() +
+  geom_ribbon(alpha = .1, color = NA) +
+  ggtitle("General secondary") +
+  theme_classic()
+
+ggplot(data = predictions_duration_schooltype[predictions_duration_schooltype$schooltype == 2,], aes(y = estimate, x = age, group = gender, color = gender,
+                                        ymin = conf.low, ymax = conf.high, fill = gender)) +
+  geom_point() +
+  geom_line() +
+  geom_ribbon(alpha = .1, color = NA) +
+  ggtitle("Grammar school") +
+  theme_classic()
+
+```
+
+```{r within_classroom}
+classrooms <- unique(youth2023$unique_classroom)
+
+for (i in 1:length(classrooms)) {
+  print(table(youth2023$source[youth2023$unique_classroom == classrooms[i]]))
+}
+
+```
+
 

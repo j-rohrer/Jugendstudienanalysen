@@ -760,6 +760,12 @@ vars <- c("id", "year", "wph", "schooltype", "gender", "age", "mig_lang", "migba
           "gaming", "socialmedia", "streaming", "duration_seconds")
 combined <- rbind(youth2010[, vars], youth2015[, vars], youth2023[, vars])
 
+# Anonymize unique_classrooms
+combined$unique_classroom <- as.factor(combined$unique_classroom)
+combined$unique_classroom <- factor(combined$unique_classroom, 
+                                     levels = levels(combined$unique_classroom), 
+                                     labels = seq_along(levels(combined$unique_classroom)))
+
 
 table(youth2010$gender)
 table(youth2015$gender)

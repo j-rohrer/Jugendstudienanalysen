@@ -652,5 +652,4 @@ print(avg_comparisons(explanandum_mig_lang,
                       newdata = all2023,
                       hypothesis = "b2 = b6")) # migback
 
-
 ```
