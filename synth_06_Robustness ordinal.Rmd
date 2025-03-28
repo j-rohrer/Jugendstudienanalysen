@@ -9,7 +9,9 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-load("prep.RData")
+load("synthetic_data")
+combined <- syn_dat
+
 library(haven)
 library(marginaleffects)
 library(brms)
@@ -25,15 +27,15 @@ combined$source <- as.factor(combined$source)
 # Fit model in ordinal
 # We are using brms here simply because polr() does not support
 # the postestimation routine of marginaleffects on the link scale
-#explanandum_paper_only_ordinal <- brm(satis ~ as.factor(year) + gender + as.factor(year):gender +
-#                                        as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
-#                                        as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
-#                                        as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
-#                                 family = cumulative("probit"),
-#                                 cores = 4,
-#                  data = combined[combined$source == "paper",])
+explanandum_paper_only_ordinal <- brm(satis ~ as.factor(year) + gender + as.factor(year):gender +
+                                        as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
+                                       as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+                                        as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
+                                 family = cumulative("probit"),
+                                 cores = 4,
+                  data = combined[combined$source == "paper",])
 # saveRDS(explanandum_paper_only_ordinal, file = "explanandum_paper_only_ordinal")
-explanandum_paper_only_ordinal <- readRDS("explanandum_paper_only_ordinal")
+# explanandum_paper_only_ordinal <- readRDS("explanandum_paper_only_ordinal")
 
 # Demographics like in 2023
 temp1 <- combined[combined$year == 2023,]

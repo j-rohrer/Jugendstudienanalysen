@@ -15,7 +15,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Plotting the histogram
 
 ```{r histo}
-load("prep.RData")
+load("synthetic_data")
+combined <- syn_dat
+
 library(marginaleffects)
 library(ggplot2)
 library(MASS)
@@ -26,7 +28,7 @@ ggplot(data = combined, aes(x = satis)) +
   theme_classic() +
   xlab("Life satisfaction score") +
   ylab("Frequency")
-ggsave("Plots/histogram.png", width = 4, height = 3)
+#ggsave("Plots/histogram.png", width = 4, height = 3)
 ```
 
 ## Plotting the hypothetical example
@@ -86,7 +88,7 @@ ggplot(data.frame(x = c(lower_limit, upper_limit)), aes(x = x)) +
   geom_segment(aes(x = girls_2023, xend = boys_2023, y = 0.20, yend = 0.20)) +
   xlab("Latent life satisfaction") +
   ylab("Density")
-ggsave("Plots/ordinal_hypothetical.png", width = 4, height = 3)
+#ggsave("Plots/ordinal_hypothetical.png", width = 4, height = 3)
 
 ```
 
@@ -188,7 +190,7 @@ ggplot(data.frame(x = c(lower_limit, upper_limit)), aes(x = x)) +
   geom_segment(aes(x = girls_2023, xend = boys_2023, y = 0.20, yend = 0.20)) +
   xlab("Latent life satisfaction") +
   ylab("Density")
-ggsave("Plots/ordinal_empirical.png", width = 4, height = 3)
+#ggsave("Plots/ordinal_empirical.png", width = 4, height = 3)
 
 
 ```

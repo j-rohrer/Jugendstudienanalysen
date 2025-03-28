@@ -16,7 +16,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Age differences between the years?
 
 ```{r age_diffs}
-load("prep.RData")
+load("synthetic_data")
+combined <- syn_dat
 library(marginaleffects)
 library(ggplot2)
 library(patchwork)
@@ -94,7 +95,7 @@ cat_age_2023 <- ggplot(pred[pred$year == 2023,], aes(x = age, group = gender,
 library(patchwork)
 combined_cat_age <- (cat_age_2010|cat_age_2015|cat_age_2023) + plot_layout(guides = "collect")
 combined_cat_age
-ggsave("Plots/satis_by_age_categorical.png", width = 6, height = 3)
+#ggsave("Plots/satis_by_age_categorical.png", width = 6, height = 3)
 
 
 # Re-fit the model including only the linear age effect
@@ -155,7 +156,7 @@ lin_age_2023 <- ggplot(pred[pred$year == 2023,], aes(x = age, group = gender,
 # Combine into single plot
 combined_lin_age <- (lin_age_2010|lin_age_2015|lin_age_2023) + plot_layout(guides = "collect")
 combined_lin_age
-ggsave("Plots/satis_by_age_linear.png", width = 6, height = 3)
+#ggsave("Plots/satis_by_age_linear.png", width = 6, height = 3)
 ```
 
 ### Does age explain away the explanandum?
@@ -191,7 +192,7 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
   ylab("Mean life satisfaction") +
   xlab("Survey year") +
   labs(color = "Gender")
-ggsave("Plots/explanandum_age_controlled.png", width = 4, height = 3)
+#ggsave("Plots/explanandum_age_controlled.png", width = 4, height = 3)
 
 
 # Calculate the gender gaps on the hypothetical data
@@ -358,7 +359,7 @@ cat_schooltype_2 <- ggplot(pred[pred$schooltype == 2,], aes(x = year, group = ge
 # Combine into single plot
 combined_cat_schooltype <- (cat_schooltype_1|cat_schooltype_2) + plot_layout(guides = "collect")
 combined_cat_schooltype
-ggsave("Plots/satis_by_schooltype_categorical.png", width = 6, height = 3)
+#ggsave("Plots/satis_by_schooltype_categorical.png", width = 6, height = 3)
 ```
 
 ### Does schooltype explain away the explanandum?
@@ -387,7 +388,7 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
   ylab("Mean life satisfaction") +
   xlab("Survey year") +
   labs(color = "Gender")
-ggsave("Plots/explanandum_age_schooltype_controlled.png", width = 4, height = 3)
+#ggsave("Plots/explanandum_age_schooltype_controlled.png", width = 4, height = 3)
 
 # Gender gap by year
 # For the 2010 schooltype distribution
@@ -531,7 +532,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
 # Combine into single plot
 combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
 combined_cat_mig_lang
-ggsave("Plots/satis_by_mig_lang_categorical.png", width = 6, height = 3)
+#ggsave("Plots/satis_by_mig_lang_categorical.png", width = 6, height = 3)
 ```
 
 ### Does migration background explain away the explanandum?
@@ -562,7 +563,7 @@ ggplot(pred, aes(x = year, group = gender, color = gender, y = estimate, ymin = 
   ylab("Mean life satisfaction") +
   xlab("Survey year") +
   labs(color = "Gender")
-ggsave("Plots/explanandum_age_schooltype_migrant_controlled.png", width = 4, height = 3)
+#ggsave("Plots/explanandum_age_schooltype_migrant_controlled.png", width = 4, height = 3)
 
 # Gender gaps by year
 comps <- avg_comparisons(explanandum_mig_lang, variables = "gender", by = "year",

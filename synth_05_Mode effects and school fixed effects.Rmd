@@ -9,7 +9,6 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-load("prep.RData")
 library(haven)
 library(marginaleffects)
 library(ggplot2)
@@ -17,7 +16,8 @@ library(gridExtra)
 library(dplyr)
 library(patchwork)
 
-
+load("synthetic_data")
+combined <- syn_dat
 combined$source <- as.factor(combined$source)
 
 ```
@@ -42,7 +42,7 @@ ggplot(pred, aes(x = source, group = gender, color = gender, y = estimate, ymin 
   ylab("Mean life satisfaction") +
   xlab("Survey mode") +
   labs(color = "Gender")
-ggsave("Plots/mode.png", width = 4, height = 3)
+#ggsave("Plots/mode.png", width = 4, height = 3)
 
 
 print(avg_predictions(mode_effects, variables = c("source", "gender"),
@@ -164,7 +164,7 @@ ggplot(pred, aes(x = source, group = gender, color = gender, y = estimate, ymin 
   ylab("Mean life satisfaction") +
   xlab("Survey mode") +
   labs(color = "Gender")
-ggsave("Plots/mode_fe.png", width = 4, height = 3)
+#ggsave("Plots/mode_fe.png", width = 4, height = 3)
 
 # Let's again look at mode effects by gender
 contrasts <- avg_comparisons(mode_effects_controlled_fe, variables = "source", by = "gender", vcov = ~ unique_classroom)
@@ -393,7 +393,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
 # Combine into single plot
 combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
 combined_cat_mig_lang
-ggsave("Plots/paper_satis_by_mig_lang_categorical.png", width = 6, height = 3)
+#ggsave("Plots/paper_satis_by_mig_lang_categorical.png", width = 6, height = 3)
 
 
 ```

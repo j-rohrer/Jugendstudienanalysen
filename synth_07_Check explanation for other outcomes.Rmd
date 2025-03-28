@@ -9,7 +9,8 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-load("prep.RData")
+load("synthetic_data")
+combined <- syn_dat
 library(haven)
 library(marginaleffects)
 library(ggplot2)
@@ -119,7 +120,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
 # Combine into single plot
 combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
 combined_cat_mig_lang
-ggsave("Plots/paper_satis_money.png", width = 6, height = 3)
+#ggsave("Plots/paper_satis_money.png", width = 6, height = 3)
 
 ```
 
@@ -224,7 +225,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
 # Combine into single plot
 combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
 combined_cat_mig_lang
-ggsave("Plots/paper_satis_friends.png", width = 6, height = 3)
+#ggsave("Plots/paper_satis_friends.png", width = 6, height = 3)
 
 ```
 
@@ -328,7 +329,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
 # Combine into single plot
 combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
 combined_cat_mig_lang
-ggsave("Plots/paper_satis_mother.png", width = 6, height = 3)
+#ggsave("Plots/paper_satis_mother.png", width = 6, height = 3)
 
 ```
 
@@ -431,7 +432,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
 # Combine into single plot
 combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
 combined_cat_mig_lang
-ggsave("Plots/paper_satis_dad.png", width = 6, height = 3)
+#ggsave("Plots/paper_satis_dad.png", width = 6, height = 3)
 ```
 
 ### Satisfaction with your leisure time activities
@@ -533,7 +534,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
 # Combine into single plot
 combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
 combined_cat_mig_lang
-ggsave("Plots/paper_satis_leisure.png", width = 6, height = 3)
+#ggsave("Plots/paper_satis_leisure.png", width = 6, height = 3)
 ```
 
 
@@ -636,7 +637,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
 # Combine into single plot
 combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
 combined_cat_mig_lang
-ggsave("Plots/paper_satis_grades.png", width = 6, height = 3)
+#ggsave("Plots/paper_satis_grades.png", width = 6, height = 3)
 ```
 
 ### Satisfaction with your housing situation
@@ -738,5 +739,5 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
 # Combine into single plot
 combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
 combined_cat_mig_lang
-ggsave("Plots/paper_satis_dwell.png", width = 6, height = 3)
+#ggsave("Plots/paper_satis_dwell.png", width = 6, height = 3)
 ```
