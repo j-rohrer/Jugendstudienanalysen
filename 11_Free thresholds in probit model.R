@@ -60,3 +60,10 @@ saveRDS(ordinal_b_free_year, file = "Models/ordinal_brms_free_year")
 # this should also work and as expected
 # in turn gives me a lot of uncertainty about the effects of year
 
+<<<<<<< HEAD
+=======
+
+##############################################
+# Do age as a spline
+##############################################
+>>>>>>> 5b111da34be9a0989cd54fb7b77c2235f2103a13
