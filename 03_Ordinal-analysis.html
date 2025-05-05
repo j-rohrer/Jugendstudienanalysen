@@ -11,7 +11,7 @@
 
 <meta name="author" content="Julia Rohrer" />
 
-<meta name="date" content="2025-02-21" />
+<meta name="date" content="2025-05-05" />
 
 <title>Ordinal analysis</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">Ordinal analysis</h1>
 <h4 class="author">Julia Rohrer</h4>
-<h4 class="date">2025-02-21</h4>
+<h4 class="date">2025-05-05</h4>
 
 </div>
 
@@ -368,6 +368,8 @@ example</a></li>
 on our data</a></li>
 <li><a href="#illustrating-the-model-results" id="toc-illustrating-the-model-results">Illustrating the model
 results</a></li>
+<li><a href="#additionally-freeing-thresholds" id="toc-additionally-freeing-thresholds">Additionally freeing
+thresholds</a></li>
 </ul></li>
 </ul>
 </div>
@@ -649,6 +651,187 @@ ggplot(data.frame(x = c(lower_limit, upper_limit)), aes(x = x)) +
 ## All aesthetics have length 1, but the data has 2 rows.
 ## ℹ Please consider using `annotate()` or provide this layer with data containing
 ##   a single row.</code></pre>
+</div>
+<div id="additionally-freeing-thresholds" class="section level2">
+<h2>Additionally freeing thresholds</h2>
+<pre class="r"><code>library(brms)</code></pre>
+<pre><code>## Loading required package: Rcpp</code></pre>
+<pre><code>## Loading &#39;brms&#39; package (version 2.22.0). Useful instructions
+## can be found by typing help(&#39;brms&#39;). A more detailed introduction
+## to the package is available through vignette(&#39;brms_overview&#39;).</code></pre>
+<pre><code>## 
+## Attaching package: &#39;brms&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:stats&#39;:
+## 
+##     ar</code></pre>
+<pre class="r"><code># Refit simple ordinal model in brms just to check its essentially the same
+# ordinal_b &lt;- brm(satis ~ as.factor(year) + gender + gender:as.factor(year), 
+#                 family = cumulative(probit),
+#                 data = combined,
+#                 cores = 4,
+#                 seed = 1)
+# saveRDS(ordinal_b, file = &quot;Models/ordinal_brms&quot;)
+
+
+ordinal_b &lt;- readRDS(file = &quot;Models/ordinal_brms&quot;)
+
+# Loot at coefficients
+summary(ordinal_b)</code></pre>
+<pre><code>##  Family: cumulative 
+##   Links: mu = probit; disc = identity 
+## Formula: satis ~ as.factor(year) + gender + gender:as.factor(year) 
+##    Data: combined (Number of observations: 4764) 
+##   Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 4000
+## 
+## Regression Coefficients:
+##                              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
+## Intercept[1]                    -2.32      0.06    -2.44    -2.20 1.00     1826
+## Intercept[2]                    -1.53      0.05    -1.62    -1.44 1.00     2153
+## Intercept[3]                    -0.52      0.04    -0.60    -0.43 1.00     2030
+## Intercept[4]                     0.93      0.04     0.85     1.02 1.00     2001
+## as.factoryear2015               -0.07      0.06    -0.17     0.04 1.00     1750
+## as.factoryear2023               -0.47      0.05    -0.57    -0.36 1.00     2042
+## gendermale                       0.29      0.06     0.18     0.40 1.00     1612
+## as.factoryear2015:gendermale     0.09      0.08    -0.07     0.24 1.00     1609
+## as.factoryear2023:gendermale     0.32      0.08     0.17     0.47 1.00     1767
+##                              Tail_ESS
+## Intercept[1]                     2207
+## Intercept[2]                     2619
+## Intercept[3]                     2643
+## Intercept[4]                     2758
+## as.factoryear2015                2497
+## as.factoryear2023                2650
+## gendermale                       1750
+## as.factoryear2015:gendermale     2253
+## as.factoryear2023:gendermale     1857
+## 
+## Further Distributional Parameters:
+##      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## disc     1.00      0.00     1.00     1.00   NA       NA       NA
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
+<pre class="r"><code># Free thresholds by gender
+# ordinal_b_free &lt;- brm(satis| thres(gr = gender) ~ as.factor(year) + gender + gender:as.factor(year), 
+#                       family = cumulative(probit),
+#                       data = combined,
+#                       cores = 4,
+#                       seed = 1)
+# saveRDS(ordinal_b_free, file = &quot;Models/ordinal_brms_free_gender&quot;)
+ordinal_b_free &lt;- readRDS(file = &quot;Models/ordinal_brms_free_gender&quot;)
+summary(ordinal_b_free)</code></pre>
+<pre><code>##  Family: cumulative 
+##   Links: mu = probit; disc = identity 
+## Formula: satis | thres(gr = gender) ~ as.factor(year) + gender + gender:as.factor(year) 
+##    Data: combined (Number of observations: 4764) 
+##   Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 4000
+## 
+## Regression Coefficients:
+##                              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
+## Intercept[female,1]             -2.35      0.07    -2.50    -2.21 1.00     1848
+## Intercept[female,2]             -1.53      0.05    -1.64    -1.43 1.00     2031
+## Intercept[female,3]             -0.45      0.04    -0.54    -0.36 1.00     2053
+## Intercept[female,4]              0.87      0.05     0.78     0.96 1.00     2423
+## Intercept[male,1]               -1.41      1.29    -4.02     1.02 1.00     1721
+## Intercept[male,2]               -0.68      1.29    -3.27     1.73 1.00     1723
+## Intercept[male,3]                0.20      1.29    -2.39     2.62 1.00     1722
+## Intercept[male,4]                1.80      1.29    -0.80     4.21 1.00     1723
+## as.factoryear2015               -0.06      0.06    -0.16     0.05 1.00     1987
+## as.factoryear2023               -0.45      0.06    -0.56    -0.34 1.00     1932
+## gendermale                       1.09      1.29    -1.51     3.50 1.00     1745
+## as.factoryear2015:gendermale     0.08      0.08    -0.08     0.24 1.00     2037
+## as.factoryear2023:gendermale     0.30      0.08     0.15     0.46 1.00     1987
+##                              Tail_ESS
+## Intercept[female,1]              2191
+## Intercept[female,2]              2507
+## Intercept[female,3]              2811
+## Intercept[female,4]              2679
+## Intercept[male,1]                2326
+## Intercept[male,2]                2265
+## Intercept[male,3]                2266
+## Intercept[male,4]                2306
+## as.factoryear2015                2399
+## as.factoryear2023                2457
+## gendermale                       2281
+## as.factoryear2015:gendermale     2299
+## as.factoryear2023:gendermale     2561
+## 
+## Further Distributional Parameters:
+##      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## disc     1.00      0.00     1.00     1.00   NA       NA       NA
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
+<pre class="r"><code># now there is huge uncertainties about the thresholds in men and the
+# effect of male gender
+
+
+# Free the thresholds by year
+# ordinal_b_free_year &lt;- brm(satis| thres(gr = as.factor(year)) ~ as.factor(year) + gender + gender:as.factor(year), 
+#                  family = cumulative(probit),
+#                  data = combined,
+#                  cores = 4,
+#                  seed = 1)
+# saveRDS(ordinal_b_free_year, file = &quot;Models/ordinal_brms_free_year&quot;)
+
+ordinal_b_free_year &lt;- readRDS(file = &quot;Models/ordinal_brms_free_year&quot;)
+summary(ordinal_b_free_year)</code></pre>
+<pre><code>##  Family: cumulative 
+##   Links: mu = probit; disc = identity 
+## Formula: satis | thres(gr = as.factor(year)) ~ as.factor(year) + gender + gender:as.factor(year) 
+##    Data: combined (Number of observations: 4764) 
+##   Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 4000
+## 
+## Regression Coefficients:
+##                              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
+## Intercept[2010,1]               -2.17      0.10    -2.38    -1.99 1.00     2167
+## Intercept[2010,2]               -1.38      0.06    -1.50    -1.27 1.00     3809
+## Intercept[2010,3]               -0.51      0.05    -0.61    -0.43 1.00     2816
+## Intercept[2010,4]                0.86      0.05     0.77     0.96 1.00     2644
+## Intercept[2015,1]               -1.41      1.33    -4.09     1.12 1.00     2435
+## Intercept[2015,2]               -0.69      1.33    -3.34     1.81 1.00     2438
+## Intercept[2015,3]                0.35      1.32    -2.29     2.87 1.00     2434
+## Intercept[2015,4]                1.84      1.32    -0.80     4.37 1.00     2428
+## Intercept[2023,1]               -1.52      1.30    -4.05     1.10 1.00     2336
+## Intercept[2023,2]               -0.69      1.30    -3.24     1.89 1.00     2327
+## Intercept[2023,3]                0.39      1.30    -2.15     2.97 1.00     2328
+## Intercept[2023,4]                1.89      1.30    -0.64     4.47 1.00     2335
+## as.factoryear2015                0.82      1.33    -1.83     3.35 1.00     2436
+## as.factoryear2023                0.43      1.30    -2.10     3.02 1.00     2319
+## gendermale                       0.27      0.06     0.15     0.38 1.00     1762
+## as.factoryear2015:gendermale     0.11      0.08    -0.05     0.27 1.00     2147
+## as.factoryear2023:gendermale     0.37      0.08     0.22     0.52 1.00     2146
+##                              Tail_ESS
+## Intercept[2010,1]                2305
+## Intercept[2010,2]                3372
+## Intercept[2010,3]                3034
+## Intercept[2010,4]                2546
+## Intercept[2015,1]                2336
+## Intercept[2015,2]                2233
+## Intercept[2015,3]                2173
+## Intercept[2015,4]                2198
+## Intercept[2023,1]                2224
+## Intercept[2023,2]                2226
+## Intercept[2023,3]                2225
+## Intercept[2023,4]                2239
+## as.factoryear2015                2198
+## as.factoryear2023                2233
+## gendermale                       2272
+## as.factoryear2015:gendermale     2338
+## as.factoryear2023:gendermale     2547
+## 
+## Further Distributional Parameters:
+##      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## disc     1.00      0.00     1.00     1.00   NA       NA       NA
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
 </div>
 </div>
 

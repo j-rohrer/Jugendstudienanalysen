@@ -192,3 +192,50 @@ ggsave("Plots/ordinal_empirical.png", width = 4, height = 3)
 
 
 ```
+
+## Additionally freeing thresholds
+
+```{r free_thresholds}
+library(brms)
+
+# Refit simple ordinal model in brms just to check its essentially the same
+# ordinal_b <- brm(satis ~ as.factor(year) + gender + gender:as.factor(year), 
+#                 family = cumulative(probit),
+#                 data = combined,
+#                 cores = 4,
+#                 seed = 1)
+# saveRDS(ordinal_b, file = "Models/ordinal_brms")
+
+
+ordinal_b <- readRDS(file = "Models/ordinal_brms")
+
+# Loot at coefficients
+summary(ordinal_b)
+
+# Free thresholds by gender
+# ordinal_b_free <- brm(satis| thres(gr = gender) ~ as.factor(year) + gender + gender:as.factor(year), 
+#                       family = cumulative(probit),
+#                       data = combined,
+#                       cores = 4,
+#                       seed = 1)
+# saveRDS(ordinal_b_free, file = "Models/ordinal_brms_free_gender")
+ordinal_b_free <- readRDS(file = "Models/ordinal_brms_free_gender")
+summary(ordinal_b_free)
+
+# now there is huge uncertainties about the thresholds in men and the
+# effect of male gender
+
+
+# Free the thresholds by year
+# ordinal_b_free_year <- brm(satis| thres(gr = as.factor(year)) ~ as.factor(year) + gender + gender:as.factor(year), 
+#                  family = cumulative(probit),
+#                  data = combined,
+#                  cores = 4,
+#                  seed = 1)
+# saveRDS(ordinal_b_free_year, file = "Models/ordinal_brms_free_year")
+
+ordinal_b_free_year <- readRDS(file = "Models/ordinal_brms_free_year")
+summary(ordinal_b_free_year)
+
+
+```
