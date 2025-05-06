@@ -111,15 +111,20 @@ chisq.test(table(combined_2023$mig_lang, combined_2023$source))
 To rule out that the associations between survey mode and life satisfaction are due to confounding with demographics, let's again adjust for demographics
 
 ```{r mode_satis_controlled}
+library(splines)
 
-mode_effects_controlled <- lm(satis ~ source*gender +
-                                age + age:gender + age:source +
-                                as.factor(schooltype) + as.factor(schooltype):gender + as.factor(schooltype):source +
-                                as.factor(mig_lang) + as.factor(mig_lang):gender + as.factor(mig_lang):source, data = combined[combined$year == 2023,])
+# Possible problems: splines to flexible
+# empty cells in the average comparison?
+
+mode_effects_controlled <- lm(satis ~ source*gender*as.factor(schooltype)*as.factor(mig_lang)*as.factor(age), data = combined[combined$year == 2023,])
 summary(mode_effects_controlled)
 
 # Take counterfactual contrasts: everybody with paper vs everybody online
+
+print(predictions(mode_effects_controlled, by = c("source", "gender"), vcov = ~ unique_classroom))
+
 contrasts <- avg_comparisons(mode_effects_controlled, variables = "source", by = "gender", vcov = ~ unique_classroom)
+print(contrasts)
 # Girls are less satisfied on the tablet
 # Boys are pretty much the same
 
@@ -145,10 +150,7 @@ schools_with_both <- assessment_modes$school_id[assessment_modes$count == 2]
 # and allow the effect of gender to vary between schools
 # (in completely arbitrary ways)
 
-mode_effects_controlled_fe <- lm(satis ~ source*gender +
-                                   age + age:gender + age:source +
-                                   as.factor(schooltype) + as.factor(schooltype):gender + as.factor(schooltype):source +
-                                   as.factor(mig_lang) + as.factor(mig_lang):gender + as.factor(mig_lang):source +
+mode_effects_controlled_fe <- lm(satis ~ source*gender*as.factor(schooltype)*as.factor(mig_lang)*bs(age, df = 3) +
                                    as.factor(school_id) + as.factor(school_id):gender, 
                                  data = combined[combined$year == 2023 & combined$school_id %in% schools_with_both,])
 summary(mode_effects_controlled_fe)
@@ -190,10 +192,7 @@ Tablets were only introduced in 2023, and so we cannot see how the gender gap wi
 However, paper was used throughout, and so we can look at the widening of the gender gap for this survey mode
 
 ```{r mode_explanandum}
-explanandum_paper_only <- lm(satis ~ as.factor(year) + gender + as.factor(year):gender +
-                                 as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
-                                 as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
-                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
+explanandum_paper_only <- lm(satis ~ as.factor(year)*gender*as.factor(schooltype)*bs(age, df = 3), 
                   data = combined[combined$source == "paper",])
 
 # We will evaluate this for various data grids
