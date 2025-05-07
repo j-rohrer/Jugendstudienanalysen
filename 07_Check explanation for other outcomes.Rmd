@@ -14,6 +14,7 @@ library(haven)
 library(marginaleffects)
 library(ggplot2)
 library(patchwork)
+library(splines)
 combined$source <- as.factor(combined$source)
 ```
 
@@ -25,61 +26,63 @@ Let's see whether our favored explanation also holds up for the other satisfacti
 ```{r satis_money}
 # Fit the model
 explanandum_paper_only_money <- lm(satis_money ~ as.factor(year) + gender + as.factor(year):gender +
-                                 as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
-                                 as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
-                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
+                                   bs(age, df = 3) + as.factor(year):bs(age, df = 3) + gender:bs(age, df = 3) + as.factor(year):gender:bs(age, df = 3) +
+                                   as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+                                   as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang),
                   data = combined[combined$source == "paper",])
 
-# Demographics like in 2023
-temp1 <- combined[combined$year == 2023,]
+# Demographics like in 2010
+temp1 <- combined[combined$year == 2010,]
 temp1$year <- 2010
-temp2 <- combined[combined$year == 2023,]
+temp2 <- combined[combined$year == 2010,]
 temp2$year <- 2015
-temp3 <- combined[combined$year == 2023,]
+temp3 <- combined[combined$year == 2010,]
 temp3$year <- 2023
-all2023 <- rbind(temp1, temp2, temp3)
+all2010 <- rbind(temp1, temp2, temp3)
 
 # Predictions
 pred <- predictions(explanandum_paper_only_money,
                  by = c("gender", "year"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
+print(pred)
 
 # Gender gap by year
 comps <- avg_comparisons(explanandum_paper_only_money, variables = "gender", by = "year",
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps)
 
 # Test biggest contrast: 2010 versus 2023
 max_comp <- avg_comparisons(explanandum_paper_only_money, variables = "gender", by = "year",
                 hypothesis = "b1 = b3",
-                 newdata = all2023,
+                 newdata = all2010,
                 vcov = ~ unique_classroom)
 print(max_comp)
+print(max_comp$estimate/sd(combined$satis_money))
 
 # Gender gap by year and migration background
 comps_by_migback <- avg_comparisons(explanandum_paper_only_money, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps_by_migback)
 
 # Widening of the gap for no migration background
 # 2023
 print(avg_comparisons(explanandum_paper_only_money, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom,
       hypothesis = "b1 = b5"))
 
 # Widening of the gap for migration background
 # 2023
 print(avg_comparisons(explanandum_paper_only_money, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom,
                  hypothesis = "b2 = b6"))
 
 pred <- avg_predictions(explanandum_paper_only_money,
-                        newdata = all2023,
+                        newdata = all2010,
                         by = c("gender", "year", "mig_lang"),
                         vcov = ~ unique_classroom)
 
@@ -130,61 +133,53 @@ ggsave("Plots/paper_satis_money.png", width = 6, height = 3)
 ```{r satis_friends}
 # Fit the model
 explanandum_paper_only_friends <- lm(satis_friends ~ as.factor(year) + gender + as.factor(year):gender +
-                                 as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
-                                 as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
-                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
+                                   bs(age, df = 3) + as.factor(year):bs(age, df = 3) + gender:bs(age, df = 3) + as.factor(year):gender:bs(age, df = 3) +
+                                   as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+                                   as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang),
                   data = combined[combined$source == "paper",])
 
-# Demographics like in 2023
-temp1 <- combined[combined$year == 2023,]
-temp1$year <- 2010
-temp2 <- combined[combined$year == 2023,]
-temp2$year <- 2015
-temp3 <- combined[combined$year == 2023,]
-temp3$year <- 2023
-all2023 <- rbind(temp1, temp2, temp3)
 
 # Predictions
 pred <- predictions(explanandum_paper_only_friends,
                  by = c("gender", "year"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
+print(pred)
 
 # Gender gap by year
 comps <- avg_comparisons(explanandum_paper_only_friends, variables = "gender", by = "year",
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps)
 
 # Test biggest contrast: 2010 versus 2023
 max_comp <- avg_comparisons(explanandum_paper_only_friends, variables = "gender", by = "year",
                 hypothesis = "b1 = b3",
-                 newdata = all2023,
+                 newdata = all2010,
                 vcov = ~ unique_classroom)
 print(max_comp)
+print(max_comp$estimate/sd(combined$satis_friends))
 
 # Gender gap by year and migration background
 comps_by_migback <- avg_comparisons(explanandum_paper_only_friends, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps_by_migback)
 
 # Widening of the gap for no migration background
-# 2023
 print(avg_comparisons(explanandum_paper_only_friends, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom,
       hypothesis = "b1 = b5"))
 
 # Widening of the gap for migration background
-# 2023
 print(avg_comparisons(explanandum_paper_only_friends, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom,
                  hypothesis = "b2 = b6"))
 
 pred <- avg_predictions(explanandum_paper_only_friends,
-                        newdata = all2023,
+                        newdata = all2010,
                         by = c("gender", "year", "mig_lang"),
                         vcov = ~ unique_classroom)
 
@@ -234,61 +229,55 @@ ggsave("Plots/paper_satis_friends.png", width = 6, height = 3)
 ```{r mom}
 # Fit the model
 explanandum_paper_only_mom <- lm(satis_mom ~ as.factor(year) + gender + as.factor(year):gender +
-                                 as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
-                                 as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
-                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
+                                   bs(age, df = 3) + as.factor(year):bs(age, df = 3) + gender:bs(age, df = 3) + as.factor(year):gender:bs(age, df = 3) +
+                                   as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+                                   as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang),
                   data = combined[combined$source == "paper",])
 
-# Demographics like in 2023
-temp1 <- combined[combined$year == 2023,]
-temp1$year <- 2010
-temp2 <- combined[combined$year == 2023,]
-temp2$year <- 2015
-temp3 <- combined[combined$year == 2023,]
-temp3$year <- 2023
-all2023 <- rbind(temp1, temp2, temp3)
 
 # Predictions
 pred <- predictions(explanandum_paper_only_mom,
                  by = c("gender", "year"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
+print(pred)
 
 # Gender gap by year
 comps <- avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = "year",
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps)
 
 # Test biggest contrast: 2010 versus 2023
 max_comp <- avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = "year",
                 hypothesis = "b1 = b3",
-                 newdata = all2023,
+                 newdata = all2010,
                 vcov = ~ unique_classroom)
 print(max_comp)
+print(max_comp$estimate/sd(combined$satis_mom))
 
 # Gender gap by year and migration background
 comps_by_migback <- avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps_by_migback)
 
 # Widening of the gap for no migration background
 # 2023
 print(avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom,
       hypothesis = "b1 = b5"))
 
 # Widening of the gap for migration background
 # 2023
 print(avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom,
                  hypothesis = "b2 = b6"))
 
 pred <- avg_predictions(explanandum_paper_only_mom,
-                        newdata = all2023,
+                        newdata = all2010,
                         by = c("gender", "year", "mig_lang"),
                         vcov = ~ unique_classroom)
 
@@ -337,61 +326,52 @@ ggsave("Plots/paper_satis_mother.png", width = 6, height = 3)
 ```{r dad}
 # Fit the model
 explanandum_paper_only_dad <- lm(satis_dad ~ as.factor(year) + gender + as.factor(year):gender +
-                                 as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
-                                 as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
-                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
+                                   bs(age, df = 3) + as.factor(year):bs(age, df = 3) + gender:bs(age, df = 3) + as.factor(year):gender:bs(age, df = 3) +
+                                   as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+                                   as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang),
                   data = combined[combined$source == "paper",])
-
-# Demographics like in 2023
-temp1 <- combined[combined$year == 2023,]
-temp1$year <- 2010
-temp2 <- combined[combined$year == 2023,]
-temp2$year <- 2015
-temp3 <- combined[combined$year == 2023,]
-temp3$year <- 2023
-all2023 <- rbind(temp1, temp2, temp3)
 
 # Predictions
 pred <- predictions(explanandum_paper_only_dad,
                  by = c("gender", "year"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
+print(pred)
 
 # Gender gap by year
 comps <- avg_comparisons(explanandum_paper_only_dad, variables = "gender", by = "year",
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps)
 
 # Test biggest contrast: 2010 versus 2023
 max_comp <- avg_comparisons(explanandum_paper_only_dad, variables = "gender", by = "year",
                 hypothesis = "b1 = b3",
-                 newdata = all2023,
+                 newdata = all2010,
                 vcov = ~ unique_classroom)
 print(max_comp)
+print(max_comp$estimate/sd(combined$satis_dad))
 
 # Gender gap by year and migration background
 comps_by_migback <- avg_comparisons(explanandum_paper_only_dad, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps_by_migback)
 
 # Widening of the gap for no migration background
-# 2023
 print(avg_comparisons(explanandum_paper_only_dad, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom,
       hypothesis = "b1 = b5"))
 
 # Widening of the gap for migration background
-# 2023
 print(avg_comparisons(explanandum_paper_only_dad, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom,
                  hypothesis = "b2 = b6"))
 
 pred <- avg_predictions(explanandum_paper_only_dad,
-                        newdata = all2023,
+                        newdata = all2010,
                         by = c("gender", "year", "mig_lang"),
                         vcov = ~ unique_classroom)
 
@@ -439,61 +419,52 @@ ggsave("Plots/paper_satis_dad.png", width = 6, height = 3)
 ```{r leisure}
 # Fit the model
 explanandum_paper_only_leisure <- lm(satis_leisure ~ as.factor(year) + gender + as.factor(year):gender +
-                                 as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
-                                 as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
-                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
+                                   bs(age, df = 3) + as.factor(year):bs(age, df = 3) + gender:bs(age, df = 3) + as.factor(year):gender:bs(age, df = 3) +
+                                   as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+                                   as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang),
                   data = combined[combined$source == "paper",])
-
-# Demographics like in 2023
-temp1 <- combined[combined$year == 2023,]
-temp1$year <- 2010
-temp2 <- combined[combined$year == 2023,]
-temp2$year <- 2015
-temp3 <- combined[combined$year == 2023,]
-temp3$year <- 2023
-all2023 <- rbind(temp1, temp2, temp3)
 
 # Predictions
 pred <- predictions(explanandum_paper_only_leisure,
                  by = c("gender", "year"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
+print(pred)
 
 # Gender gap by year
 comps <- avg_comparisons(explanandum_paper_only_leisure, variables = "gender", by = "year",
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps)
 
 # Test biggest contrast: 2010 versus 2023
 max_comp <- avg_comparisons(explanandum_paper_only_leisure, variables = "gender", by = "year",
                 hypothesis = "b1 = b3",
-                 newdata = all2023,
+                 newdata = all2010,
                 vcov = ~ unique_classroom)
 print(max_comp)
+print(max_comp$estimate/sd(combined$satis_leisure))
 
 # Gender gap by year and migration background
 comps_by_migback <- avg_comparisons(explanandum_paper_only_leisure, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps_by_migback)
 
 # Widening of the gap for no migration background
-# 2023
 print(avg_comparisons(explanandum_paper_only_leisure, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom,
       hypothesis = "b1 = b5"))
 
 # Widening of the gap for migration background
-# 2023
 print(avg_comparisons(explanandum_paper_only_leisure, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom,
                  hypothesis = "b2 = b6"))
 
 pred <- avg_predictions(explanandum_paper_only_leisure,
-                        newdata = all2023,
+                        newdata = all2010,
                         by = c("gender", "year", "mig_lang"),
                         vcov = ~ unique_classroom)
 
@@ -542,61 +513,52 @@ ggsave("Plots/paper_satis_leisure.png", width = 6, height = 3)
 ```{r grades}
 # Fit the model
 explanandum_paper_only_grades <- lm(satis_grades ~ as.factor(year) + gender + as.factor(year):gender +
-                                 as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
-                                 as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
-                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
+                                   bs(age, df = 3) + as.factor(year):bs(age, df = 3) + gender:bs(age, df = 3) + as.factor(year):gender:bs(age, df = 3) +
+                                   as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+                                   as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang),
                   data = combined[combined$source == "paper",])
-
-# Demographics like in 2023
-temp1 <- combined[combined$year == 2023,]
-temp1$year <- 2010
-temp2 <- combined[combined$year == 2023,]
-temp2$year <- 2015
-temp3 <- combined[combined$year == 2023,]
-temp3$year <- 2023
-all2023 <- rbind(temp1, temp2, temp3)
 
 # Predictions
 pred <- predictions(explanandum_paper_only_grades,
                  by = c("gender", "year"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
+print(pred)
 
 # Gender gap by year
 comps <- avg_comparisons(explanandum_paper_only_grades, variables = "gender", by = "year",
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps)
 
 # Test biggest contrast: 2010 versus 2023
 max_comp <- avg_comparisons(explanandum_paper_only_grades, variables = "gender", by = "year",
                 hypothesis = "b1 = b3",
-                 newdata = all2023,
+                 newdata = all2010,
                 vcov = ~ unique_classroom)
 print(max_comp)
+print(max_comp$estimate/sd(combined$satis_grades))
 
 # Gender gap by year and migration background
 comps_by_migback <- avg_comparisons(explanandum_paper_only_grades, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps_by_migback)
 
 # Widening of the gap for no migration background
-# 2023
 print(avg_comparisons(explanandum_paper_only_grades, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom,
       hypothesis = "b1 = b5"))
 
 # Widening of the gap for migration background
-# 2023
 print(avg_comparisons(explanandum_paper_only_grades, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom,
                  hypothesis = "b2 = b6"))
 
 pred <- avg_predictions(explanandum_paper_only_grades,
-                        newdata = all2023,
+                        newdata = all2010,
                         by = c("gender", "year", "mig_lang"),
                         vcov = ~ unique_classroom)
 
@@ -644,61 +606,52 @@ ggsave("Plots/paper_satis_grades.png", width = 6, height = 3)
 ```{r dwell}
 # Fit the model
 explanandum_paper_only_dwell <- lm(satis_dwell ~ as.factor(year) + gender + as.factor(year):gender +
-                                 as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
-                                 as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
-                                 as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
+                                   bs(age, df = 3) + as.factor(year):bs(age, df = 3) + gender:bs(age, df = 3) + as.factor(year):gender:bs(age, df = 3) +
+                                   as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+                                   as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang),
                   data = combined[combined$source == "paper",])
-
-# Demographics like in 2023
-temp1 <- combined[combined$year == 2023,]
-temp1$year <- 2010
-temp2 <- combined[combined$year == 2023,]
-temp2$year <- 2015
-temp3 <- combined[combined$year == 2023,]
-temp3$year <- 2023
-all2023 <- rbind(temp1, temp2, temp3)
 
 # Predictions
 pred <- predictions(explanandum_paper_only_dwell,
                  by = c("gender", "year"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
+print(pred)
 
 # Gender gap by year
 comps <- avg_comparisons(explanandum_paper_only_dwell, variables = "gender", by = "year",
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps)
 
 # Test biggest contrast: 2010 versus 2023
 max_comp <- avg_comparisons(explanandum_paper_only_dwell, variables = "gender", by = "year",
                 hypothesis = "b1 = b3",
-                 newdata = all2023,
+                 newdata = all2010,
                 vcov = ~ unique_classroom)
 print(max_comp)
+print(max_comp$estimate/sd(combined$satis_dwell))
 
 # Gender gap by year and migration background
 comps_by_migback <- avg_comparisons(explanandum_paper_only_dwell, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps_by_migback)
 
 # Widening of the gap for no migration background
-# 2023
 print(avg_comparisons(explanandum_paper_only_dwell, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom,
       hypothesis = "b1 = b5"))
 
 # Widening of the gap for migration background
-# 2023
 print(avg_comparisons(explanandum_paper_only_dwell, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom,
                  hypothesis = "b2 = b6"))
 
 pred <- avg_predictions(explanandum_paper_only_dwell,
-                        newdata = all2023,
+                        newdata = all2010,
                         by = c("gender", "year", "mig_lang"),
                         vcov = ~ unique_classroom)
 
