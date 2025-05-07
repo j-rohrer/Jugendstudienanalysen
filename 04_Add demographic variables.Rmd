@@ -736,8 +736,11 @@ In the manuscript, we report a final model to address all questions at once.
 
 
 ```{r final}
-library(splines2)
-explanandum_demo_final <- lm(satis ~ as.factor(year)*gender*bs(age, df = 3)*as.factor(schooltype)*as.factor(mig_lang),
+library(splines)
+explanandum_demo_final <- lm(satis ~ as.factor(year) + gender + as.factor(year):gender +
+                                   bs(age, df = 3) + as.factor(year):bs(age, df = 3) + gender:bs(age, df = 3) + as.factor(year):gender:bs(age, df = 3) +
+                                   as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+                                   as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang),
                              data = combined)
 summary(explanandum_demo_final)
 ```
@@ -787,11 +790,12 @@ round(max_comp$estimate/sd(combined$satis), 2)
 # Calculate margins
 all_age_comps <- avg_comparisons(explanandum_demo_final, variables = "gender",
                                  by = c("age", "year"),
-                                 vcov = ~ unique_classroom,)
+                                 vcov = ~ unique_classroom,
+                                 newdata = all2010)
 print(all_age_comps)
 
 # Calculate widening of the gender gap
-widening_per_year <- avg_comparisons(explanandum_age_spline, variables = "gender", by = c("age", "year"), newdata = all2010,
+widening_per_year <- avg_comparisons(explanandum_age_spline, variables = "gender", by = c("age", "year"), 
       hypothesis = c("b3 - b1 = 0", 
                      "b6 - b4 = 0",
                      "b9 - b7 = 0",
@@ -799,7 +803,8 @@ widening_per_year <- avg_comparisons(explanandum_age_spline, variables = "gender
                      "b15 - b13 = 0",
                      "b18 - b16 = 0",
                      "b21 - b19 = 0"),
-                      vcov = ~ unique_classroom)
+                      vcov = ~ unique_classroom,
+      newdata = all2010)
 widening_per_year$age <- 12:18
 
 # Plot widening of the gender gap
@@ -817,7 +822,8 @@ ggsave("Plots/age_modification_final.png", width = 4, height = 3)
 # Test maximum contrast
 avg_comparisons(explanandum_age_spline, variables = "gender", by = c("age", "year"), 
       hypothesis = "b3 - b1 = b12 - b10",
-                      vcov = ~ unique_classroom)
+                      vcov = ~ unique_classroom,
+      newdata = all2010)
 
 
 
@@ -829,27 +835,28 @@ avg_comparisons(explanandum_age_spline, variables = "gender", by = c("age", "yea
 # Calculate margins
 all_schooltype_comps <- avg_comparisons(explanandum_demo_final, variables = "gender",
                                                         vcov = ~ unique_classroom,
-                                 by = c("schooltype", "year"))
+                                 by = c("schooltype", "year"),
+                                 newdata = all2010)
 print(all_schooltype_comps)
 
 # Widening among schooltype 1
 avg_comparisons(explanandum_demo_final, variables = "gender",
                                  by = c("schooltype", "year"), 
                                 vcov = ~ unique_classroom,
-                hypothesis = "b1 = b3")
+                hypothesis = "b1 = b3", newdata = all2010)
 
 # Widening among schooltype 2
 avg_comparisons(explanandum_demo_final, variables = "gender",
                                  by = c("schooltype", "year"), 
                                 vcov = ~ unique_classroom,
-                hypothesis = "b4 = b6")
+                hypothesis = "b4 = b6", newdata = all2010)
 
 
 # Interaction
 avg_comparisons(explanandum_demo_final, variables = "gender",
                                  by = c("schooltype", "year"), 
                                 vcov = ~ unique_classroom,
-                hypothesis = "b1 - b3 = b4 - b6")
+                hypothesis = "b1 - b3 = b4 - b6", newdata = all2010)
 
 ```
 ### Modification by migration background
@@ -857,7 +864,8 @@ avg_comparisons(explanandum_demo_final, variables = "gender",
 ```{r final_mod_migback}
 # Calculate margins
 all_mig_lang_comps <- avg_comparisons(explanandum_demo_final, variables = "gender",
-                                                      vcov = ~ unique_classroom,
+                                      vcov = ~ unique_classroom,
+                                      newdata = all2010,
                                  by = c("mig_lang", "year"))
 print(all_mig_lang_comps)
 
@@ -865,12 +873,14 @@ print(all_mig_lang_comps)
 avg_comparisons(explanandum_demo_final, variables = "gender",
                                  by = c("mig_lang", "year"), 
                                 vcov = ~ unique_classroom,
+                newdata = all2010,
                 hypothesis = "b1 = b3")
 
 # Widening among mig_lang 1
 avg_comparisons(explanandum_demo_final, variables = "gender",
                                  by = c("mig_lang", "year"), 
                                 vcov = ~ unique_classroom,
+                newdata = all2010,
                 hypothesis = "b4 = b6")
 
 
@@ -878,6 +888,7 @@ avg_comparisons(explanandum_demo_final, variables = "gender",
 avg_comparisons(explanandum_demo_final, variables = "gender",
                                  by = c("mig_lang", "year"), 
                 vcov = ~ unique_classroom,
+                newdata = all2010,
                 hypothesis = "b1 - b3 = b4 - b6")
 
 
