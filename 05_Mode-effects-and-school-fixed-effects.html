@@ -408,8 +408,16 @@ summary(mode_effects)</code></pre>
 ## Multiple R-squared:  0.0829, Adjusted R-squared:  0.08137 
 ## F-statistic: 54.21 on 3 and 1799 DF,  p-value: &lt; 2.2e-16</code></pre>
 <pre class="r"><code>pred &lt;- avg_predictions(mode_effects, variables = c(&quot;source&quot;, &quot;gender&quot;), vcov = ~ unique_classroom)
-
-ggplot(pred, aes(x = source, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
+print(pred)</code></pre>
+<pre><code>## 
+##  source gender Estimate Std. Error     z Pr(&gt;|z|)   S 2.5 % 97.5 %
+##  online female     3.38     0.0360  93.9   &lt;0.001 Inf  3.31   3.45
+##  online male       3.91     0.0274 142.8   &lt;0.001 Inf  3.86   3.97
+##  paper  female     3.55     0.0548  64.7   &lt;0.001 Inf  3.44   3.65
+##  paper  male       3.91     0.0524  74.7   &lt;0.001 Inf  3.81   4.01
+## 
+## Type:  response</code></pre>
+<pre class="r"><code>ggplot(pred, aes(x = source, group = gender, color = gender, y = estimate, ymin = conf.low, ymax = conf.high)) +
   geom_point() +
   geom_line() +
   geom_errorbar(width = .2) +
@@ -829,8 +837,19 @@ all2023_paper &lt;- rbind(temp1, temp2, temp3)
 ##########################
 # Use 2010 distribution
 ##########################
-
-max_comp &lt;- avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = &quot;year&quot;,
+print(avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = &quot;year&quot;,
+                 newdata = all2010,
+                vcov = ~ unique_classroom))</code></pre>
+<pre><code>## 
+##  year Estimate Std. Error    z Pr(&gt;|z|)    S 2.5 % 97.5 %
+##  2010    0.223     0.0463 4.82   &lt;0.001 19.4 0.133  0.314
+##  2015    0.309     0.0493 6.26   &lt;0.001 31.3 0.212  0.405
+##  2023    0.412     0.0946 4.35   &lt;0.001 16.2 0.226  0.597
+## 
+## Term: gender
+## Type:  response 
+## Comparison: male - female</code></pre>
+<pre class="r"><code>max_comp &lt;- avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = &quot;year&quot;,
                 hypothesis = &quot;b1 = b3&quot;,
                  newdata = all2010,
                 vcov = ~ unique_classroom)
@@ -840,6 +859,8 @@ print(max_comp)</code></pre>
 ##       b1=b3   -0.188      0.105 -1.79   0.0742 3.8 -0.395 0.0184
 ## 
 ## Type:  response</code></pre>
+<pre class="r"><code>print(max_comp$estimate/sd(combined$satis))</code></pre>
+<pre><code>## [1] -0.2216236</code></pre>
 <pre class="r"><code># Gap from previously 0.27 to 0.17
 
 ##########################
@@ -916,15 +937,20 @@ print(comps_by_migback)</code></pre>
 ## Comparison: male - female</code></pre>
 <pre class="r"><code># Widening of the gap for no migration background
 # 2010
-print(avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
-                 newdata = all2010,
-                 vcov = ~ unique_classroom,
-      hypothesis = &quot;b1 = b5&quot;))</code></pre>
+
+comp_no &lt;- avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
+                           newdata = all2010,
+                           vcov = ~ unique_classroom,
+                           hypothesis = &quot;b1 = b5&quot;)
+
+print(comp_no)</code></pre>
 <pre><code>## 
 ##  Hypothesis Estimate Std. Error     z Pr(&gt;|z|)   S  2.5 % 97.5 %
 ##       b1=b5   -0.111       0.11 -1.01    0.312 1.7 -0.327  0.105
 ## 
 ## Type:  response</code></pre>
+<pre class="r"><code>print(comp_no$estimate/sd(combined$satis))</code></pre>
+<pre><code>## [1] -0.1312453</code></pre>
 <pre class="r"><code># 0.1, p = .363
 
 # 2015
@@ -964,18 +990,20 @@ print(avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by
 
 # Widening of the gap for migration background
 # 2010
-print(avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
+comp_yes &lt;- avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
-                 hypothesis = &quot;b2 = b6&quot;))</code></pre>
+                 hypothesis = &quot;b2 = b6&quot;)
+
+print(comp_yes)</code></pre>
 <pre><code>## 
 ##  Hypothesis Estimate Std. Error     z Pr(&gt;|z|)   S 2.5 % 97.5 %
 ##       b2=b6   -0.875      0.307 -2.85  0.00438 7.8 -1.48 -0.273
 ## 
 ## Type:  response</code></pre>
-<pre class="r"><code># .87, p = .004
-
-# Comparison of the widening
+<pre class="r"><code>print(comp_yes$estimate/sd(combined$satis))</code></pre>
+<pre><code>## [1] -1.030477</code></pre>
+<pre class="r"><code># Comparison of the widening
 print(avg_comparisons(explanandum_paper_only, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
                  newdata = all2023,
                  vcov = ~ unique_classroom,
