@@ -59,7 +59,7 @@ max_comp <- avg_comparisons(explanandum_paper_only_money, variables = "gender", 
                  newdata = all2010,
                 vcov = ~ unique_classroom)
 print(max_comp)
-print(max_comp$estimate/sd(combined$satis_money))
+print(max_comp$estimate/sd(combined$satis_money, na.rm = TRUE))
 
 # Gender gap by year and Mig back
 comps_by_migback <- avg_comparisons(explanandum_paper_only_money, variables = "gender", by = c("year", "mig_lang"),
@@ -158,7 +158,7 @@ max_comp <- avg_comparisons(explanandum_paper_only_friends, variables = "gender"
                  newdata = all2010,
                 vcov = ~ unique_classroom)
 print(max_comp)
-print(max_comp$estimate/sd(combined$satis_friends))
+print(max_comp$estimate/sd(combined$satis_friends, na.rm = TRUE))
 
 # Gender gap by year and Mig back
 comps_by_migback <- avg_comparisons(explanandum_paper_only_friends, variables = "gender", by = c("year", "mig_lang"),
@@ -261,7 +261,7 @@ max_comp <- avg_comparisons(explanandum_paper_only_mom, variables = "gender", by
                  newdata = all2010,
                 vcov = ~ unique_classroom)
 print(max_comp)
-print(max_comp$estimate/sd(combined$satis_mom))
+print(max_comp$estimate/sd(combined$satis_mom, na.rm = TRUE))
 
 # Gender gap by year and Mig back
 comps_by_migback <- avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = c("year", "mig_lang"),
@@ -361,7 +361,7 @@ max_comp <- avg_comparisons(explanandum_paper_only_dad, variables = "gender", by
                  newdata = all2010,
                 vcov = ~ unique_classroom)
 print(max_comp)
-print(max_comp$estimate/sd(combined$satis_dad))
+print(max_comp$estimate/sd(combined$satis_dad, na.rm = TRUE))
 
 # Gender gap by year and Mig back
 comps_by_migback <- avg_comparisons(explanandum_paper_only_dad, variables = "gender", by = c("year", "mig_lang"),
@@ -460,7 +460,7 @@ max_comp <- avg_comparisons(explanandum_paper_only_leisure, variables = "gender"
                  newdata = all2010,
                 vcov = ~ unique_classroom)
 print(max_comp)
-print(max_comp$estimate/sd(combined$satis_leisure))
+print(max_comp$estimate/sd(combined$satis_leisure, na.rm = TRUE))
 
 # Gender gap by year and Mig back
 comps_by_migback <- avg_comparisons(explanandum_paper_only_leisure, variables = "gender", by = c("year", "mig_lang"),
@@ -560,7 +560,7 @@ max_comp <- avg_comparisons(explanandum_paper_only_grades, variables = "gender",
                  newdata = all2010,
                 vcov = ~ unique_classroom)
 print(max_comp)
-print(max_comp$estimate/sd(combined$satis_grades))
+print(max_comp$estimate/sd(combined$satis_grades, na.rm = TRUE))
 
 # Gender gap by year and Mig back
 comps_by_migback <- avg_comparisons(explanandum_paper_only_grades, variables = "gender", by = c("year", "mig_lang"),
@@ -659,7 +659,7 @@ max_comp <- avg_comparisons(explanandum_paper_only_dwell, variables = "gender", 
                  newdata = all2010,
                 vcov = ~ unique_classroom)
 print(max_comp)
-print(max_comp$estimate/sd(combined$satis_dwell))
+print(max_comp$estimate/sd(combined$satis_dwell, na.rm = TRUE))
 
 # Gender gap by year and Mig back
 comps_by_migback <- avg_comparisons(explanandum_paper_only_dwell, variables = "gender", by = c("year", "mig_lang"),
