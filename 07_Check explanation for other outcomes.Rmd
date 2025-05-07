@@ -61,20 +61,20 @@ max_comp <- avg_comparisons(explanandum_paper_only_money, variables = "gender", 
 print(max_comp)
 print(max_comp$estimate/sd(combined$satis_money))
 
-# Gender gap by year and migration background
+# Gender gap by year and Mig back
 comps_by_migback <- avg_comparisons(explanandum_paper_only_money, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps_by_migback)
 
-# Widening of the gap for no migration background
+# Widening of the gap for no Mig back
 # 2023
 print(avg_comparisons(explanandum_paper_only_money, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
       hypothesis = "b1 = b5"))
 
-# Widening of the gap for migration background
+# Widening of the gap for Mig back
 # 2023
 print(avg_comparisons(explanandum_paper_only_money, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
@@ -87,7 +87,7 @@ pred <- avg_predictions(explanandum_paper_only_money,
                         vcov = ~ unique_classroom)
 
 # Plot the results
-# No migration background
+# No Mig back
 cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender, 
                                  color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -97,13 +97,13 @@ cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean financial satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
   labs(color = "Gender")
 
-# With migration background
+# With Mig back
 cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender, 
                                  color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -113,7 +113,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("Migration background") +
+  ggtitle("Mig back") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   ylab("Mean financial satisfaction") +
   xlab("Year") +
@@ -122,7 +122,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
 # Combine into single plot
 combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
 combined_cat_mig_lang
-ggsave("Plots/paper_satis_money.png", width = 6, height = 3)
+ggsave("Plots/paper_satis_money.png", width = 4, height = 3)
 
 ```
 
@@ -160,23 +160,30 @@ max_comp <- avg_comparisons(explanandum_paper_only_friends, variables = "gender"
 print(max_comp)
 print(max_comp$estimate/sd(combined$satis_friends))
 
-# Gender gap by year and migration background
+# Gender gap by year and Mig back
 comps_by_migback <- avg_comparisons(explanandum_paper_only_friends, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps_by_migback)
 
-# Widening of the gap for no migration background
+# Widening of the gap for no Mig back
 print(avg_comparisons(explanandum_paper_only_friends, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
       hypothesis = "b1 = b5"))
 
-# Widening of the gap for migration background
+# Widening of the gap for Mig back
 print(avg_comparisons(explanandum_paper_only_friends, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
                  hypothesis = "b2 = b6"))
+
+# Compare widenings
+print(avg_comparisons(explanandum_paper_only_friends, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2010,
+                 vcov = ~ unique_classroom,
+                 hypothesis = "b1 - b5 = b2 - b6"))
+
 
 pred <- avg_predictions(explanandum_paper_only_friends,
                         newdata = all2010,
@@ -184,7 +191,7 @@ pred <- avg_predictions(explanandum_paper_only_friends,
                         vcov = ~ unique_classroom)
 
 # Plot the results
-# No migration background
+# No Mig back
 cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender, 
                                  color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -194,13 +201,13 @@ cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean friendship satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
   labs(color = "Gender")
 
-# With migration background
+# With Mig back
 cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender, 
                                  color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -210,7 +217,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("Migration background") +
+  ggtitle("Mig back") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   ylab("Mean friendship satisfaction") +
   xlab("Year") +
@@ -219,7 +226,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
 # Combine into single plot
 combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
 combined_cat_mig_lang
-ggsave("Plots/paper_satis_friends.png", width = 6, height = 3)
+ggsave("Plots/paper_satis_friends.png", width = 4, height = 3)
 
 ```
 
@@ -256,25 +263,29 @@ max_comp <- avg_comparisons(explanandum_paper_only_mom, variables = "gender", by
 print(max_comp)
 print(max_comp$estimate/sd(combined$satis_mom))
 
-# Gender gap by year and migration background
+# Gender gap by year and Mig back
 comps_by_migback <- avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps_by_migback)
 
-# Widening of the gap for no migration background
-# 2023
+# Widening of the gap for no Mig back
 print(avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
       hypothesis = "b1 = b5"))
 
-# Widening of the gap for migration background
-# 2023
+# Widening of the gap for Mig back
 print(avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
                  hypothesis = "b2 = b6"))
+
+# Compare widenings
+print(avg_comparisons(explanandum_paper_only_mom, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2010,
+                 vcov = ~ unique_classroom,
+                 hypothesis = "b1 - b5 = b2 - b6"))
 
 pred <- avg_predictions(explanandum_paper_only_mom,
                         newdata = all2010,
@@ -282,7 +293,7 @@ pred <- avg_predictions(explanandum_paper_only_mom,
                         vcov = ~ unique_classroom)
 
 # Plot the results
-# No migration background
+# No Mig back
 cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender, 
                                  color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -292,13 +303,13 @@ cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean satisfaction w mom") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
   labs(color = "Gender")
 
-# With migration background
+# With Mig back
 cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender, 
                                  color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -308,7 +319,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("Migration background") +
+  ggtitle("Mig back") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   ylab("Mean satisfaction w mom") +
   xlab("Year") +
@@ -317,7 +328,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
 # Combine into single plot
 combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
 combined_cat_mig_lang
-ggsave("Plots/paper_satis_mother.png", width = 6, height = 3)
+ggsave("Plots/paper_satis_mother.png", width = 4, height = 3)
 
 ```
 
@@ -352,23 +363,29 @@ max_comp <- avg_comparisons(explanandum_paper_only_dad, variables = "gender", by
 print(max_comp)
 print(max_comp$estimate/sd(combined$satis_dad))
 
-# Gender gap by year and migration background
+# Gender gap by year and Mig back
 comps_by_migback <- avg_comparisons(explanandum_paper_only_dad, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps_by_migback)
 
-# Widening of the gap for no migration background
+# Widening of the gap for no Mig back
 print(avg_comparisons(explanandum_paper_only_dad, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
       hypothesis = "b1 = b5"))
 
-# Widening of the gap for migration background
+# Widening of the gap for Mig back
 print(avg_comparisons(explanandum_paper_only_dad, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
                  hypothesis = "b2 = b6"))
+
+# Compare widenings
+print(avg_comparisons(explanandum_paper_only_dad, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2010,
+                 vcov = ~ unique_classroom,
+                 hypothesis = "b1 - b5 = b2 - b6"))
 
 pred <- avg_predictions(explanandum_paper_only_dad,
                         newdata = all2010,
@@ -376,7 +393,7 @@ pred <- avg_predictions(explanandum_paper_only_dad,
                         vcov = ~ unique_classroom)
 
 # Plot the results
-# No migration background
+# No Mig back
 cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender, 
                                  color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -386,13 +403,13 @@ cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean satisfaction w father") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
   labs(color = "Gender")
 
-# With migration background
+# With Mig back
 cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender, 
                                  color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -402,7 +419,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("Migration background") +
+  ggtitle("Mig back") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   ylab("Mean satisfaction w father") +
   xlab("Year") +
@@ -411,7 +428,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
 # Combine into single plot
 combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
 combined_cat_mig_lang
-ggsave("Plots/paper_satis_dad.png", width = 6, height = 3)
+ggsave("Plots/paper_satis_dad.png", width = 4, height = 3)
 ```
 
 ### Satisfaction with your leisure time activities
@@ -445,23 +462,29 @@ max_comp <- avg_comparisons(explanandum_paper_only_leisure, variables = "gender"
 print(max_comp)
 print(max_comp$estimate/sd(combined$satis_leisure))
 
-# Gender gap by year and migration background
+# Gender gap by year and Mig back
 comps_by_migback <- avg_comparisons(explanandum_paper_only_leisure, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps_by_migback)
 
-# Widening of the gap for no migration background
+# Widening of the gap for no Mig back
 print(avg_comparisons(explanandum_paper_only_leisure, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
       hypothesis = "b1 = b5"))
 
-# Widening of the gap for migration background
+# Widening of the gap for Mig back
 print(avg_comparisons(explanandum_paper_only_leisure, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
                  hypothesis = "b2 = b6"))
+
+# Compare widenings
+print(avg_comparisons(explanandum_paper_only_leisure, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2010,
+                 vcov = ~ unique_classroom,
+                 hypothesis = "b1 - b5 = b2 - b6"))
 
 pred <- avg_predictions(explanandum_paper_only_leisure,
                         newdata = all2010,
@@ -469,7 +492,7 @@ pred <- avg_predictions(explanandum_paper_only_leisure,
                         vcov = ~ unique_classroom)
 
 # Plot the results
-# No migration background
+# No Mig back
 cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender, 
                                  color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -479,13 +502,13 @@ cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean leisure satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
   labs(color = "Gender")
 
-# With migration background
+# With Mig back
 cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender, 
                                  color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -495,7 +518,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("Migration background") +
+  ggtitle("Mig back") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   ylab("Mean leisure satisfaction") +
   xlab("Year") +
@@ -504,7 +527,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
 # Combine into single plot
 combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
 combined_cat_mig_lang
-ggsave("Plots/paper_satis_leisure.png", width = 6, height = 3)
+ggsave("Plots/paper_satis_leisure.png", width = 4, height = 3)
 ```
 
 
@@ -539,23 +562,29 @@ max_comp <- avg_comparisons(explanandum_paper_only_grades, variables = "gender",
 print(max_comp)
 print(max_comp$estimate/sd(combined$satis_grades))
 
-# Gender gap by year and migration background
+# Gender gap by year and Mig back
 comps_by_migback <- avg_comparisons(explanandum_paper_only_grades, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps_by_migback)
 
-# Widening of the gap for no migration background
+# Widening of the gap for no Mig back
 print(avg_comparisons(explanandum_paper_only_grades, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
       hypothesis = "b1 = b5"))
 
-# Widening of the gap for migration background
+# Widening of the gap for Mig back
 print(avg_comparisons(explanandum_paper_only_grades, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
                  hypothesis = "b2 = b6"))
+
+# Compare widenings
+print(avg_comparisons(explanandum_paper_only_grades, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2010,
+                 vcov = ~ unique_classroom,
+                 hypothesis = "b1 - b5 = b2 - b6"))
 
 pred <- avg_predictions(explanandum_paper_only_grades,
                         newdata = all2010,
@@ -563,7 +592,7 @@ pred <- avg_predictions(explanandum_paper_only_grades,
                         vcov = ~ unique_classroom)
 
 # Plot the results
-# No migration background
+# No Mig back
 cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender, 
                                  color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -573,13 +602,13 @@ cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean school grades satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
   labs(color = "Gender")
 
-# With migration background
+# With Mig back
 cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender, 
                                  color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -589,7 +618,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("Migration background") +
+  ggtitle("Mig back") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   ylab("Mean school grades satisfaction") +
   xlab("Year") +
@@ -598,7 +627,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
 # Combine into single plot
 combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
 combined_cat_mig_lang
-ggsave("Plots/paper_satis_grades.png", width = 6, height = 3)
+ggsave("Plots/paper_satis_grades.png", width = 4, height = 3)
 ```
 
 ### Satisfaction with your housing situation
@@ -632,23 +661,30 @@ max_comp <- avg_comparisons(explanandum_paper_only_dwell, variables = "gender", 
 print(max_comp)
 print(max_comp$estimate/sd(combined$satis_dwell))
 
-# Gender gap by year and migration background
+# Gender gap by year and Mig back
 comps_by_migback <- avg_comparisons(explanandum_paper_only_dwell, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom)
 print(comps_by_migback)
 
-# Widening of the gap for no migration background
+# Widening of the gap for no Mig back
 print(avg_comparisons(explanandum_paper_only_dwell, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
       hypothesis = "b1 = b5"))
 
-# Widening of the gap for migration background
+# Widening of the gap for Mig back
 print(avg_comparisons(explanandum_paper_only_dwell, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
                  hypothesis = "b2 = b6"))
+
+# Compare widenings
+print(avg_comparisons(explanandum_paper_only_dwell, variables = "gender", by = c("year", "mig_lang"),
+                 newdata = all2010,
+                 vcov = ~ unique_classroom,
+                 hypothesis = "b1 - b5 = b2 - b6"))
+
 
 pred <- avg_predictions(explanandum_paper_only_dwell,
                         newdata = all2010,
@@ -656,7 +692,7 @@ pred <- avg_predictions(explanandum_paper_only_dwell,
                         vcov = ~ unique_classroom)
 
 # Plot the results
-# No migration background
+# No Mig back
 cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender, 
                                  color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -666,13 +702,13 @@ cat_mig_lang_0 <- ggplot(pred[pred$mig_lang == 0,], aes(x = year, group = gender
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean housing satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
   labs(color = "Gender")
 
-# With migration background
+# With Mig back
 cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender, 
                                  color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -682,7 +718,7 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("Migration background") +
+  ggtitle("Mig back") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   ylab("Mean housing satisfaction") +
   xlab("Year") +
@@ -691,5 +727,5 @@ cat_mig_lang_1 <- ggplot(pred[pred$mig_lang == 1,], aes(x = year, group = gender
 # Combine into single plot
 combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
 combined_cat_mig_lang
-ggsave("Plots/paper_satis_dwell.png", width = 6, height = 3)
+ggsave("Plots/paper_satis_dwell.png", width = 4, height = 3)
 ```
