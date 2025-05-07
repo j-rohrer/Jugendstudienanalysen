@@ -11,7 +11,7 @@
 
 <meta name="author" content="Julia Rohrer" />
 
-<meta name="date" content="2025-03-06" />
+<meta name="date" content="2025-05-07" />
 
 <title>Check whether results are robust with ordinal model</title>
 
@@ -353,7 +353,7 @@ display: none;
 <h1 class="title toc-ignore">Check whether results are robust with
 ordinal model</h1>
 <h4 class="author">Julia Rohrer</h4>
-<h4 class="date">2025-03-06</h4>
+<h4 class="date">2025-05-07</h4>
 
 </div>
 
@@ -370,48 +370,67 @@ model?</h2>
 <pre class="r"><code># Fit model in ordinal
 # We are using brms here simply because polr() does not support
 # the postestimation routine of marginaleffects on the link scale
-#explanandum_paper_only_ordinal &lt;- brm(satis ~ as.factor(year) + gender + as.factor(year):gender +
-#                                        as.factor(age) + as.factor(year):as.factor(age) + gender:as.factor(age) + as.factor(year):gender:as.factor(age) +
-#                                        as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
-#                                        as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang), 
-#                                 family = cumulative(&quot;probit&quot;),
-#                                 cores = 4,
-#                  data = combined[combined$source == &quot;paper&quot;,])
+library(splines)
+# explanandum_paper_only_ordinal &lt;- brm(satis ~ as.factor(year) + gender + as.factor(year):gender +
+#                                     bs(age, df = 3) + as.factor(year):bs(age, df = 3) + gender:bs(age, df = 3) + as.factor(year):gender:bs(age, df = 3) +
+#                                     as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
+#                                     as.factor(mig_lang) + as.factor(year):as.factor(mig_lang) + gender:as.factor(mig_lang) + as.factor(year):gender:as.factor(mig_lang),
+#                                   family = cumulative(&quot;probit&quot;),
+#                                   cores = 4,
+#                    data = combined[combined$source == &quot;paper&quot;,])
+#  
+# 
 # saveRDS(explanandum_paper_only_ordinal, file = &quot;explanandum_paper_only_ordinal&quot;)
 explanandum_paper_only_ordinal &lt;- readRDS(&quot;explanandum_paper_only_ordinal&quot;)
 
-# Demographics like in 2023
-temp1 &lt;- combined[combined$year == 2023,]
+# Demographics like in 2010
+temp1 &lt;- combined[combined$year == 2010,]
 temp1$year &lt;- 2010
-temp2 &lt;- combined[combined$year == 2023,]
+temp2 &lt;- combined[combined$year == 2010,]
 temp2$year &lt;- 2015
-temp3 &lt;- combined[combined$year == 2023,]
+temp3 &lt;- combined[combined$year == 2010,]
 temp3$year &lt;- 2023
-all2023 &lt;- rbind(temp1, temp2, temp3)
+all2010 &lt;- rbind(temp1, temp2, temp3)
 
 
 pred &lt;- avg_predictions(explanandum_paper_only_ordinal,
                  by = c(&quot;gender&quot;, &quot;year&quot;),
-                 newdata = all2023,
-                 type = &quot;link&quot;)
-
-comps &lt;- avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = &quot;year&quot;,
-                 newdata = all2023,
-                 type = &quot;link&quot;)
-print(comps)</code></pre>
+                 newdata = all2010,
+                 vcov = ~ unique_classroom,
+                 type = &quot;link&quot;)</code></pre>
+<pre><code>## Warning: The `vcov` argument is not supported for models of this class.</code></pre>
+<pre class="r"><code>print(pred)</code></pre>
 <pre><code>## 
-##  year Estimate  2.5 % 97.5 %
-##  2010    0.225 0.0959  0.355
-##  2015    0.368 0.2419  0.488
-##  2023    0.516 0.2923  0.743
+##  gender year Estimate   2.5 %  97.5 %
+##  female 2010  -0.1448 -0.3508  0.0632
+##  female 2015  -0.1820 -0.4153  0.0659
+##  female 2023  -0.4459 -0.7272 -0.1758
+##  male   2010   0.1413 -0.0892  0.3807
+##  male   2015   0.2346 -0.0107  0.4874
+##  male   2023   0.0903 -0.2155  0.3932
+## 
+## Type:  link</code></pre>
+<pre class="r"><code>comps &lt;- avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = &quot;year&quot;,
+                 newdata = all2010,
+                 vcov = ~ unique_classroom,
+                 type = &quot;link&quot;)</code></pre>
+<pre><code>## Warning: The `vcov` argument is not supported for models of this class.</code></pre>
+<pre class="r"><code>print(comps)</code></pre>
+<pre><code>## 
+##  year Estimate 2.5 % 97.5 %
+##  2010    0.293 0.179  0.411
+##  2015    0.424 0.280  0.566
+##  2023    0.543 0.279  0.824
 ## 
 ## Term: gender
 ## Type:  link 
 ## Comparison: male - female</code></pre>
 <pre class="r"><code>max_comp &lt;- avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = &quot;year&quot;,
                 hypothesis = &quot;b1 = b3&quot;,
-                 newdata = all2023,
+                 newdata = all2010,
+                vcov = ~ unique_classroom,
                  type = &quot;link&quot;)</code></pre>
+<pre><code>## Warning: The `vcov` argument is not supported for models of this class.</code></pre>
 <pre><code>## Warning: 
 ## It is essential to check the order of estimates when specifying hypothesis tests using positional indices like b1, b2, etc. The indices of estimates can change depending on the order of rows in the original dataset, user-supplied arguments, model-fitting package, and version of `marginaleffects`.
 ## 
@@ -433,37 +452,43 @@ print(comps)</code></pre>
 <pre class="r"><code>print(max_comp)</code></pre>
 <pre><code>## 
 ##  Hypothesis Estimate  2.5 % 97.5 %
-##       b1=b3   -0.295 -0.545 -0.043
+##       b1=b3    -0.25 -0.545 0.0357
 ## 
 ## Type:  link</code></pre>
-<pre class="r"><code># 2023
+<pre class="r"><code># No migback
 print(avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
-                 newdata = all2023,
-      hypothesis = &quot;b1 = b5&quot;,
+                 newdata = all2010,
+                 vcov = ~ unique_classroom,
+                 hypothesis = &quot;b1 = b5&quot;,
                  type = &quot;link&quot;))</code></pre>
+<pre><code>## Warning: The `vcov` argument is not supported for models of this class.</code></pre>
 <pre><code>## 
-##  Hypothesis Estimate 2.5 % 97.5 %
-##       b1=b5   -0.164 -0.43  0.101
+##  Hypothesis Estimate  2.5 % 97.5 %
+##       b1=b5   -0.153 -0.456  0.154
 ## 
 ## Type:  link</code></pre>
-<pre class="r"><code># 2023
+<pre class="r"><code># With migback
 print(avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
-                 newdata = all2023,
+                 newdata = all2010,
+                 vcov = ~ unique_classroom,
                  hypothesis = &quot;b2 = b6&quot;,
                  type = &quot;link&quot;))</code></pre>
+<pre><code>## Warning: The `vcov` argument is not supported for models of this class.</code></pre>
 <pre><code>## 
 ##  Hypothesis Estimate 2.5 % 97.5 %
-##       b2=b6    -1.17 -1.85  -0.51
+##       b2=b6    -1.16 -1.79 -0.493
 ## 
 ## Type:  link</code></pre>
 <pre class="r"><code># Comparison
 print(avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
-                 newdata = all2023,
+                 newdata = all2010,
+                 vcov = ~ unique_classroom,
                  hypothesis = &quot;b1 - b5 = b2 - b6&quot;,
                  type = &quot;link&quot;))</code></pre>
+<pre><code>## Warning: The `vcov` argument is not supported for models of this class.</code></pre>
 <pre><code>## 
 ##   Hypothesis Estimate 2.5 % 97.5 %
-##  b1-b5=b2-b6        1 0.304   1.72
+##  b1-b5=b2-b6        1 0.293   1.69
 ## 
 ## Type:  link</code></pre>
 </div>
