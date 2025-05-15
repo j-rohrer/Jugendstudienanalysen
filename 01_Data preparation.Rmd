@@ -5,10 +5,15 @@ date: "`r Sys.Date()`"
 output: 
   html_document:
     toc: true
+    includes: 
+      before_body: nav.html
+
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(haven)
+
 ```
 
 ## Overview
@@ -183,7 +188,6 @@ To my knowledge, no weights were generated for the official report issued by the
 ### Load and clean data
 ```{r read2015}
 # Read 2015 data
-library(haven)
 youth2015 <- read_spss("Files/jugend2015.sav")
 
 # prepare some basic variables
