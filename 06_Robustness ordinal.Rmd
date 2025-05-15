@@ -49,21 +49,22 @@ temp3 <- combined[combined$year == 2010,]
 temp3$year <- 2023
 all2010 <- rbind(temp1, temp2, temp3)
 
-
+# Predicted values for all combinations of gender and year
 pred <- avg_predictions(explanandum_paper_only_ordinal,
                  by = c("gender", "year"),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
                  type = "link")
-
 print(pred)
 
+# Counterfactual comparisons: latent gender gaps per year
 comps <- avg_comparisons(explanandum_paper_only_ordinal, variables = "gender", by = "year",
                  newdata = all2010,
                  vcov = ~ unique_classroom,
                  type = "link")
 print(comps)
 
+# Let's compare the 2010 and 2023 gender gaps
 max_comp <- avg_comparisons(explanandum_paper_only_ordinal, variables = "gender", by = "year",
                 hypothesis = "b1 = b3",
                  newdata = all2010,
@@ -72,21 +73,22 @@ max_comp <- avg_comparisons(explanandum_paper_only_ordinal, variables = "gender"
 print(max_comp)
 
 
+# And lets look at how these vary by migration background
 
-# No migback
+# Widening of gender gap for students without migration background
 print(avg_comparisons(explanandum_paper_only_ordinal, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
                  hypothesis = "b1 = b5",
                  type = "link"))
 
-# With migback
+# Widening of gender gap for students with migration background
 print(avg_comparisons(explanandum_paper_only_ordinal, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
                  hypothesis = "b2 = b6",
                  type = "link"))
-# Comparison
+# Comparing the widening (triple-interaction gender, year, migration background)
 print(avg_comparisons(explanandum_paper_only_ordinal, variables = "gender", by = c("year", "mig_lang"),
                  newdata = all2010,
                  vcov = ~ unique_classroom,

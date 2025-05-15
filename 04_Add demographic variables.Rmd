@@ -14,6 +14,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Add demographic variables
+Here, we are going to add in demographic variables in an iterative manner, also looking at their associations with the outcome to gauge whether they could plausibly explain away anything.
+If you just want to see the results reported in the manuscript, you can immediately skip to the final model at the bottom of the page.
+
 ## Check for differences between the years
 ### Age
 
@@ -60,6 +63,7 @@ print(avg_comparisons(schooltype_diffs, variable = "gender", by = "year", vcov =
 
 ```{r diffs_migback}
 # Are the differences in migration background between the years?
+
 # Simple linear probability model predicting a migration background
 mig_lang_diffs <- lm(mig_lang ~ as.factor(year)*gender, data = combined)
 
@@ -87,6 +91,8 @@ print(avg_comparisons(mig_lang_diffs, variable = "gender", by = "year", vcov = "
 # Visualize the association between age and satisfaction, by gender and year
 
 # Fully categorical model
+# This allows the effect of every year of age to vary freely
+# A lot of flexibility but also huge error bars
 add_age <- lm(satis ~ gender*as.factor(year)*as.factor(age), 
                   data = combined)
 summary(add_age)
@@ -149,6 +155,8 @@ ggsave("Plots/satis_by_age_categorical.png", width = 6, height = 3)
 
 
 # Re-fit the model including only the linear age effect
+# This is the least flexible solution
+# But also greatly induces the uncertainty in the estimates
 add_age_linear <- lm(satis ~ gender*as.factor(year)*age, 
                   data = combined)
 summary(add_age_linear)
@@ -210,6 +218,8 @@ ggsave("Plots/satis_by_age_linear.png", width = 6, height = 3)
 
 
 # Best of both worlds, splines
+# Now, we allow for some flexibility
+# But we still allow some pooling across years
 add_age_splines <- lm(satis ~ gender*as.factor(year)*bs(age, df = 3), 
                   data = combined)
 summary(add_age_splines)
@@ -277,10 +287,14 @@ ggsave("Plots/satis_by_age_splines.png", width = 6, height = 3)
 
 ```{r age_explain}
 # Fit model including age
+# Categorical version here (but in the final model we will use the spline)
 explanandum_age <- lm(satis ~ as.factor(year)*gender*as.factor(age), 
                   data = combined)
 
 # New hypothetical data: demographics like in 2010
+# This is our counterfactual world in which the sample
+# composition did not change with respects to age
+# (and any other variable we will include in the model later on)
 temp1 <- combined[combined$year == 2010,]
 temp1$year <- 2010
 temp2 <- combined[combined$year == 2010,]
@@ -310,6 +324,7 @@ ggsave("Plots/explanandum_age_controlled.png", width = 4, height = 3)
 
 
 # Calculate the gender gaps on the hypothetical data
+# In which the demographics remained unchanged across the three survey waves
 comps <- avg_comparisons(explanandum_age, variables = "gender", by = "year",
                  newdata = all2010)
 print(comps)
@@ -413,7 +428,7 @@ ggsave("Plots/age_modification.png", width = 4, height = 3)
 ### Schooltype and life satisfaction
 
 ```{r schooltype_satis}
-# Fully categorical
+# Schooltype as a categorical predictor
 add_schooltype <- lm(satis ~ gender*as.factor(year)*as.factor(schooltype), 
                   data = combined)
 summary(add_schooltype)
@@ -738,7 +753,7 @@ In the manuscript, we report a final model to address all questions at once.
 
 
 ```{r final}
-library(splines)
+
 explanandum_demo_final <- lm(satis ~ as.factor(year) + gender + as.factor(year):gender +
                                    bs(age, df = 3) + as.factor(year):bs(age, df = 3) + gender:bs(age, df = 3) + as.factor(year):gender:bs(age, df = 3) +
                                    as.factor(schooltype) + as.factor(year):as.factor(schooltype) + gender:as.factor(schooltype) + as.factor(year):gender:as.factor(schooltype) +
@@ -751,7 +766,7 @@ summary(explanandum_demo_final)
 
 ```{r final_explain}
 
-# Look at comparisons for 2010 demographics
+# Look at gender gaps for 2010 demographics, by year
 comps <- avg_comparisons(explanandum_demo_final, variables = "gender", by = "year",
                          newdata = all2010, 
                          vcov = ~ unique_classroom)
@@ -787,8 +802,10 @@ round(max_comp$estimate/sd(combined$satis), 2)
 ## Do demographics modify the widening of the gap?
 
 ### Modification by age
+This will give us Figure 5 from the manuscript.
 
 ```{r final_mod_age}
+
 # Calculate margins
 all_age_comps <- avg_comparisons(explanandum_demo_final, variables = "gender",
                                  by = c("age", "year"),
@@ -796,7 +813,7 @@ all_age_comps <- avg_comparisons(explanandum_demo_final, variables = "gender",
                                  newdata = all2010)
 print(all_age_comps)
 
-# Calculate widening of the gender gap
+# Calculate widening of the gender gap separately per year of age
 widening_per_year <- avg_comparisons(explanandum_age_spline, variables = "gender", by = c("age", "year"), 
       hypothesis = c("b3 - b1 = 0", 
                      "b6 - b4 = 0",
@@ -897,6 +914,8 @@ avg_comparisons(explanandum_demo_final, variables = "gender",
 ```
 
 ## Adjusted widening of gender gap, separated by migration background
+Generate Figure 6 which summarizes our preliminary results.
+
 ```{r plot_adjusted_separated}
 # Generate predictions for combinations of gender and year and age
 pred <- predictions(explanandum_demo_final,

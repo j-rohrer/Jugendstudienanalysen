@@ -28,7 +28,8 @@ height_plot_single <- 3
 ```
 
 ## Check other outcomes
-Let's see whether our favored explanation also holds up for the other satisfaction variables
+Let's see whether our favored explanation also holds up for the other satisfaction variables.
+Here, we will also generate all panels of Figure 9.
 
 
 ### Satisfaction with the amount of money with which you have to get by (financial satisfaction)

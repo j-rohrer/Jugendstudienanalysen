@@ -19,7 +19,6 @@ library(gridExtra)
 library(dplyr)
 library(patchwork)
 
-
 combined$source <- as.factor(combined$source)
 
 ```
@@ -29,6 +28,7 @@ Here, we are going to look at the possibility that this might have affected how 
 
 ## Does life satisfaction vary by survey mode?
 First, we will simply see whether gender and mode jointly predict life satisfaction in 2023.
+
 ```{r mode_satis}
 mode_effects <- lm(satis ~ source*gender, data = combined[combined$year == 2023,])
 summary(mode_effects)
@@ -116,7 +116,6 @@ To rule out that the associations between survey mode and life satisfaction are 
 ```{r mode_satis_controlled}
 library(splines)
 
-
 mode_effects_controlled <- lm(satis ~ source*gender +
                                 as.factor(schooltype) + as.factor(schooltype):source + as.factor(schooltype):gender +
                                 as.factor(mig_lang) + as.factor(mig_lang):source + as.factor(mig_lang):gender +
@@ -185,7 +184,7 @@ print(contrasts)
 
 print(avg_comparisons(mode_effects_controlled_fe, variables = "source", by = "gender", vcov = ~ unique_classroom,
                 hypothesis = "b1 = b2"))
-# Difference of 0.25, p < .03
+
 
 # This speaks against the idea that survey mode is correlated with some unobserved school-level
 # variable that ultimately explains differences in the gender gaps
@@ -255,10 +254,11 @@ max_comp <- avg_comparisons(explanandum_paper_only, variables = "gender", by = "
                 hypothesis = "b1 = b3",
                  newdata = all2010,
                 vcov = ~ unique_classroom)
+
+# Widening of gender gap
 print(max_comp)
 print(max_comp$estimate/sd(combined$satis))
 
-# Gap from previously 0.27 to 0.17
 
 ##########################
 # Use 2015 distribution
@@ -267,8 +267,8 @@ max_comp <- avg_comparisons(explanandum_paper_only, variables = "gender", by = "
                 hypothesis = "b1 = b3",
                  newdata = all2015,
                 vcov = ~ unique_classroom)
+# Widening of gender gap
 print(max_comp)
-# Gap from 0.33 to 0.24
 
 ##########################
 # Use 2023 distribution
@@ -277,7 +277,6 @@ pred <- predictions(explanandum_paper_only,
                  by = c("gender", "year"),
                  newdata = all2023,
                  vcov = ~ unique_classroom)
-
 
 comps <- avg_comparisons(explanandum_paper_only, variables = "gender", by = "year",
                  newdata = all2023,
@@ -288,8 +287,8 @@ max_comp <- avg_comparisons(explanandum_paper_only, variables = "gender", by = "
                 hypothesis = "b1 = b3",
                  newdata = all2023,
                 vcov = ~ unique_classroom)
+# Widening of gender gap
 print(max_comp)
-# Gap from 0.31 to 0.21
 ```
 ## Paper only, modification by migback
 Before, we had already noted that the widening of the gender gap strongly differed depending on migration background/language at home.
@@ -301,9 +300,8 @@ comps_by_migback <- avg_comparisons(explanandum_paper_only, variables = "gender"
                  vcov = ~ unique_classroom)
 print(comps_by_migback)
 
+# 2010 demographics
 # Widening of the gap for no migration background
-# 2010
-
 comp_no <- avg_comparisons(explanandum_paper_only, variables = "gender", by = c("year", "mig_lang"),
                            newdata = all2010,
                            vcov = ~ unique_classroom,
@@ -312,65 +310,21 @@ comp_no <- avg_comparisons(explanandum_paper_only, variables = "gender", by = c(
 print(comp_no)
 print(comp_no$estimate/sd(combined$satis))
 
-
-# 0.1, p = .363
-
-# 2015
-print(avg_comparisons(explanandum_paper_only, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2015,
-                 vcov = ~ unique_classroom,
-      hypothesis = "b1 = b5"))
-# 0.17, p = .132
-
-# 2023
-print(avg_comparisons(explanandum_paper_only, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
-                 vcov = ~ unique_classroom,
-      hypothesis = "b1 = b5"))
-# 0.12, p = .25
-
-print(avg_comparisons(explanandum_paper_only, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023_paper,
-                 vcov = ~ unique_classroom,
-      hypothesis = "b1 = b5"))
-# 0.09, p = .384
-
 # Widening of the gap for migration background
-# 2010
 comp_yes <- avg_comparisons(explanandum_paper_only, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2010,
-                 vcov = ~ unique_classroom,
-                 hypothesis = "b2 = b6")
+                           newdata = all2010,
+                           vcov = ~ unique_classroom,
+                           hypothesis = "b2 = b6")
 
 print(comp_yes)
 print(comp_yes$estimate/sd(combined$satis))
 
-
-# Comparison of the widening
+# Comparison of the widenings by migration background
 print(avg_comparisons(explanandum_paper_only, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
+                 newdata = all2010,
                  vcov = ~ unique_classroom,
       hypothesis = "b1 - b5 = b2 - b6"))
 
-
-# 2015
-print(avg_comparisons(explanandum_paper_only, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2015,
-                 vcov = ~ unique_classroom,
-                 hypothesis = "b2 = b6"))
-# 0.93, .003
-
-# 2023
-print(avg_comparisons(explanandum_paper_only, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023,
-                 vcov = ~ unique_classroom,
-                 hypothesis = "b2 = b6"))
-# 0.88, .004
-print(avg_comparisons(explanandum_paper_only, variables = "gender", by = c("year", "mig_lang"),
-                 newdata = all2023_paper,
-                 vcov = ~ unique_classroom,
-                 hypothesis = "b2 = b6"))
-# 0.87, p = .004
 
 ```
 ## Plot the implied means of this final model

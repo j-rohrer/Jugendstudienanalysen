@@ -12,11 +12,21 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Welcome to My Project
+# Overview
 
-This site contains multiple reports generated with R Markdown. Use the links above to navigate, or choose one below:
+These pages contain the analyses code, as well as full analysis results (plus some additional analyses we conducted while building up our models) for the manuscript "Why has the gender gap in life satisfaction among adolescents in Leipzig grown?" by Julia M. Rohrer, Richard McElreath, and Gregor Kachel.
 
-- [Report 1](report1.html)
-- [Report 2](report2.html)
+For any questions, please reach out to Julia.
 
-Feel free to explore!
+Unfortunately, we cannot share the underlying data; due to legal requirements, these can only be made available by the City of Leipzig and with a special contract.
+
+
+
+- [Cleaning and preparation of the Youth Surveys](01_Data-preparation.html)
+- [Reproducing the central explanandum and looking at alternative satisfaction measures](02_Reproducing-the-Explanandum-and-considering-alternative-satisfaction-measures.html)
+- [Initial ordinal analysis: Could this pattern be a scaling artifact?](03_Ordinal-analysis.html)
+- [Do demographics explain away the widening gender gap?](04_Add-demographic-variables.html)
+- [Could this pattern result from changes in survey mode?](05_Mode-effects-and-school-fixed-effects.html)
+- [Confirming findings with an ordinal model](06_Robustness-ordinal.html)
+- [Can we explain patterns on alternative satisfaction measures in the same manner?](07_Check-explanation-for-other-outcomes.html)
+- [Miscellaneous: Checking some additional numbers regarding migration background](08_Misc.html)

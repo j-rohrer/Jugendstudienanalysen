@@ -1,5 +1,5 @@
 ---
-title: "Ordinal analysis"
+title: "Ordinal analysis: Could this pattern be a scaling artifact?"
 author: "Julia Rohrer"
 date: "`r Sys.Date()`"
 output: 
@@ -15,6 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # Ordinal analysis
 
 ## Plotting the histogram
+First, let's look at the actual distribution of the responses (Figure 3 in the manuscript).
 
 ```{r histo}
 load("prep.RData")
@@ -32,6 +33,7 @@ ggsave("Plots/histogram.png", width = 4, height = 3)
 ```
 
 ## Plotting the hypothetical example
+Let's generate the plot of an hypotetical example in which the widening gender gap was just a scaling artifact (Left panel of Figure 4).
 
 ```{r plotting_hypothetical}
 # Plot fictious thresholds and equal latent gender
@@ -93,9 +95,10 @@ ggsave("Plots/ordinal_hypothetical.png", width = 4, height = 3)
 ```
 
 ## Fitting the ordinal model on our data
+Now let's analyze our actual data to check whether such scaling artifacts should keep us up at night.
 
 ```{r fit}
-# Function wants a factor as outcome
+# The model we fit wants a factor as outcome
 combined$satis_factor <- as.factor(combined$satis)
 
 # Simple ordered probit model that estimates the means of life satisfaction by gender and survey year
@@ -104,13 +107,22 @@ ordinal <- polr(satis_factor ~ as.factor(year) + gender + gender:as.factor(year)
                 Hess = TRUE,
                 data = combined)
 
-# Loot at coefficients
+# Loot at coefficients (which happen to be sufficient for our purposes here)
 summary(ordinal)
 
-# Look at gender gaps in probabilities
+# polr in combination with marginaleffects does not natively support predictions and comparisons on the latent scale
+# we don't need those here yet so we're fine (later we will switch to brms because of that issue)
+
+# However, in principle, we could still look at effects on the "natural" scale
+# Which are probabilities of belonging to particular "groups" (response categories)
+
+# Look at gender gaps in probabilities for the individual response categories
 comps <- avg_comparisons(ordinal, variables = "gender", by = "year")
 comps
 
+
+# The interaction of interest here should, on this scale, result in differences in the gender differences in the probabilities of belongig into certain response categories
+# (not exactly intuitive)
 
 # Group 1
 # Effect of gender on probability of reporting lowest outcome, 2010 vs 2023
@@ -133,12 +145,13 @@ print(avg_comparisons(ordinal, variables = "gender", by = "year",
                 hypothesis = "b4 = b14"))
 
 # Group 5
-# Effect of gender on probability of reporting shighest outcome, 2010 vs 2023
+# Effect of gender on probability of reporting highest outcome, 2010 vs 2023
 print(avg_comparisons(ordinal, variables = "gender", by = "year",
                 hypothesis = "b5 = b15"))
 ```
 
 ## Illustrating the model results
+Let's plot these results, see Panel B of Figure 4.
 
 ```{r plotting_empirical}
 # Plot the model-implied thresholds and the model-implied means
@@ -167,7 +180,7 @@ shade_4$y <- dnorm(shade_4$x)
 shade_5 <- data.frame(x = seq(ordinal$zeta[4], upper_limit, length.out = 100))
 shade_5$y <- dnorm(shade_5$x)
 
-# model-implied latent alues
+# model-implied latent values
 girls_2010 <- 0 # girls in 2010, reference group
 boys_2010 <- as.numeric(coefficients(ordinal)["gendermale"]) # boys in 2010
 girls_2023 <- as.numeric(coefficients(ordinal)["as.factor(year)2023"]) # girls in 2023
@@ -196,8 +209,23 @@ ggsave("Plots/ordinal_empirical.png", width = 4, height = 3)
 ```
 
 ## Additionally freeing thresholds
+In footnote 4, we mention that it is possible to free the thresholds across gender and still arrive at the same results.
+Here are the corresponding analyses.
+We can also free the thresholds by year (not reported in the manuscript) and arrive at similar conclusions, however, it's a bit harder to defend why one would free thresholds across year but not across gender.
+
+Note that in either case, this introduces huge uncertainty about the "main effect" of the variable for which we are freeing the thresholds.
+That is because any affect on the mean of the latent variable could be arbitrarily re-expressed as a shifting of all thresholds; essentially the model is underidentified (there is an infinite number of solutions that would produce precisely the same observed data).
+We can still get point estimates because of Bayesian magic and priors, but the uncertainty explodes.
+However, this does not really affect the uncertainty regarding the interaction of interest.
+Here's an intuition for that: No matter which combination of thresholds and main effect we pick, once we commit ourselves, it's the same across years (if freeing by gender) or the same across genders (if freeing by year).
+Thus, the contrasts across that second variable are still identified.
+
+But notice that we could not possibly free the threesholds by both gender and both year; then the uncertainty explosion would affect the interaction of interest.
+One way to think about this: If we say "oh, in every year, girls and boys may use the scale in arbitrarily different ways that change over time", that means we essentially cannot say anything anymore about the gender differences and how they change over time.
+They could be literally anything; we can just freely pick any pattern of gender gaps and then just adjust the gender and year specific thresholds to produce the observed data.
 
 ```{r free_thresholds}
+# We switch to a Bayesian framework to make the magic happen
 library(brms)
 
 # Refit simple ordinal model in brms just to check its essentially the same
