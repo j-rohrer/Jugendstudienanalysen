@@ -207,6 +207,7 @@ prop.table(table(youth2010$s23cd, useNA = "always"))
 This is to check how many students with a Vietnamese migration background are in our 2010 data, reported in the discussion section.
 
 ```{r countries}
+library(dplyr)
 # self born in Germany? if no, which country
 table(youth2010$s23aa)
 # father born in Germany? if no, which country
