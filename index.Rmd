@@ -12,7 +12,6 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Overview
 
 These pages contain the analyses code, as well as full analysis results (plus some additional analyses we conducted while building up our models) for the manuscript "Why has the gender gap in life satisfaction among adolescents in Leipzig grown?" by Julia M. Rohrer, Richard McElreath, and Gregor Kachel.
 
