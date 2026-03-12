@@ -782,16 +782,16 @@ print(max_comp)
 round(max_comp$estimate/sd(combined$satis), 2)
 
 
-# Widening of the gap from 2010 to 2023 at 2015 schooltype distribution
-max_comp <- avg_comparisons(explanandum_schooltype, variables = "gender", by = "year",
+# Widening of the gap from 2010 to 2023 at 2015 distribution
+max_comp <- avg_comparisons(explanandum_demo_final, variables = "gender", by = "year",
                 hypothesis = "b1 = b3", newdata = all2015, vcov = ~ unique_classroom)
 print(max_comp)
 
 # Express widening gender gap in SDs
 round(max_comp$estimate/sd(combined$satis), 2)
 
-# Widening of the gap from 2010 to 2023 at 2023 schooltype distribution
-max_comp <- avg_comparisons(explanandum_schooltype, variables = "gender", by = "year",
+# Widening of the gap from 2010 to 2023 at 2023 distribution
+max_comp <- avg_comparisons(explanandum_demo_final, variables = "gender", by = "year",
                 hypothesis = "b1 = b3", newdata = all2023, vcov = ~ unique_classroom)
 print(max_comp)
 
