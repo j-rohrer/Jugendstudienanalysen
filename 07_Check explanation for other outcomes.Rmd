@@ -111,7 +111,7 @@ pred1$year <- pred1$year + 0.5 * (pred1$gender == "male")
 pred2$year <- pred2$year + 0.5 * (pred2$gender == "male") 
 
 # Plot the results
-# No migration background
+# No mig back
 cat_mig_lang_0 <- ggplot(pred1[pred1$mig_lang == 0,], 
                          aes(x = year, group = gender, color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -133,13 +133,13 @@ cat_mig_lang_0 <- ggplot(pred1[pred1$mig_lang == 0,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean financial satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
   labs(color = "Gender")
 
-# With migration background
+# With Mig back
 cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,], 
                          aes(x = year, group = gender, color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -161,7 +161,7 @@ cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean financial satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
@@ -261,7 +261,7 @@ pred1$year <- pred1$year + 0.5 * (pred1$gender == "male")
 pred2$year <- pred2$year + 0.5 * (pred2$gender == "male") 
 
 # Plot the results
-# No migration background
+# No mig back
 cat_mig_lang_0 <- ggplot(pred1[pred1$mig_lang == 0,], 
                          aes(x = year, group = gender, color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -283,13 +283,13 @@ cat_mig_lang_0 <- ggplot(pred1[pred1$mig_lang == 0,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean friendship satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
   labs(color = "Gender")
 
-# With migration background
+# With Mig back
 cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,], 
                          aes(x = year, group = gender, color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -311,7 +311,7 @@ cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean friendship satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
@@ -413,7 +413,7 @@ pred1$year <- pred1$year + 0.5 * (pred1$gender == "male")
 pred2$year <- pred2$year + 0.5 * (pred2$gender == "male") 
 
 # Plot the results
-# No migration background
+# No mig back
 cat_mig_lang_0 <- ggplot(pred1[pred1$mig_lang == 0,], 
                          aes(x = year, group = gender, color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -435,13 +435,13 @@ cat_mig_lang_0 <- ggplot(pred1[pred1$mig_lang == 0,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean satisfaction w mom") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
   labs(color = "Gender")
 
-# With migration background
+# With Mig back
 cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,], 
                          aes(x = year, group = gender, color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -463,7 +463,7 @@ cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean satisfaction w mom") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
@@ -560,7 +560,7 @@ pred1$year <- pred1$year + 0.5 * (pred1$gender == "male")
 pred2$year <- pred2$year + 0.5 * (pred2$gender == "male") 
 
 # Plot the results
-# No migration background
+# No mig back
 cat_mig_lang_0 <- ggplot(pred1[pred1$mig_lang == 0,], 
                          aes(x = year, group = gender, color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -582,13 +582,13 @@ cat_mig_lang_0 <- ggplot(pred1[pred1$mig_lang == 0,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean satisfaction w dad") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
   labs(color = "Gender")
 
-# With migration background
+# With Mig back
 cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,], 
                          aes(x = year, group = gender, color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -610,7 +610,7 @@ cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean satisfaction w dad") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
@@ -706,7 +706,7 @@ pred1$year <- pred1$year + 0.5 * (pred1$gender == "male")
 pred2$year <- pred2$year + 0.5 * (pred2$gender == "male") 
 
 # Plot the results
-# No migration background
+# No mig back
 cat_mig_lang_0 <- ggplot(pred1[pred1$mig_lang == 0,], 
                          aes(x = year, group = gender, color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -728,13 +728,13 @@ cat_mig_lang_0 <- ggplot(pred1[pred1$mig_lang == 0,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean leisure satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
   labs(color = "Gender")
 
-# With migration background
+# With Mig back
 cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,], 
                          aes(x = year, group = gender, color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -756,7 +756,7 @@ cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean leisure satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
@@ -853,7 +853,7 @@ pred1$year <- pred1$year + 0.5 * (pred1$gender == "male")
 pred2$year <- pred2$year + 0.5 * (pred2$gender == "male") 
 
 # Plot the results
-# No migration background
+# No mig back
 cat_mig_lang_0 <- ggplot(pred1[pred1$mig_lang == 0,], 
                          aes(x = year, group = gender, color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -875,13 +875,13 @@ cat_mig_lang_0 <- ggplot(pred1[pred1$mig_lang == 0,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean grades satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
   labs(color = "Gender")
 
-# With migration background
+# With Mig back
 cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,], 
                          aes(x = year, group = gender, color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -903,7 +903,7 @@ cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean grades satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
@@ -1000,7 +1000,7 @@ pred1$year <- pred1$year + 0.5 * (pred1$gender == "male")
 pred2$year <- pred2$year + 0.5 * (pred2$gender == "male") 
 
 # Plot the results
-# No migration background
+# No mig back
 cat_mig_lang_0 <- ggplot(pred1[pred1$mig_lang == 0,], 
                          aes(x = year, group = gender, color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -1022,13 +1022,13 @@ cat_mig_lang_0 <- ggplot(pred1[pred1$mig_lang == 0,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean housing satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
   labs(color = "Gender")
 
-# With migration background
+# With Mig back
 cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,], 
                          aes(x = year, group = gender, color = gender,
                                  y = estimate, ymin = conf.low, ymax = conf.high)) +
@@ -1050,7 +1050,7 @@ cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("No mig back") +
   ylab("Mean housing satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
