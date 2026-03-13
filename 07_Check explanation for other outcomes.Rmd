@@ -161,7 +161,7 @@ cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No mig back") +
+  ggtitle("Mig back") +
   ylab("Mean financial satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
@@ -311,7 +311,7 @@ cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No mig back") +
+  ggtitle("Mig back") +
   ylab("Mean friendship satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
@@ -463,7 +463,7 @@ cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No mig back") +
+  ggtitle("Mig back") +
   ylab("Mean satisfaction w mom") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
@@ -610,7 +610,7 @@ cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No mig back") +
+  ggtitle("Mig back") +
   ylab("Mean satisfaction w dad") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
@@ -756,7 +756,7 @@ cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No mig back") +
+  ggtitle("Mig back") +
   ylab("Mean leisure satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
@@ -903,7 +903,7 @@ cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No mig back") +
+  ggtitle("Mig back") +
   ylab("Mean grades satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
@@ -1050,7 +1050,7 @@ cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No mig back") +
+  ggtitle("Mig back") +
   ylab("Mean housing satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
