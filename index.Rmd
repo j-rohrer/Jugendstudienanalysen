@@ -22,6 +22,7 @@ Unfortunately, we cannot share the underlying data; due to legal requirements, t
 
 
 - [Cleaning and preparation of the Youth Surveys](01_Data-preparation.html)
+
 - [Reproducing the central explanandum and looking at alternative satisfaction measures](02_Reproducing-the-Explanandum-and-considering-alternative-satisfaction-measures.html)
 - [Initial ordinal analysis: Could this pattern be a scaling artifact?](03_Ordinal-analysis.html)
 - [Do demographics explain away the widening gender gap?](04_Add-demographic-variables.html)
@@ -29,3 +30,15 @@ Unfortunately, we cannot share the underlying data; due to legal requirements, t
 - [Confirming findings with an ordinal model](06_Robustness-ordinal.html)
 - [Can we explain patterns on alternative satisfaction measures in the same manner?](07_Check-explanation-for-other-outcomes.html)
 - [Miscellaneous: Checking some additional numbers regarding migration background](08_Misc.html)
+
+### Some additional information on the match between target population and our sample
+
+As stated in the manuscript, the City of Leipzig aimed to sample in accordance with the actual distribution of students across the school types and grade levels included.
+The following plots illustrate the joint distribution of those two variables in the target population of interest (students in Leipzig, attending grade levels 7 to 12 in general secondary and grammar schools) vs. in our sample.
+
+![2010 distribution](Plots/distribution_2010.png){width=50%}
+![2015 distribution](Plots/distribution_2015.png){width=50%}
+
+![2023 distribution](Plots/distribution_2023.png){width=50%}
+
+

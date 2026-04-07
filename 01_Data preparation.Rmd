@@ -134,6 +134,18 @@ table(youth2010$schooltype, useNA = "always")
 table(youth2010$migback, useNA = "always")
 table(youth2010$satis, useNA = "always")
 
+# Grade level
+table(youth2010$klasse)
+# A: 6, B: 7, C: 8, D: 9, E: 10, F: 11, G: 12
+youth2010$grade_level <- NA
+youth2010$grade_level[youth2010$klasse == "A"] <- 6
+youth2010$grade_level[youth2010$klasse == "B"] <- 7
+youth2010$grade_level[youth2010$klasse == "C"] <- 8
+youth2010$grade_level[youth2010$klasse == "D"] <- 9
+youth2010$grade_level[youth2010$klasse == "E"] <- 10
+youth2010$grade_level[youth2010$klasse == "F"] <- 11
+youth2010$grade_level[youth2010$klasse == "G"] <- 12
+
 ```
 
 ### An initial look at the data
@@ -245,6 +257,18 @@ youth2015$satis_dad <- 6 - youth2015$f02e
 youth2015$satis_leisure <- 6 - youth2015$f02g
 youth2015$satis_dwell <- 6 - youth2015$f02h
 youth2015$satis_grades <- 6 - youth2015$f02f
+
+# Grade-level
+table(youth2015$Klasse)
+# 1: 7, 2: 8, 3: 9, 4: 10, 5: 11, 6: 12
+youth2015$grade_level <- NA
+youth2015$grade_level[youth2015$Klasse == 1] <- 7
+youth2015$grade_level[youth2015$Klasse == 2] <- 8
+youth2015$grade_level[youth2015$Klasse == 3] <- 9
+youth2015$grade_level[youth2015$Klasse == 4] <- 10
+youth2015$grade_level[youth2015$Klasse == 5] <- 11
+youth2015$grade_level[youth2015$Klasse == 6] <- 12
+
 
 ```
 
@@ -382,6 +406,16 @@ youth2023$satis_leisure <- 6 - youth2023$f02h
 youth2023$satis_dwell <- 6 - youth2023$f02i
 youth2023$satis_grades <- 6 - youth2023$f02f
 
+# Grade-level
+table(youth2023$klassenstufe)
+# 1: 7, 2: 8, 3: 9, 4: 10, 5: 11, 6: 12
+youth2023$grade_level <- NA
+youth2023$grade_level[youth2023$klassenstufe == 1] <- 7
+youth2023$grade_level[youth2023$klassenstufe == 2] <- 8
+youth2023$grade_level[youth2023$klassenstufe == 3] <- 9
+youth2023$grade_level[youth2023$klassenstufe == 4] <- 10
+youth2023$grade_level[youth2023$klassenstufe == 5] <- 11
+youth2023$grade_level[youth2023$klassenstufe == 6] <- 12
 
 ```
 
@@ -557,7 +591,7 @@ youth2023$id <- youth2023$rawid
 
 vars <- c("id", "year", "schooltype", "gender", "age", "mig_lang", "migback",
           "satis", "satis_money", "satis_friends", "satis_mom", "satis_dad",
-          "satis_leisure", "satis_dwell", "satis_grades", "school", "unique_classroom", "school_id", "source")
+          "satis_leisure", "satis_dwell", "satis_grades", "school", "unique_classroom", "school_id", "source", "grade_level")
 
 combined <- rbind(youth2010[, vars], youth2015[, vars], youth2023[, vars])
 

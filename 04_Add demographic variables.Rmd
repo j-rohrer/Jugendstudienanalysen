@@ -987,7 +987,7 @@ cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("Migration background") +
   ylab("Mean life satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +

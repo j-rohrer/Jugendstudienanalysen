@@ -108,6 +108,10 @@ mean(combined_2023$age[combined_2023$source == "online"], na.rm = TRUE)
 prop.table(table(combined_2023$mig_lang, combined_2023$source), margin = 1)
 chisq.test(table(combined_2023$mig_lang, combined_2023$source))
 
+# Is response mode correlated with gender?
+prop.table(table(combined_2023$gender, combined_2023$source), margin = 1)
+chisq.test(table(combined_2023$gender, combined_2023$source))
+
 ```
 
 ## Does life satisfaction vary by response mode? Let's check with controls
@@ -399,7 +403,7 @@ cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,],
   coord_cartesian(ylim = c(mean(combined$satis) - sd(combined$satis), mean(combined$satis) + sd(combined$satis))) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("No migration background") +
+  ggtitle("Migration background") +
   ylab("Mean life satisfaction") +
   scale_x_continuous(breaks = c(2010, 2015, 2023)) +
   xlab("Year") +
@@ -409,7 +413,7 @@ cat_mig_lang_1 <- ggplot(pred1[pred1$mig_lang == 1,],
 # Combine into single plot
 combined_cat_mig_lang <- (cat_mig_lang_0|cat_mig_lang_1) + plot_layout(guides = "collect")
 combined_cat_mig_lang
-ggsave("Plots/paper_satis_by_mig_lang_categorical.png", width = 6, height = 3)
+ggsave("Plots/paper_satis_by_mig_lang_categorical.png", width = 7, height = 3)
 
 
 ```
