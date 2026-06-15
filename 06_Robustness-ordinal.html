@@ -11,7 +11,7 @@
 
 <meta name="author" content="Julia Rohrer" />
 
-<meta name="date" content="2025-05-07" />
+<meta name="date" content="2026-06-15" />
 
 <title>Check whether results are robust with ordinal model</title>
 
@@ -345,6 +345,20 @@ display: none;
 
 
 
+<nav style="background-color:#f0f0f0; padding:10px; margin-bottom:20px;">
+  <a href="index.html">Home</a> |
+  <a href="01_Data-preparation.html">Cleaning and preparation of the Youth Surveys</a> |
+  <a href="02_Reproducing-the-Explanandum-and-considering-alternative-satisfaction-measures.html">Explanandum and alternative satisfaction measures</a> |
+  <a href="03_Ordinal-analysis.html">Ordinal analysis</a> |
+  <a href="04_Add-demographic-variables.html">Add demographic variables</a> |
+  <a href="05_Mode-effects-and-school-fixed-effects.html">Survey mode effects</a> |
+  <a href="06_Robustness-ordinal.html">Re-check with ordinal model</a> |
+  <a href="07_Check-explanation-for-other-outcomes.html">Returning to alternative satisfaction measures</a> |
+  <a href="08_Misc.html">Miscellaneous</a>
+
+</nav>
+
+
 
 <div id="header">
 
@@ -353,7 +367,7 @@ display: none;
 <h1 class="title toc-ignore">Check whether results are robust with
 ordinal model</h1>
 <h4 class="author">Julia Rohrer</h4>
-<h4 class="date">2025-05-07</h4>
+<h4 class="date">2026-06-15</h4>
 
 </div>
 
@@ -392,7 +406,7 @@ temp3 &lt;- combined[combined$year == 2010,]
 temp3$year &lt;- 2023
 all2010 &lt;- rbind(temp1, temp2, temp3)
 
-
+# Predicted values for all combinations of gender and year
 pred &lt;- avg_predictions(explanandum_paper_only_ordinal,
                  by = c(&quot;gender&quot;, &quot;year&quot;),
                  newdata = all2010,
@@ -409,8 +423,9 @@ pred &lt;- avg_predictions(explanandum_paper_only_ordinal,
 ##  male   2015   0.2346 -0.0107  0.4874
 ##  male   2023   0.0903 -0.2155  0.3932
 ## 
-## Type:  link</code></pre>
-<pre class="r"><code>comps &lt;- avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = &quot;year&quot;,
+## Type: link</code></pre>
+<pre class="r"><code># Counterfactual comparisons: latent gender gaps per year
+comps &lt;- avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = &quot;year&quot;,
                  newdata = all2010,
                  vcov = ~ unique_classroom,
                  type = &quot;link&quot;)</code></pre>
@@ -423,9 +438,10 @@ pred &lt;- avg_predictions(explanandum_paper_only_ordinal,
 ##  2023    0.543 0.279  0.824
 ## 
 ## Term: gender
-## Type:  link 
+## Type: link
 ## Comparison: male - female</code></pre>
-<pre class="r"><code>max_comp &lt;- avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = &quot;year&quot;,
+<pre class="r"><code># Let&#39;s compare the 2010 and 2023 gender gaps
+max_comp &lt;- avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = &quot;year&quot;,
                 hypothesis = &quot;b1 = b3&quot;,
                  newdata = all2010,
                 vcov = ~ unique_classroom,
@@ -454,8 +470,10 @@ pred &lt;- avg_predictions(explanandum_paper_only_ordinal,
 ##  Hypothesis Estimate  2.5 % 97.5 %
 ##       b1=b3    -0.25 -0.545 0.0357
 ## 
-## Type:  link</code></pre>
-<pre class="r"><code># No migback
+## Type: link</code></pre>
+<pre class="r"><code># And lets look at how these vary by migration background
+
+# Widening of gender gap for students without migration background
 print(avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
@@ -466,8 +484,8 @@ print(avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&q
 ##  Hypothesis Estimate  2.5 % 97.5 %
 ##       b1=b5   -0.153 -0.456  0.154
 ## 
-## Type:  link</code></pre>
-<pre class="r"><code># With migback
+## Type: link</code></pre>
+<pre class="r"><code># Widening of gender gap for students with migration background
 print(avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
@@ -478,8 +496,8 @@ print(avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&q
 ##  Hypothesis Estimate 2.5 % 97.5 %
 ##       b2=b6    -1.16 -1.79 -0.493
 ## 
-## Type:  link</code></pre>
-<pre class="r"><code># Comparison
+## Type: link</code></pre>
+<pre class="r"><code># Comparing the widening (triple-interaction gender, year, migration background)
 print(avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
@@ -490,7 +508,7 @@ print(avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&q
 ##   Hypothesis Estimate 2.5 % 97.5 %
 ##  b1-b5=b2-b6        1 0.293   1.69
 ## 
-## Type:  link</code></pre>
+## Type: link</code></pre>
 </div>
 
 
