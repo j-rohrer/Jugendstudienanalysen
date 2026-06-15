@@ -31,7 +31,7 @@ Unfortunately, we cannot share the underlying data; due to legal requirements, t
 - [Can we explain patterns on alternative satisfaction measures in the same manner?](07_Check-explanation-for-other-outcomes.html)
 - [Miscellaneous: Checking some additional numbers regarding migration background](08_Misc.html)
 
-### Some additional information on the match between target population and our sample
+### Additional information on the match between target population and our sample
 
 As stated in the manuscript, the City of Leipzig aimed to sample in accordance with the actual distribution of students across the school types and grade levels included.
 The following plots illustrate the joint distribution of those two variables in the target population of interest (students in Leipzig, attending grade levels 7 to 12 in general secondary and grammar schools) vs. in our sample.
