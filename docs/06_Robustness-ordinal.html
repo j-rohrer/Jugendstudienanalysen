@@ -11,7 +11,7 @@
 
 <meta name="author" content="Julia Rohrer" />
 
-<meta name="date" content="2025-05-15" />
+<meta name="date" content="2025-05-07" />
 
 <title>Check whether results are robust with ordinal model</title>
 
@@ -345,20 +345,6 @@ display: none;
 
 
 
-<nav style="background-color:#f0f0f0; padding:10px; margin-bottom:20px;">
-  <a href="index.html">Home</a> |
-  <a href="01_Data-preparation.html">Cleaning and preparation of the Youth Surveys</a> |
-  <a href="02_Reproducing-the-Explanandum-and-considering-alternative-satisfaction-measures.html">Explanandum and alternative satisfaction measures</a> |
-  <a href="03_Ordinal-analysis.html">Ordinal analysis</a> |
-  <a href="04_Add-demographic-variables.html">Add demographic variables</a> |
-  <a href="05_Mode-effects-and-school-fixed-effects.html">Survey mode effects</a> |
-  <a href="06_Robustness-ordinal.html">Re-check with ordinal model</a> |
-  <a href="07_Check-explanation-for-other-outcomes.html">Returning to alternative satisfaction measures</a> |
-  <a href="08_Misc.html">Miscellaneous</a>
-
-</nav>
-
-
 
 <div id="header">
 
@@ -367,7 +353,7 @@ display: none;
 <h1 class="title toc-ignore">Check whether results are robust with
 ordinal model</h1>
 <h4 class="author">Julia Rohrer</h4>
-<h4 class="date">2025-05-15</h4>
+<h4 class="date">2025-05-07</h4>
 
 </div>
 
@@ -406,7 +392,7 @@ temp3 &lt;- combined[combined$year == 2010,]
 temp3$year &lt;- 2023
 all2010 &lt;- rbind(temp1, temp2, temp3)
 
-# Predicted values for all combinations of gender and year
+
 pred &lt;- avg_predictions(explanandum_paper_only_ordinal,
                  by = c(&quot;gender&quot;, &quot;year&quot;),
                  newdata = all2010,
@@ -424,8 +410,7 @@ pred &lt;- avg_predictions(explanandum_paper_only_ordinal,
 ##  male   2023   0.0903 -0.2155  0.3932
 ## 
 ## Type:  link</code></pre>
-<pre class="r"><code># Counterfactual comparisons: latent gender gaps per year
-comps &lt;- avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = &quot;year&quot;,
+<pre class="r"><code>comps &lt;- avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = &quot;year&quot;,
                  newdata = all2010,
                  vcov = ~ unique_classroom,
                  type = &quot;link&quot;)</code></pre>
@@ -440,22 +425,37 @@ comps &lt;- avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;ge
 ## Term: gender
 ## Type:  link 
 ## Comparison: male - female</code></pre>
-<pre class="r"><code># Let&#39;s compare the 2010 and 2023 gender gaps
-max_comp &lt;- avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = &quot;year&quot;,
+<pre class="r"><code>max_comp &lt;- avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = &quot;year&quot;,
                 hypothesis = &quot;b1 = b3&quot;,
                  newdata = all2010,
                 vcov = ~ unique_classroom,
                  type = &quot;link&quot;)</code></pre>
 <pre><code>## Warning: The `vcov` argument is not supported for models of this class.</code></pre>
+<pre><code>## Warning: 
+## It is essential to check the order of estimates when specifying hypothesis tests using positional indices like b1, b2, etc. The indices of estimates can change depending on the order of rows in the original dataset, user-supplied arguments, model-fitting package, and version of `marginaleffects`.
+## 
+## It is also good practice to use assertions that ensure the order of estimates is consistent across different runs of the same code. Example:
+## 
+## ```r
+## mod &lt;- lm(mpg ~ am * carb, data = mtcars)
+## 
+## # assertion for safety
+## p &lt;- avg_predictions(mod, by = &#39;carb&#39;)
+## stopifnot(p$carb[1] != 1 || p$carb[2] != 2)
+## 
+## # hypothesis test
+## avg_predictions(mod, by = &#39;carb&#39;, hypothesis = &#39;b1 - b2 = 0&#39;)
+## ```
+## 
+## Disable this warning with: `options(marginaleffects_safe = FALSE)`
+##  This warning appears once per session.</code></pre>
 <pre class="r"><code>print(max_comp)</code></pre>
 <pre><code>## 
 ##  Hypothesis Estimate  2.5 % 97.5 %
 ##       b1=b3    -0.25 -0.545 0.0357
 ## 
 ## Type:  link</code></pre>
-<pre class="r"><code># And lets look at how these vary by migration background
-
-# Widening of gender gap for students without migration background
+<pre class="r"><code># No migback
 print(avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
@@ -467,7 +467,7 @@ print(avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&q
 ##       b1=b5   -0.153 -0.456  0.154
 ## 
 ## Type:  link</code></pre>
-<pre class="r"><code># Widening of gender gap for students with migration background
+<pre class="r"><code># With migback
 print(avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
@@ -479,7 +479,7 @@ print(avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&q
 ##       b2=b6    -1.16 -1.79 -0.493
 ## 
 ## Type:  link</code></pre>
-<pre class="r"><code># Comparing the widening (triple-interaction gender, year, migration background)
+<pre class="r"><code># Comparison
 print(avg_comparisons(explanandum_paper_only_ordinal, variables = &quot;gender&quot;, by = c(&quot;year&quot;, &quot;mig_lang&quot;),
                  newdata = all2010,
                  vcov = ~ unique_classroom,
